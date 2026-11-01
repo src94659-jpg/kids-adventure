@@ -1,4 +1,4 @@
-<!doctype html><html lang="zh-Hant-TW"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><title>國英數大冒險</title><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="國英數大冒險"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><link rel="apple-touch-icon" href="icon-180.png"><link rel="icon" href="icon-180.png"><script>window.ZZ_SITE = 1;</script><style>:root{padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}body{margin:0}[hidden]{display:none!important}</style></head><body><title>國英數大冒險</title>
+<!doctype html><html lang="zh-Hant-TW"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><title>國英數大冒險</title><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="國英數大冒險"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><link rel="apple-touch-icon" href="icon-180.png"><link rel="icon" href="icon-180.png"><script>window.ZZ_SITE = 1; window.ZZ_API = "https://script.google.com/macros/s/AKfycbxkk46VfoU1vdSL4b3cJGkiH-SXhh9XqjGM3dJ5eGBk1FQ54wdDSg_O0iT4f9xy5kKa/exec";</script><style>:root{padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}body{margin:0}[hidden]{display:none!important}</style></head><body><title>國英數大冒險</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <script>
 /* 開機預判（最先跑）：日夜、會不會進 3D 星球。進 3D 的話開機就鋪星球天空、先載天空圖，不會先閃一下 2D 點點紙和空的工具列 */
@@ -1079,6 +1079,16 @@ body.lock-cleared .node.done::after, body.lock-cleared .rnode.done::after, body.
 .shop-top .coins { font-size: max(var(--fs-min), 1.6rem * var(--fs-l)); }
 .shop-top p { margin: 4px 0 0; color: var(--muted); font-size: max(var(--fs-min), .95rem * var(--fs-s)); }
 .shop-sec { width: 100%; max-width: 560px; }
+.tg-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }   /* 最多 4 樣，兩欄剛好 */
+.tg-sw { min-width: 0; display: flex; align-items: center; gap: 6px; min-height: 48px; padding: 4px 10px; border-radius: 16px; border: 2px solid var(--line); background: var(--paper); color: var(--ink); font: inherit; text-align: left; }
+.tg-sw .tg-ic { font-size: 1.4em; line-height: 1; }
+.tg-sw .tg-t { flex: 1; min-width: 0; line-height: 1.15; white-space: nowrap; }
+.tg-sw small { display: block; font-size: .75em; color: var(--muted); }
+.tg-sw .sw { flex: none; position: relative; width: 42px; height: 26px; border-radius: 99px; background: #BFC9C2; transition: background .15s; }
+.tg-sw .sw::after { content: ""; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0, 0, 0, .35); transition: left .15s; }
+.tg-sw[aria-checked="true"] { border-color: var(--leaf); background: var(--leaf-soft); }
+.tg-sw[aria-checked="true"] .sw { background: var(--leaf); }
+.tg-sw[aria-checked="true"] .sw::after { left: 19px; }
 .shop-sec h3 { margin: 6px 0; font-size: max(var(--fs-min), 1.2rem * var(--fs-m)); font-weight: 400; }
 .shop-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
 .item {
@@ -2179,6 +2189,7 @@ function petSVG(kind = 'owl', cls = '', tier = 0, color = '#2F7DBF', gear = {}, 
   const r3 = PET3D[kind] && (v3d() || PET3D[kind].human) ? PET3D[kind] : null;
   const a = r3 || ANIMALS[kind] || ANIMALS.owl;
   const eq0 = slot => SHOP_BY[gear && gear[slot]];
+  const hid = String((gear && gear.hide) || '').split(','), on = k => !hid.includes(k);   // 升級裝扮被玩家關掉的就不畫
   const solo = r3 && SOLO_FIT[kind] && !noSolo ? SOLO_ORDER.map(eq0).find(it => it && SOLO_FIT[kind][it.id]) : null;   // 換整張圖的那件，不再疊
   const eq = slot => solo && solo.slot === slot ? null : eq0(slot);
   const e3 = slot => r3 && eq(slot) && SHOP3D[eq(slot).id] ? eq(slot) : null;   // 3D 模式、這件有 3D 圖
@@ -2198,7 +2209,7 @@ function petSVG(kind = 'owl', cls = '', tier = 0, color = '#2F7DBF', gear = {}, 
   const k = ensureColor(color);
   const main = `url(#zz-u-${k})`, deep = `url(#zz-ud-${k})`;
   /* 第 1～3 級：棒球帽（玩家的顏色，正面有一顆星） */
-  const cap = tier >= 1 && tier < 4 ? `<g transform="translate(0 -4) rotate(-8 60 28)">
+  const cap = tier >= 1 && tier < 4 && on('cap') ? `<g transform="translate(0 -4) rotate(-8 60 28)">
       <path d="M38 29 Q37 5 60 5 Q83 5 82 29 Z" fill="${main}"/>
       <path d="M60 6 V27 M49 8 Q45 18 45 28 M71 8 Q75 18 75 28" fill="none" stroke="${mix(color, 0.35, '#000000')}" stroke-width="1.2" opacity=".45"/>
       <path d="M60 10 l2.2 4.4 4.9 .7 -3.5 3.4 .8 4.9 -4.4-2.3 -4.4 2.3 .8-4.9 -3.5-3.4 4.9-.7z" fill="#fff"/>
@@ -2207,14 +2218,14 @@ function petSVG(kind = 'owl', cls = '', tier = 0, color = '#2F7DBF', gear = {}, 
       <circle cx="60" cy="5.5" r="3" fill="${deep}"/>
       ${shine(49, 13, 7, 3.2, -35)}
     </g>` : '';
-  const scarf = tier >= 2 ? `<g transform="${a.nk ? `translate(${a.nk[0]} ${a.nk[1]}) scale(${a.nk[3] ? -a.nk[2] : a.nk[2]} ${a.nk[2]}) translate(-60 -82)` : `translate(0 ${a.dy})`}">
+  const scarf = tier >= 2 && on('scarf') ? `<g transform="${a.nk ? `translate(${a.nk[0]} ${a.nk[1]}) scale(${a.nk[3] ? -a.nk[2] : a.nk[2]} ${a.nk[2]}) translate(-60 -82)` : `translate(0 ${a.dy})`}">
       <path d="M70 86 L80 86 L84 104 L73 104 Z" fill="${deep}"/>
       <path d="M72 97 H82 M73 101 H83" stroke="#fff" stroke-width="1.4" opacity=".4"/>
       <path d="M28 74 Q60 88 92 74 L92 83 Q60 97 28 83 Z" fill="${main}"/>
       <path d="M30 78 Q60 91 90 78" fill="none" stroke="#fff" stroke-width="1.4" opacity=".35"/>
     </g>` : '';
   /* 第 3 級起：大黑粗框眼鏡，透明鏡片看得到眼睛 */
-  const glasses = tier >= 3 ? (() => {
+  const glasses = tier >= 3 && on('glasses') ? (() => {
     const [[x1, y], [x2]] = a.eyes;
     const w = Math.min(a.gr * 2.6, x2 - x1 - 4), h = w * 0.8, sw = a.gsw || Math.max(3.6, w * 0.17);
     const f = (n) => n.toFixed(1);
@@ -2227,11 +2238,11 @@ function petSVG(kind = 'owl', cls = '', tier = 0, color = '#2F7DBF', gear = {}, 
     return `${lens(x1)}${lens(x2)}
       <path d="M${f(x1 + w / 2)} ${f(y - h * 0.12)} Q60 ${f(y - h * 0.42)} ${f(x2 - w / 2)} ${f(y - h * 0.12)}" fill="none" stroke="url(#zz-frame)" stroke-width="${f(sw * 0.95)}" stroke-linecap="round"/>`;
   })() : '';
-  const grad = tier >= 4 ? `<path d="M44 22 L44 31 Q60 37 76 31 L76 22 Z" fill="${G('cap')}"/><path d="M24 18 L60 3 L96 18 L60 32 Z" fill="${G('cap')}"/>
+  const grad = tier >= 4 && on('grad') ? `<path d="M44 22 L44 31 Q60 37 76 31 L76 22 Z" fill="${G('cap')}"/><path d="M24 18 L60 3 L96 18 L60 32 Z" fill="${G('cap')}"/>
       <path d="M30 18 L60 6 L78 13" fill="none" stroke="#fff" stroke-width="1.2" opacity=".3"/>
       <path class="tassel" d="M60 17 L90 21 L90 35"/><circle cx="90" cy="37" r="3.8" fill="${G('beak')}"/><circle cx="60" cy="17" r="2.6" fill="${G('beak')}"/>` : '';
   /* 第 5 級起：胸前掛獎牌（銅 → 銀 → 金 → 彩虹） */
-  const medal = tier >= 5 ? `<g transform="${a.md ? `translate(${a.md[0]} ${a.md[1]}) scale(${a.md[2]})` : `translate(60 ${96 + a.dy})`}"><path d="M-6 -12 L-2 0 M6 -12 L2 0" stroke="#2F7DBF" stroke-width="3"/><circle r="8.6" fill="${tier >= 8 ? 'url(#zz-rainbow)' : ['#D08A4E', '#C3CCD5', '#F6B12F'][tier - 5]}" stroke="#fff" stroke-width="1.6"/>${starShape(0, 0.4, 4.4, '#fff')}</g>` : '';
+  const medal = tier >= 5 && on('medal') ? `<g transform="${a.md ? `translate(${a.md[0]} ${a.md[1]}) scale(${a.md[2]})` : `translate(60 ${96 + a.dy})`}"><path d="M-6 -12 L-2 0 M6 -12 L2 0" stroke="#2F7DBF" stroke-width="3"/><circle r="8.6" fill="${tier >= 8 ? 'url(#zz-rainbow)' : ['#D08A4E', '#C3CCD5', '#F6B12F'][tier - 5]}" stroke="#fff" stroke-width="1.6"/>${starShape(0, 0.4, 4.4, '#fff')}</g>` : '';
   const hatSvg = (hatItem ? (e3('hat') ? img3d(hatItem.id, box3d(hatItem)) : hatItem.draw()) : solo && solo.slot === 'hat' ? '' : cap + grad) + (halo3d || '');
   if (r3) {
     const hatG = hatSvg ? `<g transform="translate(${r3.hat[0]} ${r3.hat[1]}) scale(${r3.hat[2]}) translate(-60 -30)">${hatSvg}</g>` : '';
@@ -2433,7 +2444,10 @@ function removePlayer(id) {
 
 /* 英雄榜：把這個帳號所有玩家的分數整理成一份，稍等一下再寫（連續存檔只寫一次） */
 const heroEntry = p => ({ id: p.id, name: String(p.name || '').slice(0, 8), animal: p.animal || 'owl', color: p.color || COLORS[0], score: p.score || 0, stars: p.stars || 0, equip: { ...(p.equip || {}) }, week: p.week && p.week.id ? { id: p.week.id, score: p.week.score || 0 } : null });
-const cleanEquip = e => Object.fromEntries(SLOTS.map(([s]) => [s, e && SHOP_BY[e[s]] && SHOP_BY[e[s]].slot === s ? e[s] : null]).filter(([, v]) => v));
+/* 升級裝扮（稱號送的）：[代號, 名字, 圖示, 從第幾級有, 到第幾級為止]；玩家關掉的記在 equip.hide（逗號分隔），跟著存檔、英雄榜走 */
+const TIER_GEAR = [['cap', '棒球帽', '🧢', 1, 3], ['scarf', '圍巾', '🧣', 2, 99], ['glasses', '眼鏡', '👓', 3, 99], ['grad', '博士帽', '🎓', 4, 99], ['medal', '獎牌', '🏅', 5, 99]];
+const cleanHide = h => [...new Set(String(h || '').split(','))].filter(k => TIER_GEAR.some(([g]) => g === k)).join(',');
+const cleanEquip = e => { const o = Object.fromEntries(SLOTS.map(([s]) => [s, e && SHOP_BY[e[s]] && SHOP_BY[e[s]].slot === s ? e[s] : null]).filter(([, v]) => v)); const h = cleanHide(e && e.hide); if (h) o.hide = h; return o; };
 function scheduleHeroes() {
   if (!store.cloud || store.readOnly || !store.uid) return;
   clearTimeout(heroTimer);
@@ -2698,9 +2712,10 @@ async function packMove(players) {
 async function unpackMove(text) {
   const raw = String(text || '').trim(), t = raw.replace(/\s+/g, '');
   let json = raw;
-  if (/^ZZ[01]:/.test(t)) {
-    let bytes = Uint8Array.from(atob(t.slice(4)), c => c.charCodeAt(0));
-    if (t[2] === '1') bytes = new Uint8Array(await new Response(new Blob([bytes]).stream().pipeThrough(new DecompressionStream('deflate-raw'))).arrayBuffer());
+  const zz = t.match(/zz([01]):([A-Za-z0-9+/=]+)/i);   // 手機或記事本可能把開頭改成小寫、前後多複製到別的字
+  if (zz) {
+    let bytes = Uint8Array.from(atob(zz[2]), c => c.charCodeAt(0));
+    if (zz[1] === '1') bytes = new Uint8Array(await new Response(new Blob([bytes]).stream().pipeThrough(new DecompressionStream('deflate-raw'))).arrayBuffer());
     json = new TextDecoder().decode(bytes);
   }
   const o = JSON.parse(json);
@@ -4987,6 +5002,15 @@ function renderPlayers() {
 }
 
 /* 商店：用金幣買裝扮（只有造型，不會加分）；點商品可以先試穿 */
+/* 商店最上面：升級時稱號送的裝扮，每一樣可以自己關掉（還沒升到那一級的不顯示） */
+const tierGearSec = p => {
+  const t = tierOf(p.stars), hid = String(p.equip.hide || '').split(',');
+  const list = TIER_GEAR.filter(([, , , lo, hi]) => t >= lo && t <= hi);
+  return list.length ? `<div class="shop-sec tg-sec"><h3>升級裝扮</h3><div class="tg-row">${list.map(([k, name, ic]) => {
+    const show = !hid.includes(k);
+    return `<button class="tg-sw" role="switch" aria-checked="${show}" data-act="tier-hide" data-k="${k}"><span class="tg-ic">${ic}</span><span class="tg-t">${name}<small>${show ? '戴著' : '收起來了'}</small></span><span class="sw"></span></button>`;
+  }).join('')}</div></div>` : '';
+};
 function renderShop() {
   const p = me();
   if (ensureWallet(p)) persist(p);
@@ -5005,7 +5029,7 @@ function renderShop() {
   const card = it => {
     const { act, owned, on } = actOf(it);
     return `<div class="item ${S.tryItem === it.id ? 'trying' : ''} ${on ? 'on' : ''}">
-      <button class="btn-small" style="border:none;background:none;padding:0;min-height:0" data-act="try" data-id="${it.id}" aria-label="放大看${it.name}">${petOf(p, '', { [it.slot]: it.id })}</button>
+      <button class="btn-small" style="border:none;background:none;padding:0;min-height:0" data-act="try" data-id="${it.id}" aria-label="放大看${it.name}">${petOf(p, '', { hide: p.equip.hide, [it.slot]: it.id })}</button>
       <span class="iname">${it.name}${on ? '（穿著）' : owned ? '（已擁有）' : ''}</span>${act}</div>`;
   };
   /* 點商品：跳出放大視窗，看大大的夥伴穿上它（3D 模式旁邊再放商品本身的圖），在視窗裡也能買／穿 */
@@ -5024,6 +5048,7 @@ function renderShop() {
       <div><div class="coins"><span class="coin">金</span> ${fmtNum(p.coins)} 金幣</div>
       <p>${trying ? `正在試穿「${trying.name}」` : '點商品圖片可以放大、先試穿'}</p>
       <p>每得 ${COIN_RATE} 分就有 1 個金幣。裝扮只是好看，不會加分喔！</p></div></div>
+    ${tierGearSec(p)}
     ${SLOTS.map(([slot, label]) => `<div class="shop-sec"><h3>${label}</h3><div class="shop-grid">${SHOP.filter(it => it.slot === slot && !it.limited).map(card).join('')}</div></div>`).join('')}
     <div class="shop-sec limited"><h3>寶箱限定</h3><div class="shop-grid">${SHOP.filter(it => it.limited).map(card).join('')}</div></div>
   </section>${zoom}`;
@@ -6732,6 +6757,7 @@ document.addEventListener('click', e => {
     sfx('coin'); render(); burst(screen.querySelector('.shop-top .pet')); narrate(`買好了！已經幫你穿上${it.name}。`);
   }
   else if (act === 'equip') { const p = me(), it = SHOP_BY[b.dataset.id]; if (it && p.owned.includes(it.id)) { p.equip[it.slot] = it.id; S.tryItem = null; persist(p); sfx('tap'); render(); } }
+  else if (act === 'tier-hide') { const p = me(), k = b.dataset.k; if (TIER_GEAR.some(([g]) => g === k)) { const h = new Set(String(p.equip.hide || '').split(',').filter(Boolean)); h.has(k) ? h.delete(k) : h.add(k); const v = cleanHide([...h].join(',')); if (v) p.equip.hide = v; else delete p.equip.hide; persist(p); sfx('tap'); render(); } }
   else if (act === 'unequip') { const p = me(), it = SHOP_BY[b.dataset.id]; if (it) { delete p.equip[it.slot]; S.tryItem = null; persist(p); sfx('tap'); render(); } }
   else if (act === 'player') { sfx('tap'); setCur(b.dataset.id); S.greet = null; enterGame(); }
   else if (act === 'add-player') { sfx('tap'); S.newColor = S.newAnimal = S.editId = null; go('newPlayer'); narrate(currentSay()); }
