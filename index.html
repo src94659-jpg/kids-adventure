@@ -657,6 +657,7 @@ body.lock-cleared .node.done::after, body.lock-cleared .rnode.done::after, body.
   transform: scale(.88); opacity: .7; transition: transform .2s, opacity .2s;
 }
 .animal .pet { width: 100%; max-width: 88px; }
+.animal .long { display: inline-block; transform: scaleX(.86); }   /* 名字長的（30號籃球英雄）橫向擠一點，才放得進卡片 */
 .animal[aria-pressed="true"] { transform: scale(1.22); opacity: 1; border-color: var(--sky); background: var(--sky-soft); box-shadow: 0 0 0 3px var(--sky); }
 .ani-arrow { flex: none; width: var(--aw); height: var(--aw); display: grid; place-items: center; padding: 0; border: 3px solid var(--line); border-radius: 50%; background: var(--paper); color: var(--ink); font-size: max(var(--fs-min), 1.6rem * var(--fs-l)); line-height: 1; box-shadow: 0 3px 0 var(--line); }
 .ani-arrow:active { transform: translateY(2px); box-shadow: none; }
@@ -1687,6 +1688,19 @@ body.v3d .dex-card.got { background-image: url(v50_art/ui/card_collected.webp), 
   .lb-title, .lb .save-note { display: none; }
 }
 body.v3d #preview { background: url(v50_art/ui/character_platform.webp) center bottom / min(56vw, 210px) auto no-repeat; padding-bottom: 14px; }
+/* 網站版雲端存檔：ID＋暗號同一排、搬家代碼文字框、還沒存上雲端的紅色提示 */
+.id-pin { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; align-items: end; }
+.id-pin label { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; line-height: 1.25; }
+body.v3d .id-pin label > span { background: rgba(255, 253, 247, .9); border-radius: 14px; padding: 2px 12px; }
+:root.night body.v3d .id-pin label > span { background: rgba(27, 40, 73, .9); }
+.id-pin input[type=text] { min-width: 0; }
+.mv-text { width: 100%; max-width: 440px; min-height: 96px; padding: 10px 12px; border: 3px solid var(--line); border-radius: 16px; background: var(--paper); color: inherit; font: 14px/1.4 ui-monospace, Menlo, Consolas, monospace; word-break: break-all; resize: vertical; }
+.dex-modal.mv-modal { z-index: 60; }   /* 星球（3D）上面也看得到 */
+.mv-card { width: min(100%, 460px); background: var(--paper); border-radius: 22px; padding: 18px; display: flex; flex-direction: column; gap: 10px; align-items: center; text-align: center; }
+.mv-card h3 { margin: 0; }
+.mv-card p { margin: 0; }
+#syncPill { position: fixed; left: 50%; bottom: calc(10px + env(safe-area-inset-bottom)); transform: translateX(-50%); z-index: 40; max-width: calc(100vw - 32px); padding: 8px 16px; border: 0; border-radius: 999px; background: #A8443E; color: #fff; font-size: max(var(--fs-min), .95rem * var(--fs-s)); box-shadow: 0 4px 14px rgba(0, 0, 0, .25); }
+#syncPill[hidden], .mv-card [hidden] { display: none; }
 </style>
 
 <div id="app">
@@ -1995,7 +2009,9 @@ const ANIMALS = {
   boy: { name: '冒險男孩' },
   girl: { name: '冒險女孩' },
   mboy: { name: '摩登男孩' },
-  mgirl: { name: '摩登女孩' }
+  mgirl: { name: '摩登女孩' },
+  princess: { name: '童話公主' },
+  hoop: { name: '30號籃球英雄' }
 };
 const ANIMAL_KEYS = Object.keys(ANIMALS);
 
@@ -2070,7 +2086,12 @@ const PET3D = {
   mboy: { human: 1, y: 2, hd: [[41, 86], [81, 87]], eyes: [[56, 40], [70, 39.5]], gr: 4.6, gsw: 1.7, dy: 0, feet: [[47, 119], [75, 119]], hat: [61, 24, .95], wing: 1, wc: [63, 70],
     nk: [64, 57, .46], md: [63, 70, .6], cape: [26, 57, 76, 52] },
   mgirl: { human: 1, y: 2, hd: [[46, 91], [82, 91]], eyes: [[61, 49], [74, 48]], gr: 4.6, gsw: 1.7, dy: 0, feet: [[54, 120], [78, 120]], hat: [67, 32, .9], wing: 1, wc: [67, 75],
-    nk: [68, 64, .42], md: [69, 74, .6], cape: [38, 64, 62, 48] }
+    nk: [68, 64, .42], md: [69, 74, .6], cape: [38, 64, 62, 48] },
+  /* 童話公主、30號籃球英雄：頭比較小。裝扮多半換成 SOLO_FIT 的整張圖，這些點給「同時穿好幾件」時疊上去的那幾件 */
+  princess: { human: 1, y: 0, hd: [[50, 70], [86, 77]], eyes: [[54.5, 38], [64.5, 37]], gr: 4.2, gsw: 1.5, dy: 0, feet: [[50, 119], [66, 119]], shoe: .55, hat: [56, 28, .64], wing: 1, wc: [60, 62],
+    nk: [60, 52, .38], md: [62, 60, .55], cape: [26, 52, 70, 58] },
+  hoop: { human: 1, y: 0, hd: [[41, 88], [78, 88]], eyes: [[49, 37], [60, 36]], gr: 4.2, gsw: 1.5, dy: 0, feet: [[50, 117], [73, 119]], shoe: .75, hat: [55.5, 26.5, .72], wing: 1, wc: [57, 64],
+    nk: [57, 53, .4], md: [57, 64, .55], cape: [32, 54, 52, 50] }
 };
 /* 商店 42 件的 3D 圖（GPT 畫的，已裁掉透明邊）。位置框 [x, y, 寬, 高, 對齊]：帽子和光環是在「帽子座標」（頭寬 38～82、帽緣 y 30，會跟著每隻動物的頭縮放），
    其他是夥伴的 viewBox 座標；圖用 meet 放進框裡、不變形 */
@@ -2130,7 +2151,14 @@ const COMBO_FIT = {
   girl: ['goldShoes', 'violin', 22.02, 11.48, 98.55, 107.05, 1, 0],
   mboy: ['sneakers', 'recorder', 36.09, 13.42, 51.53, 109.44, 1, 0],
   mgirl: ['rainbowShoes', 'pipa', 27.59, 21.92, 77.83, 102.53, 0.994, 0] };
-const FIT_HC = { owl: [60, 38], cat: [56.7, 31.6], dog: [59.8, 35.8], lion: [56.5, 30.9], bear: [60, 34.7], boy: [60.1, 34.3], girl: [57.1, 33.9], mboy: [58.1, 34], mgirl: [57, 40.7] };
+/* 童話公主、30號籃球英雄：每件商店裝扮都有 GPT 畫的「穿這一件」全身圖（solo/<夥伴>_<道具>，[x, y, 寬, 高, f, 頭歪角度] 同 HOLD_FIT），
+   穿一件就整張換掉；穿好幾件照 SOLO_ORDER 挑第一件有圖的換整張，其他幾件照舊疊上去。
+   公主沒有吉他、彩虹皇冠、冰晶皇冠的圖：只穿這三件時用母圖＋疊圖 */
+const SOLO_FIT = {
+  princess: { crown: [23.88, 11.42, 72.52, 112.36, 1, 0], wizard: [21.75, 4.52, 77.3, 124.05, 0.955, 0], pirate: [21.75, 9.83, 76.77, 119.8, 0.942, 0], bunny: [21.48, 1.06, 77.3, 126.97, 0.958, 0], flowers: [23.34, 15.14, 73.05, 109.97, 0.99, 0], ninja: [24.14, 14.61, 72.52, 110.23, 0.993, 0], diamondCrown: [22.55, 10.09, 74.91, 116.34, 0.979, 0], capeRed: [15.11, 13.81, 86.59, 110.77, 0.996, 0], capeRainbow: [16.7, 14.08, 84.73, 110.77, 0.993, 0], capeStar: [16.97, 13.81, 88.72, 109.7, 1, 0], auroraCape: [13.78, 13.81, 88.45, 112.36, 0.979, 0], angel: [21.75, 13.81, 74.38, 109.97, 1, 0], butterfly: [18.03, 13.81, 77.83, 109.97, 1, 0], dragon: [22.02, 13.81, 73.84, 109.44, 1, 0], phoenix: [13.25, 13.81, 91.38, 109.97, 1, 0], sneakers: [24.94, 13.81, 71.72, 111.03, 0.996, 0], boots: [23.61, 13.81, 72.52, 111.56, 0.987, 0], goldShoes: [24.14, 13.81, 72.52, 110.5, 0.999, 0], wand: [23.88, 14.08, 73.05, 112.89, 0.971, 0], balloon: [23.34, -7.7, 91.64, 133.34, 0.982, 0], icecream: [23.34, 13.81, 73.31, 111.83, 0.985, 0], violin: [21.75, 13.81, 85.8, 116.61, 0.934, 0], pipa: [22.28, 13.81, 77.3, 115.55, 0.947, -3.5], recorder: [23.08, 13.81, 73.31, 111.83, 0.985, 0], sax: [20.69, 13.81, 75.7, 114.75, 0.952, 0], drum: [24.67, 14.08, 78.09, 115.28, 0.947, 0], triangle: [25.2, 14.34, 74.38, 112.09, 0.974, -5.3], halo: [22.81, 4.78, 73.31, 119.8, 0.993, 0], sparkle: [24.41, 13.55, 71.98, 109.97, 1, 0], goldCape: [16.17, 13.81, 91.91, 111.56, 0.985, 0], heartWings: [23.08, 13.81, 72.78, 110.23, 1, 0], fairy: [23.88, 13.55, 73.84, 111.03, 0.993, 0], comet: [16.17, 13.81, 94.03, 111.03, 0.99, 0], galaxyCape: [5.55, 13.81, 103.59, 110.5, 0.996, 0], iceWings: [16.44, 13.81, 83.67, 110.23, 1, 0], rainbowShoes: [24.41, 13.81, 71.45, 111.03, 0.993, 0], magicBook: [25.2, 13.55, 73.31, 113.16, 0.974, 0], bubbles: [12.98, 13.28, 89.52, 110.77, 1, 0], flameShoes: [24.14, 13.81, 73.05, 113.69, 0.963, 0] },
+  hoop: { crown: [35.3, 0.27, 48.34, 124.84, 0.99, 0], wizard: [31.58, -2.92, 52.86, 131.22, 0.958, 0], pirate: [26.53, -0.27, 58.97, 132.28, 0.925, 0], bunny: [32.64, -5.84, 51.53, 133.61, 0.963, 0], flowers: [35.3, 11.69, 47.28, 111.83, 1, 0], ninja: [37.16, 13.55, 47.81, 109.44, 1, 0], diamondCrown: [36.09, 2.92, 48.34, 125.91, 0.952, 0], capeRed: [22.55, 13.81, 81.02, 111.83, 0.985, 0], capeRainbow: [18.3, 13.28, 87.66, 114.22, 0.963, 0], capeStar: [22.28, 13.81, 83.14, 110.77, 0.996, 0], auroraCape: [14.84, 13.81, 94.3, 110.77, 0.996, 0], angel: [20.95, 13.81, 83.67, 110.77, 0.993, 0], butterfly: [21.22, 13.55, 82.08, 110.77, 0.999, 0], dragon: [22.28, 13.81, 79.69, 110.77, 0.999, 0], phoenix: [10.33, 13.81, 101.2, 111.3, 0.987, 0], sneakers: [37.16, 13.28, 45.42, 111.83, 0.99, 0], boots: [37.42, 13.81, 45.16, 111.3, 0.99, 0], goldShoes: [37.42, 13.81, 45.16, 109.97, 1, 0], wand: [22.55, 13.55, 60.56, 113.16, 0.974, 0], balloon: [-2.69, -6.38, 79.95, 136.27, 0.94, 15.6], icecream: [34.23, 13.81, 49.94, 115.02, 0.952, 0], guitar: [33.44, 13.55, 67.47, 115.28, 0.952, 0], violin: [30.78, 13.02, 79.16, 122.19, 0.892, -10.6], pipa: [37.42, 13.81, 54.98, 116.34, 0.94, 0], recorder: [36.89, 13.55, 44.09, 115.28, 0.95, 0], sax: [30.52, 13.81, 58.44, 118.47, 0.917, -10.4], drum: [34.5, 13.81, 49.67, 112.89, 0.974, 0], triangle: [25.2, 13.81, 51.8, 111.56, 0.987, 19.5], halo: [37.16, 2.39, 45.42, 120.86, 1, 0], sparkle: [37.16, 13.55, 58.97, 111.83, 0.985, 0], rainbowCrown: [35.03, -0.27, 48.08, 125.64, 0.985, 0], goldCape: [17.77, 13.81, 90.58, 111.03, 0.993, 0], heartWings: [24.94, 13.55, 76.23, 110.23, 1, 0], fairy: [37.95, 13.81, 61.36, 109.97, 1, 0], comet: [23.88, 13.81, 91.11, 111.03, 0.996, 0], iceCrown: [35.03, 5.05, 48.61, 121.92, 0.968, 0], galaxyCape: [19.09, 13.55, 90.58, 110.5, 1, 0], iceWings: [16.97, 13.81, 87.92, 110.77, 0.996, 0], rainbowShoes: [36.89, 13.81, 46.75, 113.69, 0.963, 0], magicBook: [30.78, 12.75, 54.98, 117.14, 0.94, 0], bubbles: [16.97, 13.81, 87.12, 111.56, 0.987, 0], flameShoes: [37.42, 13.55, 47.55, 111.83, 0.987, 0] } };
+const SOLO_ORDER = ['music', 'hand', 'shoes', 'hat', 'wings', 'cape', 'aura'];
+const FIT_HC = { owl: [60, 38], cat: [56.7, 31.6], dog: [59.8, 35.8], lion: [56.5, 30.9], bear: [60, 34.7], boy: [60.1, 34.3], girl: [57.1, 33.9], mboy: [58.1, 34], mgirl: [57, 40.7], princess: [56.1, 30.8], hoop: [56.2, 30.7] };
 const FIT_FRONT = new Set(['guitar', 'violin', 'pipa', 'recorder', 'sax', 'drum', 'magicBook']);   // 拿在胸前／嘴邊的（圍巾、獎牌會擋到）
 const FIT_ST = {};   // 全身圖載入狀態：'ing' 載入中、'ok' 可用、'bad' 載不到（退回疊圖）
 function fitState(src) {
@@ -2147,18 +2175,21 @@ function fitState(src) {
   im.src = PET3D_ART + src + '.webp';
   return 'ing';
 }
-function petSVG(kind = 'owl', cls = '', tier = 0, color = '#2F7DBF', gear = {}) {
+function petSVG(kind = 'owl', cls = '', tier = 0, color = '#2F7DBF', gear = {}, noSolo = false) {
   const r3 = PET3D[kind] && (v3d() || PET3D[kind].human) ? PET3D[kind] : null;
   const a = r3 || ANIMALS[kind] || ANIMALS.owl;
-  const eq = slot => SHOP_BY[gear && gear[slot]];
+  const eq0 = slot => SHOP_BY[gear && gear[slot]];
+  const solo = r3 && SOLO_FIT[kind] && !noSolo ? SOLO_ORDER.map(eq0).find(it => it && SOLO_FIT[kind][it.id]) : null;   // 換整張圖的那件，不再疊
+  const eq = slot => solo && solo.slot === slot ? null : eq0(slot);
   const e3 = slot => r3 && eq(slot) && SHOP3D[eq(slot).id] ? eq(slot) : null;   // 3D 模式、這件有 3D 圖
   const [wx, wy] = a.wc || [60, 62];
   const wingsSvg = e3('wings') ? (it => { const h = 110, w = Math.min(156, h * (SHOP3D_ASP[it.id] || 1.2)); return img3d(it.id, [wx - w / 2, wy - h / 2, w, h, 'xMidYMid']); })(e3('wings'))
     : eq('wings') ? (r3 ? `<g transform="translate(60 72) scale(${r3.wing}) translate(-60 -72)">${eq('wings').draw()}</g>` : eq('wings').draw()) : '';
   const capeSvg = e3('cape') ? img3d(e3('cape').id, a.cape || [-6, 44 + a.dy, 132, 78 - a.dy], 'none') : eq('cape') ? eq('cape').draw() : '';   // 披風在身體後面，兩邊和下襬露出來
   const capeClasp = eq('cape') ? `<circle cx="60" cy="${80 + a.dy}" r="3.6" fill="${G('beak')}" stroke="#C98510"/>` : '';
-  const fit = r3 && e3('shoes') && SHOE_FIT.has(e3('shoes').id) ? e3('shoes').id : null;   // 換成穿好鞋的全身圖
+  const fit = r3 && !SOLO_FIT[kind] && e3('shoes') && SHOE_FIT.has(e3('shoes').id) ? e3('shoes').id : null;   // 換成穿好鞋的全身圖
   const shoesSvg = fit ? ''
+    : eq('shoes') && r3 && r3.shoe ? r3.feet.map(([x, y]) => `<g transform="translate(${x} ${y}) scale(${r3.shoe}) translate(${-x} ${-y})">${eq('shoes').draw([[x, y]])}</g>`).join('')   // 腳小的（公主、籃球英雄）鞋子縮小
     : eq('shoes') ? eq('shoes').draw(r3 ? r3.feet : FEET[kind] || FEET.owl) : '';
   const hatItem = eq('hat');
   const handSvg = (e3('music') ? held3d(e3('music'), r3) : eq('music') ? eq('music').draw() : '') + (e3('hand') ? held3d(e3('hand'), r3) : eq('hand') ? eq('hand').draw() : '');
@@ -2201,7 +2232,7 @@ function petSVG(kind = 'owl', cls = '', tier = 0, color = '#2F7DBF', gear = {}) 
       <path class="tassel" d="M60 17 L90 21 L90 35"/><circle cx="90" cy="37" r="3.8" fill="${G('beak')}"/><circle cx="60" cy="17" r="2.6" fill="${G('beak')}"/>` : '';
   /* 第 5 級起：胸前掛獎牌（銅 → 銀 → 金 → 彩虹） */
   const medal = tier >= 5 ? `<g transform="${a.md ? `translate(${a.md[0]} ${a.md[1]}) scale(${a.md[2]})` : `translate(60 ${96 + a.dy})`}"><path d="M-6 -12 L-2 0 M6 -12 L2 0" stroke="#2F7DBF" stroke-width="3"/><circle r="8.6" fill="${tier >= 8 ? 'url(#zz-rainbow)' : ['#D08A4E', '#C3CCD5', '#F6B12F'][tier - 5]}" stroke="#fff" stroke-width="1.6"/>${starShape(0, 0.4, 4.4, '#fff')}</g>` : '';
-  const hatSvg = (hatItem ? (e3('hat') ? img3d(hatItem.id, box3d(hatItem)) : hatItem.draw()) : cap + grad) + (halo3d || '');
+  const hatSvg = (hatItem ? (e3('hat') ? img3d(hatItem.id, box3d(hatItem)) : hatItem.draw()) : solo && solo.slot === 'hat' ? '' : cap + grad) + (halo3d || '');
   if (r3) {
     const hatG = hatSvg ? `<g transform="translate(${r3.hat[0]} ${r3.hat[1]}) scale(${r3.hat[2]}) translate(-60 -30)">${hatSvg}</g>` : '';
     const clasp = e3('cape') ? '' : capeClasp;
@@ -2213,6 +2244,18 @@ function petSVG(kind = 'owl', cls = '', tier = 0, color = '#2F7DBF', gear = {}) 
       : !eq('shoes') && HOLD_FIT[kind] && HOLD_FIT[kind][one.id] ? [`held/${kind}_${one.id}`, HOLD_FIT[kind][one.id]] : null;
     const st = hold && fitState(hold[0]);
     const svg = inner => `<svg class="pet p3d ${cls}" viewBox="-8 -16 136 140" aria-hidden="true">${inner}</svg>`;
+    if (solo) {   // 公主、籃球英雄：換成穿這件的整張圖，其他件照舊疊；載不到就整個退回母圖＋疊圖
+      const src = `solo/${kind}_${solo.id}`, sst = fitState(src);
+      if (sst === 'bad') return petSVG(kind, cls, tier, color, gear, true);
+      const [x, y, w, h, f, rot] = SOLO_FIT[kind][solo.id], [hx, hy] = FIT_HC[kind];
+      const head = glasses + hatG;
+      const badge = FIT_FRONT.has(solo.id) ? '' : scarf + medal;
+      const neu = `${wingsSvg}${capeSvg}${SHADOW}<image href="${PET3D_ART}${src}.webp" x="${x}" y="${y}" width="${w}" height="${h}"/>${shoesSvg}${badge}${clasp}${handSvg}${rot && head ? `<g transform="rotate(${rot} ${hx} ${hy})">${head}</g>` : head}${auraSvg}`;
+      const fin = f < 1 ? `<g transform="translate(${hx} ${hy}) scale(${f}) translate(${-hx} ${-hy})">${neu}</g>` : neu;
+      if (sst === 'ok') return svg(fin);
+      const base = petSVG(kind, cls, tier, color, gear, true).replace(/^<svg[^>]*>|<\/svg>$/g, '');
+      return svg(`<g data-fit="${src}" data-v="old">${base}</g><g data-fit="${src}" data-v="new" display="none">${fin}</g>`);
+    }
     if (!hold || st === 'bad') return svg(old);
     /* 新圖已經畫了鞋和那件道具：不疊舊鞋、不疊 held3d；帽子眼鏡跟著頭歪；道具太大就整隻以頭為中心縮小 */
     const [x, y, w, h, f, rot] = hold[1], [hx, hy] = FIT_HC[kind];
@@ -2370,6 +2413,7 @@ function persist(p) {
   if (p && p.guest) { lsSet(GUEST_KEY, JSON.stringify(p)); return; }
   saveLocal();
   scheduleHeroes();
+  if (synced(p)) { SYNC[p.id].dirty = (SYNC[p.id].dirty || 0) + 1; saveSync(); queueSync(8000); }   // 網站版：等一下再一起上傳
   if (!store.cloud || store.readOnly) return;
   const body = clone(p); delete body.id;
   writing[p.id] = (writing[p.id] || Promise.resolve())
@@ -2381,6 +2425,7 @@ function removePlayer(id) {
   if (CUR === id) setCur(null);
   saveLocal();
   scheduleHeroes();
+  if (SYNC[id]) { delete SYNC[id]; saveSync(); syncUI(); }   // 網站版只是從這台移除，雲端還在
   if (store.cloud && !store.readOnly) {
     writing[id] = (writing[id] || Promise.resolve()).then(() => store.db.collection(playersCol()).doc(id).delete()).catch(() => {});
   }
@@ -2397,15 +2442,16 @@ function scheduleHeroes() {
     heroWriting = heroWriting.then(() => store.db.doc('heroes/' + store.uid).set(body)).catch(() => {});
   }, 500);
 }
+const heroFrom = (x, mine) => ({
+  id: String(x.id || ''), name: String(x.name || '').slice(0, 8), animal: ANIMALS[x.animal] ? x.animal : 'owl',
+  color: /^#[0-9a-f]{6}$/i.test(x.color) ? x.color : COLORS[0],
+  score: Math.max(0, Number(x.score) || 0), stars: Math.max(0, Number(x.stars) || 0), equip: cleanEquip(x.equip), week: x.week && typeof x.week.id === 'string' ? { id: x.week.id.slice(0, 10), score: Math.max(0, Number(x.week.score) || 0) } : null, mine
+});
 function watchHeroes() {
   store.db.collection('heroes').onSnapshot(snap => {
     HEROES = snap.docs.filter(d => d.exists).flatMap(d => {
       const b = d.data() || {};
-      return (Array.isArray(b.players) ? b.players : []).slice(0, MAX_PLAYERS).map(x => ({
-        id: String(x.id || ''), name: String(x.name || '').slice(0, 8), animal: ANIMALS[x.animal] ? x.animal : 'owl',
-        color: /^#[0-9a-f]{6}$/i.test(x.color) ? x.color : COLORS[0],
-        score: Math.max(0, Number(x.score) || 0), stars: Math.max(0, Number(x.stars) || 0), equip: cleanEquip(x.equip), week: x.week && typeof x.week.id === 'string' ? { id: x.week.id.slice(0, 10), score: Math.max(0, Number(x.week.score) || 0) } : null, mine: d.id === store.uid
-      }));
+      return (Array.isArray(b.players) ? b.players : []).slice(0, MAX_PLAYERS).map(x => heroFrom(x, d.id === store.uid));
     });
     if (S.screen === 'heroes') render();
   }, () => {});
@@ -2470,6 +2516,236 @@ async function connectCloud() {
 const cloudKey = () => 'zizi-cloud-ids:' + store.uid;
 function cloudIds() { try { const a = JSON.parse(lsGet(cloudKey())); return new Set(Array.isArray(a) ? a : []); } catch (e) { return new Set(); } }
 function refreshIfIdle() { if (['home', 'players', 'grade', 'level', 'map', 'heroes'].includes(S.screen)) render(); }
+
+/* ---------- 網站版雲端存檔：ID＋暗號，存在大人的 Google 試算表（Apps Script 網頁應用程式；build_site.py 從 site_api.txt 設 window.ZZ_API） ----------
+   本機先存，背景上傳（有變動等 8 秒一起送；失敗 30 秒後再試；離線等連上網路補傳）。
+   SYNC[這台的玩家 id]＝{ cid: 雲端 ID, token: 通行證, ver: 雲端版本, dirty: 還沒上傳的變動數, err }，只存在這台裝置。
+   雲端版本跟這台記的不一樣＝別台先存過：拿雲端的回來合併（成績取較好的），不整份蓋掉 */
+const API = SITE && window.ZZ_API ? String(window.ZZ_API) : '';
+const SYNC_KEY = 'zizi-sync';
+let SYNC = (() => { try { const o = JSON.parse(lsGet(SYNC_KEY)); return o && typeof o === 'object' && !Array.isArray(o) ? o : {}; } catch (e) { return {}; } })();
+const saveSync = () => lsSet(SYNC_KEY, JSON.stringify(SYNC));
+const synced = p => !!(API && p && SYNC[p.id] && SYNC[p.id].token);
+const cloudBody = p => { const b = clone(p); delete b.id; delete b.guest; return b; };
+let syncTimer = 0, syncBusy = false, heroAt = 0, pullAt = 0;
+async function api(action, body = {}, opts = {}) {
+  const ctl = new AbortController(), t = setTimeout(() => ctl.abort(), 25000);
+  const text = JSON.stringify({ action, ...body });
+  try {   // text/plain：不會觸發 CORS 預檢；Apps Script 會轉址到 googleusercontent 再回 JSON
+    const r = await fetch(API, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: text, signal: ctl.signal, keepalive: !!opts.keepalive && text.length < 60000 });
+    return await r.json();
+  } catch (e) { return { err: 'net' }; } finally { clearTimeout(t); }
+}
+function cloudMsg(res, kind) {
+  return {
+    net: '連不上雲端，請檢查網路再試一次', taken: '這個 ID 已經有人用了，換一個吧', bad_id: 'ID 只能用中文、英文字母或數字，2～8 個字',
+    bad_pin: kind === 'login' ? `暗號不對，再試一次${res.left ? `（還可以試 ${res.left} 次）` : ''}` : '暗號要是 4～6 位數字',
+    locked: `暗號錯太多次，請 ${res.wait || 10} 分鐘後再試（或請大人在試算表解除鎖定）`, no_id: '找不到這個 ID，檢查一下有沒有打錯',
+    too_big: '進度資料太大，存不進雲端', auth: '暗號改過了，請重新登入'
+  }[res.err] || '雲端出了點問題，請等一下再試';
+}
+/* 兩份進度合併：以雲端那份為底，成績（星星、分數、金幣、每關最好成績、過關、圖鑑、徽章、裝扮）取兩邊較好的 */
+function mergePlayer(a, b) {
+  const m = clone(b), mx = (x, y) => Math.max(Number(x) || 0, Number(y) || 0);
+  ['stars', 'score', 'coins'].forEach(k => { m[k] = mx(a[k], b[k]); });
+  m.owned = [...new Set([...(b.owned || []), ...(a.owned || [])])];
+  m.dex = { ...(a.dex || {}) }; Object.entries(b.dex || {}).forEach(([k, v]) => { m.dex[k] = mx(m.dex[k], v); });
+  m.dexDone = { ...(a.dexDone || {}), ...(b.dexDone || {}) }; m.badges = { ...(a.badges || {}), ...(b.badges || {}) };
+  m.prog = m.prog || {};
+  for (const [g, lvs] of Object.entries(a.prog || {})) {
+    const mg = m.prog[g] = m.prog[g] || {};
+    for (const [lv, arr] of Object.entries(lvs || {})) {
+      if (!Array.isArray(arr)) { if (!(lv in mg)) mg[lv] = clone(arr); continue; }
+      const o = Array.isArray(mg[lv]) ? mg[lv] : (mg[lv] = []);
+      arr.forEach((r, i) => {
+        if (!r || typeof r !== 'object') return;
+        const q = o[i];
+        if (!q || typeof q !== 'object') { o[i] = clone(r); return; }
+        o[i] = { ...((Number(r.best) || 0) > (Number(q.best) || 0) ? { ...q, ...clone(r) } : q), best: mx(q.best, r.best), cleared: !!(q.cleared || r.cleared) };
+      });
+    }
+  }
+  if (a.week && a.week.id && (!b.week || a.week.id > b.week.id || (a.week.id === b.week.id && (a.week.score || 0) > (b.week.score || 0)))) m.week = clone(a.week);
+  if (a.storySeen) m.storySeen = true;
+  return m;
+}
+function adopt(p, data) {   // 換成新的進度，這台的玩家 id 不變（畫面上拿著的是同一個物件）
+  const id = p.id;
+  Object.keys(p).forEach(k => delete p[k]);
+  Object.assign(p, clone(data), { id });
+  if (!p.kzV40) kzMigrate40(p);
+}
+let syncDue = 0;
+function queueSync(ms) {   // 已經排了就不往後延（一直有變動也照樣會送）；要更早送就提前
+  if (!API || (syncTimer && syncDue <= Date.now() + ms)) return;
+  clearTimeout(syncTimer); syncDue = Date.now() + ms; syncTimer = setTimeout(flushSync, ms);
+}
+async function flushSync(keepalive) {
+  clearTimeout(syncTimer); syncTimer = 0;
+  if (syncBusy) { queueSync(3000); return; }
+  const todo = PLAYERS.filter(p => synced(p) && SYNC[p.id].dirty && SYNC[p.id].err !== 'auth');
+  if (!todo.length) return syncUI();
+  syncBusy = true;
+  let failed = false;
+  for (const p of todo) if (!(await pushOne(p, keepalive === true))) failed = true;
+  syncBusy = false;
+  syncUI();
+  if (failed) queueSync(30000);
+}
+async function pushOne(p, keepalive) {
+  for (let tries = 0; tries < 3; tries++) {
+    const s = SYNC[p.id];
+    if (!s) return true;
+    const d = s.dirty;
+    const res = await api('save', { id: s.cid, token: s.token, base: s.ver, data: cloudBody(p) }, { keepalive });
+    if (SYNC[p.id] !== s) return true;   // 上傳時被移除了
+    if (res.ok) { s.ver = res.updated; if (s.dirty === d) s.dirty = 0; s.err = ''; saveSync(); return true; }
+    if (res.err === 'conflict') { s.ver = res.updated; if (res.data) { adopt(p, mergePlayer(p, res.data)); saveLocal(); } saveSync(); continue; }
+    s.err = res.err === 'auth' || res.err === 'no_id' ? 'auth' : 'net'; saveSync();
+    return false;
+  }
+  return false;
+}
+/* 把別台存的新進度拿回來（打開遊戲、回到玩家清單、切回這個 App 時；最多一分鐘一次，答題中不換） */
+async function pullAll(force) {
+  if (!API || syncBusy || (!force && Date.now() - pullAt < 60000)) return;
+  if (!['home', 'players', 'grade', 'level', 'map', 'units', 'heroes', 'shop', 'dex', 'report'].includes(S.screen)) return;
+  pullAt = Date.now(); syncBusy = true;
+  let changed = false;
+  for (const p of PLAYERS.filter(synced)) {
+    const s = SYNC[p.id];
+    if (s.err === 'auth') continue;
+    const res = await api('load', { id: s.cid, token: s.token, have: s.ver });
+    if (SYNC[p.id] !== s) continue;
+    if (!res.ok) { if (res.err === 'auth' || res.err === 'no_id') s.err = 'auth'; continue; }
+    if (res.same || !res.data || ['game', 'result', 'duel', 'remote'].includes(S.screen)) continue;   // 答題中先不換，之後存檔時再合併
+    adopt(p, s.dirty ? mergePlayer(p, res.data) : res.data);
+    s.ver = res.updated; changed = true;
+  }
+  syncBusy = false;
+  saveSync();
+  if (changed) { saveLocal(); refreshIfIdle(); }
+  syncUI();
+  queueSync(1000);
+}
+async function fetchHeroes(force) {
+  if (!API || (!force && Date.now() - heroAt < 30000)) return;
+  heroAt = Date.now();
+  const res = await api('heroes');
+  if (!res.ok || !Array.isArray(res.list)) { heroAt = 0; return; }
+  const mine = new Set(PLAYERS.filter(synced).map(p => String(SYNC[p.id].cid).toLowerCase()));
+  HEROES = res.list.map(x => heroFrom({ ...x, id: 'c:' + x.id, name: x.id }, mine.has(String(x.id).toLowerCase())));
+  if (S.screen === 'heroes') render();
+}
+async function registerCloud(p, id, pin) {
+  const res = await api('register', { id, pin, data: { ...cloudBody(p), name: id } });
+  if (!res.ok) return cloudMsg(res, 'new');
+  SYNC[p.id] = { cid: res.id, token: res.token, ver: res.updated, dirty: 0, err: '' };
+  saveSync(); heroAt = 0;
+  return '';
+}
+async function loginCloud(id, pin) {
+  const res = await api('login', { id, pin });
+  if (!res.ok) return { msg: cloudMsg(res, 'login') };
+  const same = PLAYERS.find(p => String(p.name).toLowerCase() === String(res.id).toLowerCase());
+  if (same && !(SYNC[same.id] && String(SYNC[same.id].cid).toLowerCase() === String(res.id).toLowerCase()))
+    return { msg: `這台已經有一位「${same.name}」（只存在這台），請先到「大人用：管理玩家」把他改名` };
+  let p = same;
+  if (p) { if (res.data) adopt(p, SYNC[p.id].dirty ? mergePlayer(p, res.data) : res.data); }
+  else {
+    if (PLAYERS.length >= MAX_PLAYERS) return { msg: `這台最多 ${MAX_PLAYERS} 位玩家，請先移除一位` };
+    p = res.data ? { ...clone(res.data), id: newPlayer('', '', '').id } : newPlayer(res.id, COLORS[0], 'owl');
+    if (!p.kzV40) kzMigrate40(p);
+    PLAYERS.push(p);
+  }
+  p.name = res.id;
+  const dirty = SYNC[p.id] ? SYNC[p.id].dirty : 0;
+  SYNC[p.id] = { cid: res.id, token: res.token, ver: res.updated, dirty, err: '' };
+  saveLocal(); saveSync(); syncUI(); heroAt = 0;
+  if (dirty) queueSync(500);
+  return { p };
+}
+/* 還沒存上雲端的變動：畫面下方紅色提示，點一下馬上再試（暗號被重設的玩家：點了去重新登入） */
+const syncPill = document.createElement('button');
+syncPill.id = 'syncPill'; syncPill.hidden = true; syncPill.dataset.act = 'sync-retry';
+function syncUI() {
+  if (!API) return;
+  const bad = PLAYERS.filter(p => synced(p) && SYNC[p.id].err && (SYNC[p.id].dirty || SYNC[p.id].err === 'auth'));
+  const auth = bad.find(p => SYNC[p.id].err === 'auth');
+  syncPill.hidden = !bad.length;
+  syncPill.textContent = auth ? `⚠ 「${auth.name}」要重新登入，進度才能存到雲端` : '⚠ 進度還沒存到雲端，連上網路會自動補存（點這裡再試）';
+  syncPill.dataset.id = auth ? auth.id : '';
+}
+function siteCloud() {
+  if (!API) return;
+  document.body.appendChild(syncPill);
+  syncUI(); fetchHeroes(true); pullAll(true);
+  addEventListener('online', () => { PLAYERS.forEach(p => { if (synced(p) && SYNC[p.id].err === 'net') SYNC[p.id].err = ''; }); queueSync(500); });
+  document.addEventListener('visibilitychange', () => { if (document.hidden) flushSync(true); else pullAll(); });
+}
+
+/* ---------- 搬家代碼：claude.ai 版複製（壓縮成一段文字），網站版貼上；也接受玩家物件 JSON（陣列或 { players: [...] }） ---------- */
+async function packMove(players) {
+  const json = JSON.stringify({ v: 1, players: players.map(cloudBody) });
+  let bytes = new TextEncoder().encode(json), tag = 'ZZ0:';
+  if (window.CompressionStream) {
+    try { bytes = new Uint8Array(await new Response(new Blob([bytes]).stream().pipeThrough(new CompressionStream('deflate-raw'))).arrayBuffer()); tag = 'ZZ1:'; } catch (e) { /* 不能壓縮就用原本的 */ }
+  }
+  let s = '';
+  for (let i = 0; i < bytes.length; i += 0x8000) s += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
+  return tag + btoa(s);
+}
+async function unpackMove(text) {
+  const raw = String(text || '').trim(), t = raw.replace(/\s+/g, '');
+  let json = raw;
+  if (/^ZZ[01]:/.test(t)) {
+    let bytes = Uint8Array.from(atob(t.slice(4)), c => c.charCodeAt(0));
+    if (t[2] === '1') bytes = new Uint8Array(await new Response(new Blob([bytes]).stream().pipeThrough(new DecompressionStream('deflate-raw'))).arrayBuffer());
+    json = new TextDecoder().decode(bytes);
+  }
+  const o = JSON.parse(json);
+  const L = Array.isArray(o) ? o : o && Array.isArray(o.players) ? o.players : o && typeof o === 'object' ? [o] : [];
+  return L.map(x => x && x.data && typeof x.data === 'object' && !x.name ? x.data : x)   // 資料庫匯出的 { id, data: {...} } 也可以
+    .filter(x => x && typeof x === 'object' && typeof x.name === 'string' && x.name)
+    .map(x => ({ ...x, prog: x.prog || {}, review: x.review || {} }));
+}
+function copyMove() {
+  const job = packMove(PLAYERS);
+  let copied;
+  try {   // Safari 要在按下去的當下就呼叫剪貼簿，所以先交一個「之後才會好」的內容
+    copied = window.ClipboardItem && navigator.clipboard && navigator.clipboard.write
+      ? navigator.clipboard.write([new ClipboardItem({ 'text/plain': job.then(s => new Blob([s], { type: 'text/plain' })) })])
+      : job.then(s => navigator.clipboard.writeText(s));
+  } catch (e) { copied = Promise.reject(e); }
+  copied.catch(() => {});
+  const ov = document.createElement('div');
+  ov.className = 'dex-modal mv-modal';
+  ov.innerHTML = `<div class="mv-card" role="dialog" aria-label="搬家代碼"><h3>搬家代碼（${PLAYERS.length} 位玩家）</h3>
+    <p id="mvMsg">正在產生…</p><textarea id="mvCode" class="mv-text" rows="4" readonly></textarea>
+    <p class="save-note">打開網站版 src94659-jpg.github.io/kids-adventure →「用 ID 登入」→「貼上搬家代碼」，再幫每位玩家設一個暗號。</p>
+    <div class="btn-row"><button class="btn-small wear" data-act="mv-again" hidden>按這裡複製</button><button class="btn-big" data-act="mv-close">關閉</button></div></div>`;
+  document.body.appendChild(ov);
+  const msg = t => { $('#mvMsg').textContent = t; };
+  ov.addEventListener('click', ev => {
+    const a = ev.target.dataset.act;
+    if (ev.target === ov || a === 'mv-close') ov.remove();
+    if (a === 'mv-again') {   // 第二次機會：按下去的當下複製（剪貼簿不給用時，改用舊的「選取＋複製」）
+      const box = $('#mvCode'); box.focus(); box.select(); box.setSelectionRange(0, box.value.length);
+      let ok = false;
+      try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+      if (ok) msg('已經複製好了！');
+      else if (navigator.clipboard) navigator.clipboard.writeText(box.value).then(() => msg('已經複製好了！'), () => msg('還是沒辦法自動複製：請長按代碼，全選後複製。'));
+      else msg('還是沒辦法自動複製：請長按代碼，全選後複製。');
+    }
+  });
+  job.then(s => {
+    $('#mvCode').value = s;
+    return copied.then(() => true, () => false);
+  }).then(ok => {
+    msg(ok ? '已經複製好了！' : '還沒複製到：請按「按這裡複製」，或長按下面的代碼全選後複製。');
+    if (!ok) ov.querySelector('[data-act="mv-again"]').hidden = false;
+  }, () => msg('產生代碼失敗，請再試一次'));
+}
 
 /* 等級 */
 const tierOf = stars => TITLES.reduce((t, x, i) => stars >= x.at ? i : t, 0);
@@ -3822,7 +4098,9 @@ function currentSay() {
     case 'home': return '歡迎來到國英數大冒險！按下開始玩。';
     case 'voice': return VOICE_SAMPLE.zh;
     case 'players': return PLAYERS.length ? '誰要來玩？按一下你的名字。也可以用遊客玩。' : '請大人幫你建立 ID，或是先用遊客玩。';
-    case 'newPlayer': return '請大人幫忙輸入 ID，再選一個動物夥伴和顏色。不想輸入 ID，也可以用遊客玩。';
+    case 'newPlayer': return API && !S.editId ? '請大人幫忙輸入 ID 和暗號，再選一個動物夥伴和顏色。暗號要記下來，換平板登入要用。' : '請大人幫忙輸入 ID，再選一個動物夥伴和顏色。不想輸入 ID，也可以用遊客玩。';
+    case 'cloudForm': return '請大人幫忙輸入 ID 和暗號。';
+    case 'movePaste': return '請大人把搬家代碼貼上來。';
     case 'grade': return S.hub ? '你想玩哪一科？按一下國語、英文、數學還是安親班。' : S.subject === 'kz' ? '安親班專區。點一座島，就能開始寫。' : S.subject === 'en' ? (S.enSet ? '選一冊。' : '選一個英文項目。') : '按一下你的年級。';
     case 'level': return '選一個關卡。';
     case 'units': return `«${enSetOf(S.grade).name}, ${bookName(S.grade)}»。選一課。`;
@@ -3850,7 +4128,7 @@ function render() {
   if (S.subject === 'en' && ['level', 'map', 'units'].includes(S.screen)) S.screen = [...BOOKS, ...WW_BOOKS].includes(S.grade) && bookUnits(S.grade).length ? 'units' : 'grade';
   ({ home: renderHome, players: renderPlayers, newPlayer: renderNewPlayer, grade: renderGrade, level: renderLevel, units: renderUnits,
      map: renderMap, game: renderGame, result: renderResult, heroes: renderHeroes, shop: renderShop, dex: renderDex, report: renderReport,
-     duelSetup: renderDuelSetup, duel: renderDuel, remote: renderRemote, voice: renderVoice }[S.screen] || renderHome)();
+     duelSetup: renderDuelSetup, duel: renderDuel, remote: renderRemote, voice: renderVoice, cloudForm: renderCloudForm, movePaste: renderMovePaste }[S.screen] || renderHome)();
   const scrKey = S.screen + '|' + (S.hub ? 1 : 0) + '|' + (S.subject || '') + '|' + (S.enSet || '');
   if (scrKey !== render.last) {   // 換到別的畫面才淡入；同一個畫面重畫（答題、切日夜）不動
     screen.classList.remove('scr-in');   // 星球畫面整片淡入會透出後面的 2D 背景，所以只淡入其他畫面（星球上的視窗自己淡入）
@@ -3888,7 +4166,7 @@ function v3dBg() {
   if (s === 'map') return { n: `route/route_${v3o()}`, blur: true, wide: true };
   if (s === 'game' || s === 'result') return { n: `quiz/${QUIZ_ART[currentLand().name] || 'forest'}` };
   return { shop: { n: 'pages/shop_interior' }, dex: { n: 'pages/collection_hall' }, heroes: { n: 'pages/lb_hall' }, duelSetup: { n: 'pages/arena' }, duel: { n: 'pages/arena' }, remote: { n: 'pages/arena' },
-    report: { n: 'pages/report_room' }, voice: { n: 'pages/report_room' }, newPlayer: { n: 'pages/character_creation' } }[s] || null;
+    report: { n: 'pages/report_room' }, voice: { n: 'pages/report_room' }, newPlayer: { n: 'pages/character_creation' }, cloudForm: { n: 'pages/character_creation' }, movePaste: { n: 'pages/character_creation' } }[s] || null;
 }
 function v3dSync() {
   const on = v3d() && !document.body.classList.contains('pl-full'), b = on ? v3dBg() : null;
@@ -4005,6 +4283,8 @@ function saveNote() {
   if (store.cloud && !store.readOnly) return `<p class="save-note"><b>●</b> 進度存在雲端，換一台平板打開同一個網址也能接著玩</p>`;
   if (store.readOnly) return `<p class="save-note">這個帳號只能看、不能存雲端，進度只存在這台裝置</p>`;
   if (!store.checked) return '';
+  if (API) return PLAYERS.some(synced) ? `<p class="save-note"><b>●</b> 有 ID 的玩家，進度存在雲端</p>`
+    : `<p class="save-note">建立 ID＋暗號，進度就會存到雲端，換平板也能接著玩</p>`;
   if (SITE) return `<p class="save-note">進度存在這台裝置。iPad 用 Safari 的「加入主畫面」來玩，進度最穩</p>`;
   return `<p class="save-note">進度只存在這台裝置。用登入 claude.ai 的瀏覽器打開，就能跨平板保存</p>`;
 }
@@ -4662,22 +4942,27 @@ function meBar(p) {
 function renderPlayers() {
   S.hub = true;   // 選好玩家後一律先到科目入口
   setBar('誰要來玩？');
+  pullAll(); fetchHeroes();   // 網站版：順便拿別台存的新進度（一分鐘最多一次）
   let cards;
   if (S.manage) {
     cards = PLAYERS.map(p => S.delArm === p.id
-      ? `<div class="confirm"><p>確定要刪除「${esc(p.name)}」和所有進度嗎？刪除後找不回來。</p>
-          <div class="manage-row"><button class="btn-small" data-act="del-cancel">不要刪</button><button class="btn-small danger" data-act="del-yes" data-id="${p.id}">確定刪除</button></div></div>`
+      ? (synced(p) ? `<div class="confirm"><p>要把「${esc(p.name)}」從這台移除嗎？雲端的進度還在，之後用 ID＋暗號可以再登入。</p>
+          <div class="manage-row"><button class="btn-small" data-act="del-cancel">不要</button><button class="btn-small danger" data-act="del-yes" data-id="${p.id}">確定移除</button></div></div>`
+        : `<div class="confirm"><p>確定要刪除「${esc(p.name)}」和所有進度嗎？刪除後找不回來。</p>
+          <div class="manage-row"><button class="btn-small" data-act="del-cancel">不要刪</button><button class="btn-small danger" data-act="del-yes" data-id="${p.id}">確定刪除</button></div></div>`)
       : `<div class="card manage"><span class="num">${petOf(p)}</span>
-          <span class="txt"><span class="name">${esc(p.name)}</span><span class="desc">★ ${p.stars}</span>${lockMark(p)}</span>
-          <span class="manage-row" style="margin-left:auto;width:auto"><button class="btn-small" data-act="edit" data-id="${p.id}">修改</button><button class="btn-small danger" data-act="del-arm" data-id="${p.id}">刪除</button></span>
+          <span class="txt"><span class="name">${esc(p.name)}</span><span class="desc">★ ${p.stars}${API ? (synced(p) ? '・存在雲端' : '・只存這台') : ''}</span>${lockMark(p)}</span>
+          <span class="manage-row" style="margin-left:auto;width:auto">${API && !synced(p) ? `<button class="btn-small wear" data-act="cloud-save" data-id="${p.id}">存到雲端</button>` : ''}<button class="btn-small" data-act="edit" data-id="${p.id}">修改</button><button class="btn-small danger" data-act="del-arm" data-id="${p.id}">${synced(p) ? '移除' : '刪除'}</button></span>
           <button class="lock-sw" role="switch" aria-checked="${!!p.lockCleared}" data-act="lock-cleared" data-id="${p.id}"><span class="sw" aria-hidden="true"></span><span>${p.lockCleared ? '🔒' : '🔓'} 已通過的關卡不能再玩<b>${p.lockCleared ? '開' : '關'}</b></span></button></div>`).join('');
-    cards = `<p class="manage-tip">大人設定：打開玩家卡片下面的「已通過的關卡不能再玩」，這位小朋友過關的關卡就鎖住，只能玩還沒過的（錯題複習照常）。</p>` + cards;
+    cards = `<p class="manage-tip">大人設定：打開玩家卡片下面的「已通過的關卡不能再玩」，這位小朋友過關的關卡就鎖住，只能玩還沒過的（錯題複習照常）。</p>`
+      + (!SITE && PLAYERS.length ? `<button class="btn-small" data-act="move-copy">複製搬家代碼（搬到網站版）</button>` : '') + cards;
   } else {
     cards = PLAYERS.map(p => `<button class="card" data-act="player" data-id="${p.id}">
         <span class="num" style="background:${p.color}22">${petOf(p)}</span>
         <span class="txt"><span class="name">${esc(p.name)}</span>
         <span class="desc">${TITLES[tierOf(p.stars)].name}・★ ${p.stars}・${fmtNum(p.score)} 分</span>${lockMark(p)}</span></button>`).join('');
-    if (PLAYERS.length < MAX_PLAYERS) cards += `<button class="card add" data-act="add-player">＋ 新增玩家（輸入 ID）</button>`;
+    if (PLAYERS.length < MAX_PLAYERS) cards += `<button class="card add" data-act="add-player">＋ 新增玩家（輸入 ID）</button>`
+      + (API ? `<button class="card add" data-act="cloud-login">🔑 用 ID 登入（換平板接著玩）</button>` : '');   // 按鈕列放不下第三顆，做成卡片
     cards += `<button class="card guest" data-act="guest">
         <span class="num">${GUEST ? petOf(GUEST) : petSVG('owl', '', 0, '#8A8F99')}</span>
         <span class="txt"><span class="name">遊客</span>
@@ -4765,8 +5050,8 @@ function renderHeroes() {
       <span class="hero-txt"><span class="hero-name">${esc(h.name)}${h.mine ? '<em>這台</em>' : ''}</span><span class="hero-title">${TITLES[tierOf(h.stars)].name}・★ ${h.stars}</span></span>
       <span class="hero-score"><b>${fmtNum(h.score)}</b>分</span>
     </li>`).join('');
-  const note = store.db
-    ? '分享這個網址給同學或親友，大家的分數會一起排名'
+  const note = store.db || API
+    ? `分享這個網址給同學或親友，大家的分數會一起排名${API ? '（大約一分鐘更新一次）' : ''}`
     : SITE ? '現在只顯示這台裝置的玩家' : '登入 claude.ai 打開才看得到大家的排名，現在只顯示這台裝置的玩家';
   if (v3d()) return renderHeroes3d(list, weekly, range, note);
   screen.innerHTML = `<section class="stack heroes ${list.length ? '' : 'empty'}">
@@ -4844,16 +5129,20 @@ function renderNewPlayer() {
   if (!S.newColor) S.newColor = editing ? editing.color : fromGuest ? (COLORS.find(c => !used.includes(c)) || COLORS[0]) : (COLORS.find(c => !used.includes(c)) || COLORS[0]);
   if (!S.newAnimal) S.newAnimal = editing ? (editing.animal || 'owl') : fromGuest ? (GUEST.animal || 'owl') : 'owl';
   const previewTier = editing ? Math.max(1, tierOf(editing.stars)) : fromGuest ? Math.max(1, tierOf(GUEST.stars)) : 1;
+  const cloudNew = API && !editing, lockName = editing && synced(editing);   // 網站版：新玩家同時設暗號存到雲端；雲端玩家的 ID 不能改
+  if (cloudNew) fetchHeroes();
   screen.innerHTML = `<section class="stack">
     <div id="preview">${petSVG(S.newAnimal, '', previewTier, S.newColor)}</div>
     <form class="form" id="newForm" autocomplete="off" novalidate>
-      <label for="pname">ID（必填，2～8 個字；會顯示在英雄榜上，建議用暱稱，請大人幫忙輸入）</label>
-      <input type="text" id="pname" maxlength="8" placeholder="例如：小明" enterkeyhint="done" required aria-describedby="perr" value="${editing ? esc(editing.name) : ''}">
+      ${cloudNew ? `<div class="id-pin"><label><span>ID（2～8 個字）</span><input type="text" id="pname" maxlength="8" placeholder="例如：小明" enterkeyhint="next" required aria-describedby="perr"></label>
+        <label><span>暗號（大人記下來）</span><input type="text" id="ppin" maxlength="6" inputmode="numeric" pattern="[0-9]*" placeholder="4～6 位數" enterkeyhint="done" aria-describedby="perr"></label></div>`
+      : `<label for="pname">${lockName ? 'ID（已經存到雲端，不能改）' : 'ID（必填，2～8 個字；會顯示在英雄榜上，建議用暱稱，請大人幫忙輸入）'}</label>
+      <input type="text" id="pname" maxlength="8" placeholder="例如：小明" enterkeyhint="done" required aria-describedby="perr" value="${editing ? esc(editing.name) : ''}"${lockName ? ' readonly' : ''}>`}
       <p class="form-err" id="perr" role="alert"></p>
       ${fromGuest ? `<p class="save-note" style="text-align:left">遊客的 ${fmtNum(GUEST.score)} 分、${GUEST.stars} 顆星、${fmtNum(GUEST.coins || 0)} 個金幣和裝扮，都會搬到這個 ID。</p>` : ''}
       <span class="form-label">選一個動物夥伴</span>
       <div class="ani-wheel"><button type="button" class="ani-arrow" data-act="animal-step" data-d="-1" aria-label="上一個夥伴">‹</button>
-        <div class="animals" id="aniRow">${ANIMAL_KEYS.map(k => `<button type="button" class="animal" data-act="animal" data-k="${k}" aria-pressed="${k === S.newAnimal}">${petSVG(k)}<span>${ANIMALS[k].name}</span></button>`).join('')}</div>
+        <div class="animals" id="aniRow">${ANIMAL_KEYS.map(k => `<button type="button" class="animal" data-act="animal" data-k="${k}" aria-pressed="${k === S.newAnimal}">${petSVG(k)}<span${ANIMALS[k].name.length > 5 ? ' class="long"' : ''}>${ANIMALS[k].name}</span></button>`).join('')}</div>
         <button type="button" class="ani-arrow" data-act="animal-step" data-d="1" aria-label="下一個夥伴">›</button></div>
       <span class="form-label">選一個顏色</span>
       <div class="swatches">${COLORS.map(c => `<button type="button" class="swatch" style="background:${c}" data-act="color" data-c="${c}" aria-pressed="${c === S.newColor}" aria-label="選這個顏色"></button>`).join('')}</div>
@@ -4872,17 +5161,20 @@ function renderNewPlayer() {
     if (best && best.dataset.k !== S.newAnimal) pickAnimal(best.dataset.k, false);
   }, 140); }, { passive: true });
   row.addEventListener('wheel', e => { if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) { e.preventDefault(); row.scrollBy({ left: e.deltaY > 0 ? 80 : -80, behavior: 'smooth' }); } }, { passive: false });   // 滑鼠直的滾輪也能左右轉
-  $('#newForm').addEventListener('submit', e => {
+  $('#newForm').addEventListener('submit', async e => {
     e.preventDefault();
-    const name = $('#pname').value.trim();
-    const bad = idProblem(name, editing ? editing.id : null) || (!editing && PLAYERS.length >= MAX_PLAYERS ? `這台最多 ${MAX_PLAYERS} 位玩家，請先刪掉一位` : '');
-    if (bad) { $('#perr').textContent = bad; $('#pname').focus(); sfx('wrong'); narrate(bad); return; }
+    if (S.cloudBusy) return;
+    const name = $('#pname').value.trim(), pin = cloudNew ? $('#ppin').value.trim() : '';
+    const bad = idProblem(name, editing ? editing.id : null) || (!editing && PLAYERS.length >= MAX_PLAYERS ? `這台最多 ${MAX_PLAYERS} 位玩家，請先刪掉一位` : '')
+      || (cloudNew && !/^\d{4,6}$/.test(pin) ? '暗號要是 4～6 位數字，請大人幫忙設定並記下來' : '');
+    if (bad) { $('#perr').textContent = bad; $(cloudNew && !idProblem(name, null) ? '#ppin' : '#pname').focus(); sfx('wrong'); narrate(bad); return; }
     if (fromGuest) {
       const g = GUEST;
       const p = { ...newPlayer(name, S.newColor, S.newAnimal), stars: g.stars || 0, score: g.score || 0, coins: g.coins || 0, owned: g.owned || [], equip: g.equip || {}, prog: g.prog || {}, review: g.review || {} };
+      p.storySeen = !!g.storySeen; p.dex = g.dex || {}; p.dexDone = g.dexDone || {}; p.week = g.week || null; p.lastSeen = g.lastSeen;
+      if (cloudNew && !(await cloudCreate(p, name, pin))) return;
       PLAYERS.push(p); setCur(p.id); persist(p);
       GUEST = null; lsSet(GUEST_KEY, '');
-      p.storySeen = !!g.storySeen; p.dex = g.dex || {}; p.dexDone = g.dexDone || {}; p.week = g.week || null; p.lastSeen = g.lastSeen; persist(p);
       S.newColor = S.newAnimal = null; S.fromGuest = false; S.greet = null;
       go('grade'); narrate(`${name}，你的 ID 建好了！以後你的分數會出現在英雄榜上。`);
       return;
@@ -4895,12 +5187,99 @@ function renderNewPlayer() {
       return;
     }
     const p = newPlayer(name, S.newColor, S.newAnimal);
+    if (cloudNew && !(await cloudCreate(p, name, pin))) return;
     PLAYERS.push(p); setCur(p.id); persist(p);
     S.newColor = S.newAnimal = null;
     S.manage = false; S.greet = null;
     enterGame();
   });
 }
+/* 網站版：送出表單時連雲端（按鈕先變「連線中…」，失敗把原因寫在表單上，成功回傳 true） */
+async function cloudCreate(p, id, pin, run = () => registerCloud(p, id, pin)) {
+  const scr = S.screen, btn = screen.querySelector('form .go'), label = btn ? btn.textContent : '';
+  S.cloudBusy = true;
+  if (btn) { btn.disabled = true; btn.textContent = '連線中…'; }
+  let msg;
+  try { msg = await run(); } finally { S.cloudBusy = false; }
+  if (S.screen !== scr) return false;
+  if (btn) { btn.disabled = false; btn.textContent = label; }
+  if (msg) { const err = screen.querySelector('.form-err'); if (err) err.textContent = msg; sfx('wrong'); narrate(msg); return false; }
+  return true;
+}
+/* 網站版：用 ID＋暗號登入（換平板）、把這台的玩家或搬家代碼裡的玩家存到雲端
+   S.cf＝{ mode: 'login' }｜{ mode: 'save', pid }（這台的玩家）｜{ mode: 'save', list, i }（搬家代碼，一位一位設暗號） */
+function renderCloudForm() {
+  const cf = S.cf || { mode: 'login' }, login = cf.mode === 'login';
+  const imp = !login && cf.list ? cf.list[cf.i] : null, loc = !login && !cf.list ? PLAYERS.find(p => p.id === cf.pid) : null, who = imp || loc;
+  if (!login && !who) { S.cf = null; S.screen = 'players'; return renderPlayers(); }
+  setBar(login ? '用 ID 登入' : imp ? '搬家' : '存到雲端');
+  const pet = who ? petSVG(ANIMALS[who.animal] ? who.animal : 'owl', '', Math.max(1, tierOf(who.stars || 0)), who.color || COLORS[0], who.equip || {}) : petSVG('owl', 'happy', 1, COLORS[0]);
+  const head = login ? '換了平板？輸入 ID 和暗號，就能接著玩。'
+    : imp ? `搬家（第 ${cf.i + 1}／${cf.list.length} 位）：「${imp.name}」★ ${imp.stars || 0}・${fmtNum(imp.score || 0)} 分。設一個暗號就存到雲端。`
+    : `「${loc.name}」的進度現在只存在這台。設一個暗號，就會存到雲端。`;
+  const full = imp && PLAYERS.length >= MAX_PLAYERS;
+  screen.innerHTML = `<section class="stack">
+    <div id="preview">${pet}</div>
+    <p class="save-note">${esc(head)}</p>
+    <form class="form" id="cfForm" autocomplete="off" novalidate>
+      <div class="id-pin"><label><span>ID</span><input type="text" id="cfId" maxlength="8" value="${esc(login ? (cf.id || '') : who.name || '')}" placeholder="例如：小明" enterkeyhint="next" autocapitalize="off"></label>
+        <label><span>暗號${login ? '' : '（大人記下來）'}</span><input type="text" id="cfPin" maxlength="6" inputmode="numeric" pattern="[0-9]*" placeholder="4～6 位數" enterkeyhint="done"></label></div>
+      <p class="form-err" id="cfErr" role="alert">${full ? `這台已經有 ${MAX_PLAYERS} 位玩家：這位會存到雲端，要玩時在別台用 ID 登入` : ''}</p>
+      <button class="btn-big go" type="submit">${login ? '登入' : '存到雲端'}</button>
+      ${login ? '<button type="button" class="btn-small" data-act="move-paste">從 claude.ai 搬過來？貼上搬家代碼</button>' : imp ? '<button type="button" class="btn-small" data-act="cf-skip">先跳過這位</button>' : ''}
+    </form>
+    ${login ? '<p class="save-note">忘記暗號：請大人在試算表的「國英數大冒險」選單重設</p>' : ''}
+  </section>`;
+  $('#cfForm').addEventListener('submit', async e => {
+    e.preventDefault();
+    if (S.cloudBusy) return;
+    const id = $('#cfId').value.trim(), pin = $('#cfPin').value.trim();
+    const bad = login ? (!id ? '請輸入 ID' : '') : idProblem(id, loc ? loc.id : null);
+    const msg = bad || (!/^\d{4,6}$/.test(pin) ? '暗號要是 4～6 位數字' : '');
+    if (msg) { $('#cfErr').textContent = msg; sfx('wrong'); narrate(msg); return; }
+    if (login) {
+      let got = null;
+      if (!(await cloudCreate(null, id, pin, async () => { const r = await loginCloud(id, pin); got = r.p; return r.msg || ''; }))) return;
+      S.cf = null; setCur(got.id); S.greet = null; S.manage = false; enterGame(); narrate(`歡迎回來，${got.name}！`);
+      return;
+    }
+    if (loc) {
+      if (!(await cloudCreate(loc, id, pin))) return;
+      loc.name = id; saveLocal(); S.cf = null; go('players'); narrate(`${id}的進度存到雲端了`);
+      return;
+    }
+    const p = { ...clone(imp), id: newPlayer('', '', '').id, name: id };
+    delete p.guest;
+    if (!p.kzV40) kzMigrate40(p);
+    if (!(await cloudCreate(p, id, pin))) return;
+    if (PLAYERS.length < MAX_PLAYERS) { PLAYERS.push(p); saveLocal(); }
+    else { delete SYNC[p.id]; saveSync(); }
+    nextImport(`${id}搬好了！`);
+  });
+}
+function nextImport(say) {
+  const cf = S.cf;
+  if (cf && cf.list && cf.i + 1 < cf.list.length) { cf.i++; render(); narrate(`${say}下一位。`); return; }
+  S.cf = null; go('players'); narrate(`${say}搬家完成。`);
+}
+function renderMovePaste() {
+  setBar('貼上搬家代碼');
+  screen.innerHTML = `<section class="stack">
+    <p class="notice">先在 claude.ai 版：誰要來玩？→「大人用：管理玩家」→「複製搬家代碼」。再回到這裡，把代碼貼在下面。</p>
+    <textarea id="mvIn" class="mv-text" rows="5" placeholder="把搬家代碼貼在這裡" autocomplete="off" autocapitalize="off" spellcheck="false"></textarea>
+    <p class="form-err" id="mvErr" role="alert"></p>
+    <button class="btn-big go" data-act="move-read">讀取</button>
+  </section>`;
+}
+async function readMove() {
+  let list = [];
+  try { list = await unpackMove($('#mvIn').value); } catch (e) { list = []; }
+  if (S.screen !== 'movePaste') return;
+  if (!list.length) { const m = '讀不懂這段代碼，請確認整段都有貼上'; $('#mvErr').textContent = m; sfx('wrong'); narrate(m); return; }
+  S.cf = { mode: 'save', list, i: 0 }; go('cloudForm');
+  narrate(`找到${list.length}位玩家。幫每一位設一個暗號。`);
+}
+
 /* 選夥伴轉盤：選一個（點、箭頭或轉到中間），center 時把它轉到正中間 */
 function aniCenter(smooth = true) {
   const row = $('#aniRow'), b = row && row.querySelector('[aria-pressed="true"]');
@@ -6287,7 +6666,7 @@ function goBack() {
   clearTimeout(duelTimer); clearInterval(whackTimer);
   if (S.screen === 'remote') leaveRemote();
   const home = planetOn() ? (me() ? 'grade' : 'players') : 'home';   // 3D 沒有標題頁：回星球（還沒選玩家就是玩家視窗）
-  const back = { remote: 'duelSetup', voice: planetOn() ? 'players' : 'home', players: home, newPlayer: 'players', grade: planetOn() ? home : 'players', level: 'grade', map: 'level', heroes: ['players', 'grade'].includes(S.heroBack) ? S.heroBack : home, shop: S.shopBack || 'grade',
+  const back = { remote: 'duelSetup', voice: planetOn() ? 'players' : 'home', players: home, newPlayer: 'players', cloudForm: 'players', movePaste: 'players', grade: planetOn() ? home : 'players', level: 'grade', map: 'level', heroes: ['players', 'grade'].includes(S.heroBack) ? S.heroBack : home, shop: S.shopBack || 'grade',
                  dex: S.dexBack || 'grade', report: S.reportBack || 'grade', duelSetup: S.duelBack || 'grade', duel: 'duelSetup',
                  game: playBack(), result: playBack(), units: 'grade' }[S.screen];
   if (S.screen === 'game' && me()) persist(me());   // 中途離開也保留這回合答錯的字
@@ -6361,6 +6740,18 @@ document.addEventListener('click', e => {
   else if (act === 'animal') pickAnimal(b.dataset.k);
   else if (act === 'animal-step') { const i = ANIMAL_KEYS.indexOf(S.newAnimal) + +b.dataset.d; if (i >= 0 && i < ANIMAL_KEYS.length) pickAnimal(ANIMAL_KEYS[i]); }
   else if (act === 'manage') { S.manage = !S.manage; S.delArm = null; render(); }
+  else if (act === 'cloud-login') { sfx('tap'); S.cf = { mode: 'login' }; go('cloudForm'); narrate('請大人幫忙輸入 ID 和暗號。'); }
+  else if (act === 'cloud-save') { sfx('tap'); S.cf = { mode: 'save', pid: b.dataset.id }; go('cloudForm'); }
+  else if (act === 'cf-skip') { sfx('tap'); nextImport(''); }
+  else if (act === 'move-paste') { sfx('tap'); go('movePaste'); }
+  else if (act === 'move-read') { sfx('tap'); readMove(); }
+  else if (act === 'move-copy') { sfx('tap'); copyMove(); }
+  else if (act === 'sync-retry') {
+    sfx('tap');
+    const p = PLAYERS.find(x => x.id === b.dataset.id);
+    if (p) { S.cf = { mode: 'login', id: SYNC[p.id] ? SYNC[p.id].cid : p.name }; go('cloudForm'); }
+    else { PLAYERS.forEach(x => { if (synced(x) && SYNC[x.id].err === 'net') SYNC[x.id].err = ''; }); flushSync(); }
+  }
   else if (act === 'lock-cleared') { const p = PLAYERS.find(x => x.id === b.dataset.id); if (p) { sfx('tap'); p.lockCleared = !p.lockCleared; persist(p); render(); } }
   else if (act === 'del-arm') { S.delArm = b.dataset.id; render(); }
   else if (act === 'del-cancel') { S.delArm = null; render(); }
@@ -6487,6 +6878,7 @@ async function start(saved) {
   bootDone();
   if (S.screen === 'game' && !S.answered) startTimer(false);   // 網頁更新後接著原本的秒數倒數
   connectCloud();
+  siteCloud();
 }
 window.claude?.hot?.snapshot?.(() => ({ S: clone(S) }));
 window.claude?.hot?.ready ? window.claude.hot.ready(start) : start(window.claude?.hot?.data ?? {});
