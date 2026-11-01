@@ -1,4 +1,4 @@
-<!doctype html><html lang="zh-Hant-TW"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><title>國英數大冒險</title><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="國英數大冒險"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><link rel="apple-touch-icon" href="icon-180.png"><link rel="icon" href="icon-180.png"><script>window.ZZ_SITE = 1; window.ZZ_API = "https://script.google.com/macros/s/AKfycbxkk46VfoU1vdSL4b3cJGkiH-SXhh9XqjGM3dJ5eGBk1FQ54wdDSg_O0iT4f9xy5kKa/exec";</script><style>:root{padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}body{margin:0}[hidden]{display:none!important}</style></head><body><title>國英數大冒險</title>
+<!doctype html><html lang="zh-Hant-TW"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><title>國英數大冒險</title><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="國英數大冒險"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><link rel="apple-touch-icon" href="icon-180.png"><link rel="icon" href="icon-180.png"><script>window.ZZ_SITE = 1; window.ZZ_API = "https://script.google.com/macros/s/AKfycbxkk46VfoU1vdSL4b3cJGkiH-SXhh9XqjGM3dJ5eGBk1FQ54wdDSg_O0iT4f9xy5kKa/exec";if(navigator.userAgent.indexOf(" Line/")>=0&&location.search.indexOf("openExternalBrowser")<0)location.replace(location.pathname+(location.search?location.search+"&":"?")+"openExternalBrowser=1"+location.hash);</script><style>:root{padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}body{margin:0}[hidden]{display:none!important}</style></head><body><title>國英數大冒險</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <script>
 /* 開機預判（最先跑）：日夜、會不會進 3D 星球。進 3D 的話開機就鋪星球天空、先載天空圖，不會先閃一下 2D 點點紙和空的工具列 */
@@ -2536,6 +2536,9 @@ function refreshIfIdle() { if (['home', 'players', 'grade', 'level', 'map', 'her
    SYNC[這台的玩家 id]＝{ cid: 雲端 ID, token: 通行證, ver: 雲端版本, dirty: 還沒上傳的變動數, err }，只存在這台裝置。
    雲端版本跟這台記的不一樣＝別台先存過：拿雲端的回來合併（成績取較好的），不整份蓋掉 */
 const API = SITE && window.ZZ_API ? String(window.ZZ_API) : '';
+/* LINE、Facebook、IG 裡面直接開的網頁：關掉後常常整個清掉，玩家又要重新登入（LINE 外框會先轉去手機瀏覽器，見 build_site.py） */
+const INAPP = SITE && / Line\/|FBAN|FBAV|Instagram|MicroMessenger/i.test(navigator.userAgent || '');
+const keepStorage = () => { try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {}); } catch (e) {} };   // 請瀏覽器不要自動清掉這個網站的存檔
 const SYNC_KEY = 'zizi-sync';
 let SYNC = (() => { try { const o = JSON.parse(lsGet(SYNC_KEY)); return o && typeof o === 'object' && !Array.isArray(o) ? o : {}; } catch (e) { return {}; } })();
 const saveSync = () => lsSet(SYNC_KEY, JSON.stringify(SYNC));
@@ -2655,7 +2658,7 @@ async function registerCloud(p, id, pin) {
   const res = await api('register', { id, pin, data: { ...cloudBody(p), name: id } });
   if (!res.ok) return cloudMsg(res, 'new');
   SYNC[p.id] = { cid: res.id, token: res.token, ver: res.updated, dirty: 0, err: '' };
-  saveSync(); heroAt = 0;
+  saveSync(); heroAt = 0; keepStorage();
   return '';
 }
 async function loginCloud(id, pin) {
@@ -2675,7 +2678,7 @@ async function loginCloud(id, pin) {
   p.name = res.id;
   const dirty = SYNC[p.id] ? SYNC[p.id].dirty : 0;
   SYNC[p.id] = { cid: res.id, token: res.token, ver: res.updated, dirty, err: '' };
-  saveLocal(); saveSync(); syncUI(); heroAt = 0;
+  saveLocal(); saveSync(); syncUI(); heroAt = 0; keepStorage();
   if (dirty) queueSync(500);
   return { p };
 }
@@ -4298,6 +4301,7 @@ function saveNote() {
   if (store.cloud && !store.readOnly) return `<p class="save-note"><b>●</b> 進度存在雲端，換一台平板打開同一個網址也能接著玩</p>`;
   if (store.readOnly) return `<p class="save-note">這個帳號只能看、不能存雲端，進度只存在這台裝置</p>`;
   if (!store.checked) return '';
+  if (API && INAPP) return `<p class="notice">現在是在 LINE／Facebook 裡面打開，關掉後可能要重新登入。請按右上角「⋯」選「用瀏覽器開啟」再玩。</p>`;
   if (API) return PLAYERS.some(synced) ? `<p class="save-note"><b>●</b> 有 ID 的玩家，進度存在雲端</p>`
     : `<p class="save-note">建立 ID＋序號，進度就會存到雲端，換平板也能接著玩</p>`;
   if (SITE) return `<p class="save-note">進度存在這台裝置。iPad 用 Safari 的「加入主畫面」來玩，進度最穩</p>`;
@@ -5253,7 +5257,7 @@ function renderCloudForm() {
       <button class="btn-big go" type="submit">${login ? '登入' : '存到雲端'}</button>
       ${login ? '<button type="button" class="btn-small" data-act="move-paste">從 claude.ai 搬過來？貼上搬家代碼</button>' : imp ? '<button type="button" class="btn-small" data-act="cf-skip">先跳過這位</button>' : ''}
     </form>
-    ${login ? '<p class="save-note">忘記序號：請大人在試算表的「國英數大冒險」選單重設</p>' : ''}
+    ${login ? '<p class="save-note">登入一次，這台就會記住。iPad 的 Safari 和主畫面圖示是分開的，各要登入一次；無痕視窗不會記住。</p><p class="save-note">忘記序號：請大人在試算表的「國英數大冒險」選單重設</p>' : ''}
   </section>`;
   $('#cfForm').addEventListener('submit', async e => {
     e.preventDefault();
