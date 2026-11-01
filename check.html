@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>字庫檢查表</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@600&display=swap">
+<style>
+:root {
+  --bg: #F4F8F4; --paper: #FFFFFF; --ink: #1F3A2C; --muted: #5D7467; --line: #D5E3D8;
+  --flag: #FFF1CF; --flag-line: #E3A21F; --sky: #1F5E94;
+  --kai: "TW-Kai", "BiauKai", "DFKai-SB", "標楷體", "Kaiti TC", "Noto Serif TC", serif;
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.6 "PingFang TC", "Microsoft JhengHei", "Noto Sans TC", sans-serif; }
+.wrap { max-width: 1100px; margin: 0 auto; padding-block: 24px 48px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+h1 { margin: 0 0 6px; font-size: 1.8rem; }
+.lead { margin: 0 0 18px; color: var(--muted); max-width: 46em; }
+.filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+.filters button { font: inherit; padding: 8px 16px; border-radius: 999px; border: 2px solid var(--line); background: var(--paper); color: var(--ink); cursor: pointer; }
+.filters button[aria-pressed="true"] { border-color: var(--sky); color: var(--sky); font-weight: 700; }
+.tbl { overflow-x: auto; background: var(--paper); border: 1px solid var(--line); border-radius: 12px; }
+table { border-collapse: collapse; width: 100%; min-width: 860px; }
+th, td { padding: 8px 10px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+th { font-size: .85rem; color: var(--muted); letter-spacing: .04em; background: var(--bg); position: sticky; top: 0; }
+td.z { font-family: var(--kai); font-size: 2rem; line-height: 1.1; }
+td.zy { font-size: 1.15rem; white-space: nowrap; }
+tr.flag td { background: var(--flag); }
+.note { display: inline-block; margin-top: 4px; padding: 2px 8px; border-left: 3px solid var(--flag-line); font-size: .9rem; }
+.small { color: var(--muted); font-size: .9rem; }
+a { color: var(--sky); }
+.back { display: inline-block; margin-bottom: 14px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="./">← 回到遊戲</a>
+  <h1>字庫檢查表</h1>
+  <p class="lead">這裡列出遊戲裡每個字的注音、例詞和常見錯字。黃色的列是比較需要確認的字（破音字、輕聲、變調）。每一列的「查辭典」會開啟教育部《重編國語辭典修訂本》，可以逐字核對。</p>
+  <div class="filters" id="filters"></div>
+  <div class="tbl"><table>
+    <thead><tr><th>字</th><th>注音</th><th>年級</th><th>例詞</th><th>形近字</th><th>常見錯字（正確 → 錯誤）</th><th>其他讀音／需確認</th><th>核對</th></tr></thead>
+    <tbody id="rows"><tr><td colspan="8">讀取字庫中…</td></tr></tbody>
+  </table></div>
+</div>
+<script>
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const CN = ['', '一', '二', '三', '四', '五', '六'];
+let BANK = [], view = 'all';
+function draw() {
+  const list = BANK.filter(w => view === 'all' || (view === 'flag' ? (w.需確認 || (w.其他讀音 || []).length) : String(w.年級) === view));
+  document.getElementById('rows').innerHTML = list.map(w => {
+    const flag = w.需確認 || (w.其他讀音 || []).length;
+    const other = (w.其他讀音 || []).map(o => `${esc(o.注音)}（${esc(o.說明)}）`).join('<br>');
+    return `<tr class="${flag ? 'flag' : ''}">
+      <td class="z">${esc(w.字)}</td>
+      <td class="zy">${esc(w.注音)}<div class="small">第 ${w.聲調 === 0 ? '輕' : w.聲調} 聲</div></td>
+      <td>${CN[w.年級]}${esc(w.學期)}</td>
+      <td>${w.例詞.map(esc).join('、')}</td>
+      <td>${(w.形近字 || []).map(esc).join('、') || '<span class="small">—</span>'}</td>
+      <td>${(w.常見錯字 || []).map(e => `${esc(e.正確)} → ${esc(e.錯誤)}`).join('<br>') || '<span class="small">—</span>'}</td>
+      <td>${other}${w.需確認 ? `<div class="note">${esc(w.需確認)}</div>` : ''}</td>
+      <td><a href="https://dict.revised.moe.edu.tw/search.jsp?md=1&word=${encodeURIComponent(w.字)}" target="_blank" rel="noopener">查辭典</a></td>
+    </tr>`;
+  }).join('');
+}
+function filters() {
+  const gs = [...new Set(BANK.map(w => w.年級))].sort();
+  const opts = [['all', `全部（${BANK.length}）`], ...gs.map(g => [String(g), `${CN[g]}年級`]), ['flag', '只看需確認']];
+  const box = document.getElementById('filters');
+  box.innerHTML = opts.map(([v, t]) => `<button data-v="${v}" aria-pressed="${v === view}">${t}</button>`).join('');
+  box.onclick = e => { const b = e.target.closest('button'); if (!b) return; view = b.dataset.v; filters(); draw(); };
+}
+fetch('words.json', { cache: 'no-cache' }).then(r => r.json()).then(d => { BANK = d['字庫'] || []; filters(); draw(); })
+  .catch(() => { document.getElementById('rows').innerHTML = '<tr><td colspan="8">字庫讀不到（words.json）。</td></tr>'; });
+</script>
+</body>
+</html>
