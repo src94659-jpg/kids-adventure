@@ -4,6 +4,7 @@
 /* 開機預判（最先跑）：日夜、會不會進 3D 星球。進 3D 的話開機就鋪星球天空、先載天空圖，不會先閃一下 2D 點點紙和空的工具列 */
 (function () {
   var r = document.documentElement, ls = function (k) { try { return localStorage.getItem(k); } catch (e) { return null; } };
+  /* 日夜：沿用上次最後的日夜（遊戲開著每玩 20 分鐘自動換一次，小朋友也可以自己按） */
   var night = ls('zizi-theme') === 'night', v = ls('zizi-3d'), gl2 = false;
   if (night) r.classList.add('night');
   if (v !== 'off' && v !== 'slow') {
@@ -13,7 +14,7 @@
   if (!gl2) return;
   r.classList.add('boot3d');
   /* 上次畫好的島嶼畫面（同樣大小、同樣日夜）：一打開就先貼這張，等 3D 星球畫好再換上，不會先看到空的天空 */
-  try { var pp = JSON.parse(ls('zizi-plposter') || 'null'); if (pp && pp.u && pp.n === (night ? 1 : 0) && Math.abs(pp.w - innerWidth) <= pp.w * .06 && Math.abs(pp.h - innerHeight) <= pp.h * .06) { window.ZZ_POSTER = pp; r.classList.add('boot-poster'); r.style.setProperty('--poster', 'url(' + pp.u + ')'); } } catch (e) {}
+  try { var pp = JSON.parse(ls('zizi-plposter' + (night ? '-n' : '')) || 'null'); if (pp && pp.u && pp.n === (night ? 1 : 0) && Math.abs(pp.w - innerWidth) <= pp.w * .06 && Math.abs(pp.h - innerHeight) <= pp.h * .06) { window.ZZ_POSTER = pp; r.classList.add('boot-poster'); r.style.setProperty('--poster', 'url(' + pp.u + ')'); } } catch (e) {}
   ['planet_art/map/sky_' + (night ? 'night' : 'day') + '.webp', 'fantasy_art/characters/owl_3d.webp', 'planet_art/map/map_' + (night ? 'night' : 'day') + '.webp',
    'planet_art/halls/hall_chinese.webp', 'planet_art/halls/hall_english.webp', 'planet_art/halls/hall_math.webp', 'planet_art/halls/hall_afterschool.webp'].forEach(function (h) {
     var l = document.createElement('link'); l.rel = 'preload'; l.as = 'image'; l.href = h; document.head.appendChild(l);
@@ -630,6 +631,10 @@ body.pl-calm .pl-modal { animation: none; }   /* 星球畫好重畫一次時，�
 body.lock-cleared .node.done::after, body.lock-cleared .rnode.done::after, body.lock-cleared .kzm-isle.done::after { content: "🔒"; position: absolute; top: -4px; left: -4px; z-index: 3; font-size: 18px; line-height: 1; filter: drop-shadow(0 1px 1px rgba(0, 0, 0, .35)); }
 .toast { position: fixed; left: 50%; bottom: max(24px, env(safe-area-inset-bottom, 0px)); z-index: 60; transform: translate(-50%, 20px); width: max-content; max-width: calc(100vw - 32px); padding: 12px 18px; border-radius: 18px; background: rgba(31, 58, 44, .94); color: #fff; text-align: center; text-wrap: pretty; box-shadow: 0 6px 18px rgba(0, 0, 0, .3); opacity: 0; pointer-events: none; transition: opacity .2s, transform .2s; }
 .toast.on { opacity: 1; transform: translate(-50%, 0); }
+/* 時間到自動換日夜：整個畫面慢慢變成黃昏（或清晨）的顏色，換好再慢慢亮回來 */
+.theme-fade { position: fixed; inset: 0; z-index: 9999; opacity: 0; pointer-events: none; transition: opacity .6s ease; background: linear-gradient(#1B2A5C, #5A4B7A); }
+.theme-fade.day { background: linear-gradient(#BFE3FF, #FFE9C2); }
+.theme-fade.on { opacity: 1; pointer-events: auto; }
 :root.night body:not(.pl-full) .lock-sw { background: rgba(27, 40, 73, .9); color: #EEF2FB; border-color: rgba(255, 255, 255, .25); }   /* 星球上的玩家視窗夜裡也是羊皮紙，不換深色 */
 :root.night body:not(.pl-full) .lock-sw[aria-checked="true"] { background: #1E5A3A; border-color: #9BE3B5; }
 :root.night body:not(.pl-full) .manage-tip { background: rgba(27, 40, 73, .9); }
@@ -4583,6 +4588,7 @@ function starsFor(n, total) { const r = n / total; return r >= 0.85 ? 3 : r >= 0
 
 function render() {
   if (!DATA) return;
+  if (S.screen !== 'game' && S.screen !== 'duel') setTimeout(themeTick, 0);   // 剛回到地圖、首頁：時間到了就換日夜
   if (S.screen !== 'game') stopTimer();
   screen.classList.toggle('playing', S.screen === 'game' || S.screen === 'duel' || (S.screen === 'remote' && !!R && !!R.st && ['q', 'show'].includes(R.st.phase) && !R.hostGone && !R.err));
   setScene(S.screen === 'game' || S.screen === 'result');
@@ -6038,7 +6044,7 @@ function planetPoster() {
       g.drawImage(sky, (cv.width - dw) / 2, cv.height - dh, dw, dh);
       PL.renderer.render(PL.scene, PL.cam);   // 同一個工作裡畫完馬上拿，WebGL 畫布才不會是空的
       g.drawImage(PL.renderer.domElement, 0, 0, cv.width, cv.height);
-      localStorage.setItem('zizi-plposter', JSON.stringify({ w, h, n: night ? 1 : 0, d: box.querySelector('.pl-dock') ? 1 : 0, u: cv.toDataURL('image/jpeg', .72) }));
+      localStorage.setItem('zizi-plposter' + (night ? '-n' : ''), JSON.stringify({ w, h, n: night ? 1 : 0, d: box.querySelector('.pl-dock') ? 1 : 0, u: cv.toDataURL('image/jpeg', .72) }));
       PL.posterKey = key;
     } catch (e) { /* 存不下就算了，下次照舊先顯示「星球準備中」 */ }
   };
@@ -6417,7 +6423,36 @@ function applyTheme(t) {
   const b = $('#themeBtn');
   [b, $('.pl-theme')].forEach(x => { if (x) { x.innerHTML = THEME_ICON[night ? 'night' : 'day']; x.setAttribute('aria-label', night ? '換成白天模式' : '換成黑夜模式'); } });   // 上方工具列和星球上的日夜按鈕
 }
-applyTheme(lsGet(THEME_KEY) === 'night' ? 'night' : 'day');
+let THEME_MS = 20 * 60 * 1000;   // 真的在玩（頁面看得到）每 20 分鐘白天、黑夜換一次
+applyTheme(lsGet(THEME_KEY) === 'night' ? 'night' : 'day');   // 跟最上面開機那段一樣：沿用上次
+/* 計時：只算頁面看得到的時間（切到背景、鎖屏不算）。到點時還在答題、對戰就先不換，回到地圖或首頁再換；
+   換的時候整個畫面慢慢暗下去（或亮起來）再換，不會一下閃掉 */
+const TT = { played: 0, last: Date.now(), vis: !document.hidden, fading: false };
+function themeClock() { const now = Date.now(); if (TT.vis) TT.played += now - TT.last; TT.last = now; TT.vis = !document.hidden; }
+function themeReset() { themeClock(); TT.played = 0; }
+function themeTick() {
+  themeClock();
+  if (TT.fading || document.hidden || TT.played < THEME_MS) return;
+  if (S.screen === 'game' || S.screen === 'duel' || S.screen === 'remote') return;
+  const want = document.documentElement.classList.contains('night') ? 'day' : 'night';
+  TT.fading = true; TT.played = 0;
+  const ready = typeof PL !== 'undefined' && PL.state === 'ready'   // 3D 島的地圖貼圖先載好，蓋住時才換得乾淨
+    ? Promise.race([planetTex('map/map_' + want).catch(() => {}), new Promise(r => setTimeout(r, 2500))]) : Promise.resolve();
+  ready.then(() => {
+    const o = document.createElement('div');
+    o.className = 'theme-fade ' + want;
+    document.body.appendChild(o);
+    void o.offsetWidth;
+    o.classList.add('on');
+    setTimeout(() => {
+      applyTheme(want); lsSet(THEME_KEY, want);   // 記住：下次打開沿用這個
+      if (typeof PL !== 'undefined' && PL.state === 'ready' && PL.night !== (want === 'night')) planetTheme(want === 'night');
+      setTimeout(() => { o.classList.remove('on'); setTimeout(() => { o.remove(); TT.fading = false; }, 800); }, 300);
+    }, 650);
+  });
+}
+setInterval(themeTick, 15000);
+document.addEventListener('visibilitychange', () => { themeClock(); if (!document.hidden) themeTick(); });
 let sceneName = '';
 function setScene(on) {
   sceneEl.classList.toggle('on', on);
@@ -7313,7 +7348,7 @@ document.addEventListener('click', e => {
   if (b.id === 'backBtn') { sfx('tap'); return goBack(); }
   if (b.id === 'sayBtn') return speak(currentSay());
   const act = b.dataset.act;
-  if (act === 'theme') { const night = !document.documentElement.classList.contains('night'); applyTheme(night ? 'night' : 'day'); lsSet(THEME_KEY, night ? 'night' : 'day'); sfx(night ? 'night' : 'day'); narrate(night ? '黑夜模式。天上有星星和流星喔！' : '白天模式。'); return; }
+  if (act === 'theme') { const night = !document.documentElement.classList.contains('night'); applyTheme(night ? 'night' : 'day'); lsSet(THEME_KEY, night ? 'night' : 'day'); themeReset(); sfx(night ? 'night' : 'day'); narrate(night ? '黑夜模式。天上有星星和流星喔！' : '白天模式。'); return; }
   if (act === 'start') { sfx('tap'); go('players'); narrate(currentSay()); }
   else if (act === 'guest') { sfx('tap'); setCur('guest'); const g = me(); ensureWallet(g); persist(g); S.manage = false; S.greet = null; enterGame(); }
   else if (act === 'buddy') { buddyReact(b); }
