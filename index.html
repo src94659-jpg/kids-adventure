@@ -4300,9 +4300,10 @@ function hopStage(items) {
   S.hop = { hp: 9, hearts: 3, lost: false };
   return [...hop, ...boss];
 }
-function hopAfter(q) {   // 跳石頭答完：夥伴跳過去，自動換下一顆（題目直接出來，不用再點石頭）
-  if (!hopOn() || q.phase !== 'hop') return;
-  setTimeout(() => { if (S.screen === 'game' && S.answered && curQ() === q && !$('.party')) nextQ(); }, 1100);
+function hopAfter(q) {   // 跳石頭、打頭目答完都自動換下一題（不用按「下一題」）；打倒頭目多停一下、公布答案停久一點讓他看清楚
+  if (!hopOn() || S.hop.lost) return;
+  const ms = q.phase === 'boss' && S.hop.hp <= 0 ? 1600 : S.timedOut ? 2200 : 1100;
+  setTimeout(() => { if (S.screen === 'game' && S.answered && curQ() === q && !$('.party')) nextQ(); }, ms);
 }
 function hopHeart() {
   S.hop.hearts = Math.max(0, S.hop.hearts - 1);
