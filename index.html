@@ -1102,6 +1102,18 @@ body.lock-cleared .node.done::after, body.lock-cleared .rnode.done::after, body.
 .stone.lit { background: radial-gradient(circle at 35% 30%, #FFF6C9, #F6B12F); border-color: #D98E0C; box-shadow: 0 5px 0 #B9842A, 0 0 0 5px rgba(255, 230, 120, .55); color: #5A3A00; animation: stoneGlow .9s ease-in-out infinite alternate; cursor: pointer; }
 .stone.ok { background: radial-gradient(circle at 35% 30%, #E4F7E8, #6CC28A); border-color: #3C9A66; box-shadow: 0 5px 0 #2E7A50; color: #1F4D33; font-size: max(.8rem, min(1.35rem, 2.8vw, 3vh)); }
 .stone:not(.lit):not(.ok) { opacity: .75; pointer-events: none; }
+/* 隱藏關卡的「？」石頭：沒打開是灰色，打開了發亮，打贏過變綠色 */
+.secret-stone { display: grid; place-items: center; width: 100%; aspect-ratio: 1.15; border-radius: 50%; border: 3px solid #8C8F95; background: radial-gradient(circle at 35% 30%, #F1F2F4, #9EA3AB); box-shadow: 0 5px 0 #6B6F76; color: #5A5F68; font-weight: 900; line-height: 1; }
+.open > .secret-stone { background: radial-gradient(circle at 35% 30%, #FFF6C9, #F6B12F); border-color: #D98E0C; box-shadow: 0 5px 0 #B9842A, 0 0 0 6px rgba(255, 230, 120, .55); color: #6A3F00; animation: stoneGlow .9s ease-in-out infinite alternate; }
+.won > .secret-stone { background: radial-gradient(circle at 35% 30%, #E4F7E8, #6CC28A); border-color: #3C9A66; box-shadow: 0 5px 0 #2E7A50; color: #1F4D33; animation: none; }
+.rnode.rsecret { transform: translate(-50%, -50%); }
+.portrait .rnode.rsecret { width: 12cqw; } .portrait .rsecret .secret-stone { font-size: 6cqw; }
+.landscape .rnode.rsecret { width: 7.4cqw; } .landscape .rsecret .secret-stone { font-size: 3.6cqw; }
+.rsecret .rn-tag { top: 104%; }
+.landscape .rsecret .rn-tag { top: 50%; left: auto; right: 112%; transform: translateY(-50%); }   /* 橫放：石頭靠右邊，名字放在石頭左邊 */
+.node.secret { width: 64px; height: 64px; border: 0; background: none; box-shadow: none; padding: 0; animation: none; }
+.node.secret .secret-stone { font-size: 1.8rem; }
+.node.secret small { top: auto; bottom: 74px; }
 @keyframes stoneGlow { to { box-shadow: 0 5px 0 #B9842A, 0 0 0 10px rgba(255, 230, 120, .25); } }
 .hop-river.narrow { height: min(30vh, 56vw, 250px); }
 .hop-river.narrow .hop-flag { top: auto; bottom: 6px; }
@@ -1864,6 +1876,7 @@ function diffLevel() {
 const timeFor = g => Math.max(10, Math.round((TIME_LIMIT[g > 100 ? g - 100 : g] || 18) * ({ 1: 0.8, '-1': 1.4 }[diffLevel()] || 1)));
 function newQTime() {
   const q = S.qs && S.qs[S.idx], base = timeFor(S.grade) * 10;
+  if (S.mode === 'secret') { S.qTotal = S.mix.full; return; }   // 九九大混戰：整回合共用一個倒數，換題不重算
   if (q && q.noTimer) { S.qTotal = 10; S.timeLeft = 0; return; }   // 安親班不倒數，也沒有時間加分（首答 10 分）
   /* 新題型要做的事比較多，給比較長的時間 */
   S.qTotal = !q ? base : q.type === 'stroke' ? Math.max(base, q.strokes.length * 45) : q.type === 'spell' ? Math.round(base * 1.4) : q.type === 'whack' || q.type === 'en-spell' || q.type === 'en-miss' ? Math.round(base * 1.2) : q.type === 'en-sent' || q.type === 'en-def' ? Math.round(base * 1.6) : q.sub === 'math' && q.type !== 'm-count' && q.type !== 'm-cmp' ? Math.round(base * (S.grade >= 4 ? 3 : 1.5)) : base;   // 計算題要多一點時間（高年級的直式計算更久）
@@ -2196,10 +2209,10 @@ const SHOP3D = { crown: 'hats/gold_crown', wizard: 'hats/wizard_hat', pirate: 'h
   guitar: 'instruments/guitar', violin: 'instruments/violin', pipa: 'instruments/pipa', recorder: 'instruments/recorder', sax: 'instruments/saxophone', drum: 'instruments/snare_drum', triangle: 'instruments/triangle',
   halo: 'effects/angel_halo', sparkle: 'effects/sparkling_stars',
   rainbowCrown: 'treasure/rainbow_crown', goldCape: 'treasure/golden_cape', heartWings: 'treasure/heart_wings', fairy: 'treasure/fairy_companion', comet: 'treasure/shooting_star', iceCrown: 'treasure/ice_crown',
-  galaxyCape: 'treasure/galaxy_cape', iceWings: 'treasure/ice_wings', rainbowShoes: 'treasure/rainbow_shoes', magicBook: 'treasure/magic_book', bubbles: 'treasure/bubbles', flameShoes: 'treasure/flame_shoes' };
+  galaxyCape: 'treasure/galaxy_cape', cap99: 'treasure/math_cap99', iceWings: 'treasure/ice_wings', rainbowShoes: 'treasure/rainbow_shoes', magicBook: 'treasure/magic_book', bubbles: 'treasure/bubbles', flameShoes: 'treasure/flame_shoes' };
 const SHOP3D_ASP = { angel: 1.25, butterfly: 1.07, dragon: 1.475, phoenix: 1.27, heartWings: 1.06, iceWings: 1.135 };   // 翅膀圖的寬高比
 const BOX3D_SLOT = { hat: [40, -25, 40, 60, 'xMidYMax'], hand: [84, 50, 38, 56, 'xMidYMax'], music: [-6, 58, 42, 58, 'xMidYMax'], aura: [-8, -4, 40, 40, 'xMidYMid'] };
-const BOX3D = { rainbowCrown: [39, -25, 42, 60], wizard: [37, -24, 46, 60], pirate: [40, -24, 40, 60], bunny: [40, -26, 40, 60], flowers: [38, -28, 44, 60], ninja: [34, -18, 52, 60],
+const BOX3D = { rainbowCrown: [39, -25, 42, 60], cap99: [37, -25, 46, 60], wizard: [37, -24, 46, 60], pirate: [40, -24, 40, 60], bunny: [40, -26, 40, 60], flowers: [38, -28, 44, 60], ninja: [34, -18, 52, 60],
   halo: [36, -2, 48, 16, 'xMidYMid'], comet: [84, -8, 42, 42], bubbles: [-12, 40, 40, 44],
   balloon: [80, -6, 46, 100], fairy: [84, -4, 42, 44, 'xMidYMid'], icecream: [88, 58, 28, 46], magicBook: [82, 70, 40, 36], drum: [-10, 76, 46, 42] };
 const img3d = (id, [x, y, w, h, al = 'xMidYMax'], mode = 'meet') => `<image href="${SHOP3D_ART}${SHOP3D[id]}.webp" x="${+x.toFixed(1)}" y="${+y.toFixed(1)}" width="${+w.toFixed(1)}" height="${+h.toFixed(1)}" preserveAspectRatio="${mode === 'none' ? 'none' : al + ' meet'}"/>`;
@@ -2436,6 +2449,10 @@ SHOP.push(
   { id: 'bubbles', slot: 'aura', name: '泡泡特效', price: 0, limited: true, draw: () => [[10, 40, 6], [110, 30, 5], [6, 86, 4], [114, 80, 6.5], [22, 16, 3.5], [100, 8, 4]].map(([x, y, r]) => `<circle cx="${x}" cy="${y}" r="${r}" fill="#8BD3F7" opacity=".25" stroke="#8BD3F7" stroke-width="1.2"/><circle cx="${x - r * 0.35}" cy="${y - r * 0.35}" r="${(r * 0.25).toFixed(1)}" fill="#fff" opacity=".8"/>`).join('') },
   { id: 'flameShoes', slot: 'shoes', name: '火焰鞋', price: 0, limited: true, draw: feet => feet.map(([x, y]) => `<path d="M${x - 12} ${y + 2} Q${x - 20} ${y - 8} ${x - 13} ${y - 14} Q${x - 12} ${y - 6} ${x - 6} ${y - 4} Z" fill="#F6A13B"/><path d="M${x - 11} ${y + 1} Q${x - 15} ${y - 5} ${x - 11} ${y - 9} Q${x - 10} ${y - 4} ${x - 7} ${y - 3} Z" fill="#FFE07A"/>`).join('') + shoesOf(feet, '#D9473F', (x, y) => `<path d="M${x - 6} ${y - 1} Q${x} ${y - 7} ${x + 6} ${y - 1}" stroke="#FFE07A" stroke-width="2" fill="none"/>`) }
 );
+/* 九九博士帽（隱藏關卡獎勵）：平面畫面直接畫；3D 用這張圖轉成的 treasure/math_cap99.webp */
+const CAP99 = `<defs><linearGradient id="c99a" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4A5FB0"/><stop offset="1" stop-color="#1F2B5E"/></linearGradient><linearGradient id="c99b" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#6077CC"/><stop offset=".55" stop-color="#34449A"/><stop offset="1" stop-color="#232F6E"/></linearGradient><linearGradient id="c99g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFE48A"/><stop offset="1" stop-color="#E0A21E"/></linearGradient></defs><path d="M78 112 L78 178 Q160 222 242 178 L242 112 Z" fill="url(#c99a)"/><path d="M78 158 Q160 200 242 158 L242 182 Q160 226 78 182 Z" fill="url(#c99g)" stroke="#B9842A" stroke-width="2"/><text x="160" y="200" text-anchor="middle" font-size="22" font-weight="900" fill="#7A4A00" font-family="Arial, sans-serif">9×9</text><path d="M8 92 L160 154 L312 92 L312 106 L160 168 L8 106 Z" fill="#18214A"/><path d="M160 30 L312 92 L160 154 L8 92 Z" fill="url(#c99b)"/><path d="M160 40 L282 90 L160 78 Z" fill="#fff" opacity=".14"/><path d="M160 92 Q232 96 278 102 L281 176" stroke="url(#c99g)" stroke-width="7" fill="none" stroke-linecap="round"/><circle cx="160" cy="92" r="12" fill="url(#c99g)" stroke="#B9842A" stroke-width="3"/><path d="M267 172 L295 172 L301 236 Q281 246 261 236 Z" fill="url(#c99g)" stroke="#B9842A" stroke-width="3"/><path d="M271 186 L269 232 M281 186 L281 236 M291 186 L293 232" stroke="#C98510" stroke-width="3"/><path d="M52 26 l6 14 14 6 -14 6 -6 14 -6 -14 -14 -6 14 -6z" fill="#FFE48A"/>`;
+/* 隱藏關卡打贏才拿得到的專屬裝扮（商店買不到，寶箱也開不到） */
+SHOP.push({ id: 'cap99', slot: 'hat', name: '九九博士帽', price: 0, secret: '九九大混戰', draw: () => `<svg x="34" y="-10" width="52" height="42" viewBox="0 0 320 260" overflow="visible">${CAP99}</svg>` });
 SHOP.forEach(it => { SHOP_BY[it.id] = it; });
 
 /* ---------- 小工具 ---------- */
@@ -2651,6 +2668,7 @@ function mergePlayer(a, b) {
   m.owned = [...new Set([...(b.owned || []), ...(a.owned || [])])];
   m.dex = { ...(a.dex || {}) }; Object.entries(b.dex || {}).forEach(([k, v]) => { m.dex[k] = mx(m.dex[k], v); });
   m.dexDone = { ...(a.dexDone || {}), ...(b.dexDone || {}) }; m.badges = { ...(a.badges || {}), ...(b.badges || {}) };
+  m.secret = { ...(b.secret || {}) }; Object.entries(a.secret || {}).forEach(([k, r]) => { const o = m.secret[k]; m.secret[k] = o ? { best: mx(o.best, r.best), stars: mx(o.stars, r.stars), wins: mx(o.wins, r.wins) } : clone(r); });   // 隱藏關卡的最佳紀錄
   m.prog = m.prog || {};
   for (const [g, lvs] of Object.entries(a.prog || {})) {
     const mg = m.prog[g] = m.prog[g] || {};
@@ -4313,6 +4331,82 @@ function hopJump() {   // 答對後夥伴從上一顆石頭跳到這一顆
   requestAnimationFrame(() => requestAnimationFrame(() => { hm.style.left = hm.dataset.x + '%'; hm.style.top = hm.dataset.y + '%'; hm.classList.add('jump'); }));
 }
 
+/* ---------- 隱藏關卡：一個玩法的每一關都拿 3 顆星才打開（目前只有九九大混戰） ---------- */
+const SECRET = {
+  'm-99': { id: 'mix99', name: '九九大混戰', need: 20, sec: 90, bonus: 2, prize: 'cap99', coins: 80, badge: '九九大師',
+    line: '你把九九都學會了？那就來大混戰！2 到 9 全部混在一起，看你打不打得倒我！' }
+};
+const secretOf = (lv = S.level) => SECRET[lv] || null;
+const secretKey = (g, lv) => badgeKey(g, secretOf(lv).id);
+const secretRec = (p, g, lv) => (p.secret && p.secret[secretKey(g, lv)]) || { best: 0, stars: 0, wins: 0 };
+const secretLeft = (p, g, lv) => Array.from({ length: stagesOf(g, lv).length }, (_, i) => peek(p, g, lv, i).best).filter(b => b < 3).length;   // 還有幾關沒拿 3 星
+const secretOpen = (p, g, lv) => !!secretOf(lv) && stagesOf(g, lv).length > 0 && !secretLeft(p, g, lv);
+/* 地圖上那顆「？」石頭：沒打開是灰色問號，打開了發亮，打贏過寫最佳紀錄 */
+function secretGate(p, g, lv) {
+  const sc = secretOf(lv); if (!sc) return null;
+  const open = secretOpen(p, g, lv), r = secretRec(p, g, lv);
+  return { open, won: r.wins > 0, face: open ? '混' : '？', label: !open ? '隱藏關卡' : r.wins ? `最佳剩 ${r.best} 秒` : sc.name };
+}
+/* 出題：72 題抽 30 題排隊（答對 20 題就贏）；錯題複習清單裡的題目 3 倍機率，×1、×2、×5 和 2、5 的乘法表比較簡單，少出一點 */
+function secretQs(g, lv) {
+  const miss = new Set(reviewList(me(), g, 'math').filter(r => r.lv === lv).map(r => r.ref));
+  const pool = levelItems(g, lv).map(it => ({ it, w: miss.has(`${it.t}|${it.n}`) ? 3 : [1, 2, 5].includes(it.n) || [2, 5].includes(it.t) ? 0.4 : 1 }));
+  const out = [];
+  while (out.length < 30 && pool.length) {
+    let r = Math.random() * pool.reduce((s, x) => s + x.w, 0), k = 0;
+    while (k < pool.length - 1 && (r -= pool[k].w) > 0) k++;
+    out.push(pool.splice(k, 1)[0].it);
+  }
+  return out.map(it => makeQ(lv, it));
+}
+function startSecret() {
+  const p = me(), sc = secretOf(); if (!p || !sc) return;
+  if (!secretOpen(p, S.grade, S.level)) { toast(`🔒 每一關都拿到 3 顆星，就會打開隱藏關卡（還差 ${secretLeft(p, S.grade, S.level)} 關）`); return; }
+  S.mode = 'secret'; S.stage = stagesOf(S.grade, S.level).length; S.hop = null;   // 終點那一格的風景當背景
+  S.qs = secretQs(S.grade, S.level);
+  S.mix = { hp: sc.need, over: false, full: sc.sec * 10 };
+  S.timeLeft = S.mix.full;
+  beginRound(`${sc.name}。`);
+}
+function secretAfter(q) {   // 答對自動換下一題，倒數不用等小朋友按按鈕
+  setTimeout(() => { if (S.screen === 'game' && S.mode === 'secret' && S.answered && curQ() === q && !$('.party')) nextQ(); }, S.mix.hp ? 900 : 1600);
+}
+function finishSecret() {
+  const p = me(), sc = secretOf(), g = S.grade, k = secretKey(g, S.level);
+  const win = S.mix.hp <= 0, left = win ? Math.ceil(S.timeLeft / 10) : 0;
+  const stars = win ? (left >= 30 ? 3 : left >= 15 ? 2 : 1) : 0, old = secretRec(p, g, S.level);
+  p.daily = p.daily || {}; const dd = p.daily[today()] || (p.daily[today()] = { n: 0, ok: 0, score: 0, sec: 0 }); dd.score += S.roundScore;
+  const before = tierOf(p.stars), gained = Math.max(0, stars - old.stars);
+  p.stars += gained;
+  ensureWallet(p);
+  p.score = (p.score || 0) + S.roundScore;
+  const wk = weekKey();
+  if (!p.week || p.week.id !== wk) p.week = { id: wk, score: 0 };
+  p.week.score += S.roundScore;
+  const coinsGot = Math.floor(S.roundScore / COIN_RATE); p.coins += coinsGot;
+  const first = win && !old.wins;
+  p.secret = { ...(p.secret || {}), [k]: { best: Math.max(old.best, left), stars: Math.max(old.stars, stars), wins: old.wins + (win ? 1 : 0) } };
+  if (first) { p.coins += sc.coins; if (!p.owned.includes(sc.prize)) p.owned.push(sc.prize); p.badges = { ...(p.badges || {}), [k]: true }; }   // 第一次打贏：徽章、專屬裝扮、金幣
+  const after = tierOf(p.stars);
+  const R = { stars, gained, total: S.idx + 1, score: S.roundScore, coins: coinsGot, firstTry: S.firstTry, levelUp: after > before ? after : -1, passedNow: win, canSkip: false, levelClear: false, gradeBadge: false,
+              bestCombo: S.bestCombo, newCards: [], chest: null, land: currentLand().name,
+              secret: { win, left, best: Math.max(old.best, left), newBest: win && old.wins > 0 && left > old.best, first, dmg: sc.need - S.mix.hp } };
+  persist(p);
+  const bn = bossOf().name, lines = [];
+  lines.push(win ? `你打倒${bn}了！還剩${left}秒。` : `時間到！${bn}還剩${S.mix.hp}格血，再挑戰一次吧！`);
+  if (first) lines.push(`拿到${sc.badge}徽章、${SHOP_BY[sc.prize].name}，還有${sc.coins}個金幣！`);
+  else if (R.secret.newBest) lines.push('打破自己的紀錄了！');
+  if (R.levelUp >= 0) lines.push(`升級了！你現在是${TITLES[R.levelUp].name}。`);
+  R.line = lines.join('');
+  S.result = R;
+  go('result');
+  sfx(win ? 'boss' : 'stars', stars);
+  celebrate(R);
+  setTimeout(() => narrate(R.line), 1200);
+  maybeRest(document.querySelector('.party') ? 4600 : 600);
+}
+const secretLine = X => X.win ? `還剩 ${X.left} 秒就打倒${bossOf().name}！最佳紀錄：剩 ${X.best} 秒${X.newBest ? '（新紀錄！）' : ''}` : `打中${bossOf().name} ${X.dmg}／${secretOf().need} 下，差一點點！`;
+
 function buildListen(w, g) {
   const cands = poolFor(g, x => x.字 !== w.字, 12).filter(x => !homophone(x, w));
   const near = shuffle(cands.filter(x => (w.形近字 || []).includes(x.字)));
@@ -4622,12 +4716,14 @@ function routeAt(path, o, n) {
     return [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t];
   });
 }
-function routeHTML(nodes, boss) {
+const SECRET_AT = { portrait: [0.6, 0.1], landscape: [0.925, 0.14] };   // 隱藏關卡石頭在路線圖上的位置（頭目旁邊的空地）
+function routeHTML(nodes, boss, gate) {
   const stage = o => { const pts = routeAt(ROUTE_PATH[o], o, nodes.length), e = pts[nodes.length]; return `<div class="hall-stage route-stage ${o}" style="${v3dn(`route/route_${o}`)}">
     ${nodes.map((nd, i) => `<button class="rnode ${nd.cls}" style="left:${(pts[i][0] * 100).toFixed(1)}%;top:${(pts[i][1] * 100).toFixed(1)}%" data-act="stage" data-i="${i}" ${nd.open ? '' : 'disabled'} aria-label="第 ${i + 1} 關">
       ${v3i(`route/node_${nd.art}`, 'rn-art')}${nd.num ? `<b class="rn-num">${i + 1}</b>` : ''}<small class="rn-tag">${nd.label}</small></button>`).join('')}
     <button class="rnode rboss ${boss.cls}" style="left:${(e[0] * 100).toFixed(1)}%;top:${(e[1] * 100).toFixed(1)}%" data-act="boss" ${boss.open ? '' : 'disabled'} aria-label="頭目關">
-      ${boss.open && !boss.beat ? BOSS_SVG('rn-art') : v3i('route/finish_trophy', 'rn-art')}<small class="rn-tag">${boss.label}</small></button></div>`; };
+      ${boss.open && !boss.beat ? BOSS_SVG('rn-art') : v3i('route/finish_trophy', 'rn-art')}<small class="rn-tag">${boss.label}</small></button>
+    ${gate ? `<button class="rnode rsecret ${gate.open ? 'open' : 'locked'} ${gate.won ? 'won' : ''}" style="left:${SECRET_AT[o][0] * 100}%;top:${SECRET_AT[o][1] * 100}%" data-act="secret" aria-label="${esc(gate.label)}"><span class="secret-stone">${gate.face}</span><small class="rn-tag">${esc(gate.label)}</small></button>` : ''}</div>`; };
   return `<div class="hall3d route3d">${stage('portrait')}${stage('landscape')}</div>`;
 }
 function go(name) { S.screen = name; render(); screen.scrollTop = 0; }
@@ -5364,6 +5460,7 @@ function renderShop() {
     let act;
     if (owned) act = on ? `<button class="btn-small" data-act="unequip" data-id="${it.id}">脫下</button>` : `<button class="btn-small wear" data-act="equip" data-id="${it.id}">穿上</button>`;
     else if (it.limited) act = `<span class="lock">答對寶箱題才拿得到</span>`;
+    else if (it.secret) act = `<span class="lock">打贏${it.secret}才拿得到</span>`;
     else if (p.coins >= it.price) act =`<button class="btn-small buy ${S.buyArm === it.id ? 'confirm' : ''}" data-act="buy" data-id="${it.id}">${S.buyArm === it.id ? `確定用 ${it.price} 金幣買？` : `<span class="coin">金</span> ${it.price} 買`}</button>`;
     else act = `<span class="lack"><span><span class="coin">金</span> ${it.price}・還差 ${it.price - p.coins}</span></span>`;
     return { act, owned, on };
@@ -5391,8 +5488,9 @@ function renderShop() {
       <p>${trying ? `正在試穿「${trying.name}」` : '點商品圖片可以放大、先試穿'}</p>
       <p>每得 ${COIN_RATE} 分就有 1 個金幣。裝扮只是好看，不會加分喔！</p></div></div>
     ${tierGearSec(p)}
-    ${SLOTS.map(([slot, label]) => `<div class="shop-sec"><h3>${label}</h3><div class="shop-grid">${SHOP.filter(it => it.slot === slot && !it.limited).map(card).join('')}</div></div>`).join('')}
+    ${SLOTS.map(([slot, label]) => `<div class="shop-sec"><h3>${label}</h3><div class="shop-grid">${SHOP.filter(it => it.slot === slot && !it.limited && !it.secret).map(card).join('')}</div></div>`).join('')}
     <div class="shop-sec limited"><h3>寶箱限定</h3><div class="shop-grid">${SHOP.filter(it => it.limited).map(card).join('')}</div></div>
+    <div class="shop-sec"><h3>隱藏關卡獎勵</h3><div class="shop-grid">${SHOP.filter(it => it.secret).map(card).join('')}</div></div>
   </section>${zoom}`;
 }
 
@@ -6305,7 +6403,7 @@ function renderMap() {
     });
     const bossOpen = allPassed(p, g, lv), beat = hasBadge(p, g, lv);
     screen.innerHTML = `<section class="stack v3-room"><p class="map-tip">${mapTip(p, g, lv)}</p>${routeHTML(nodes,
-      { open: bossOpen, beat, cls: beat ? 'won' : bossOpen ? 'boss-open' : 'locked', label: beat ? `打敗${bossOf(lv).name}！` : bossOpen ? `頭目：${bossOf(lv).name}` : levelDone(p, g, lv) ? '破關了！' : '終點：頭目關' })}</section>`;
+      { open: bossOpen, beat, cls: beat ? 'won' : bossOpen ? 'boss-open' : 'locked', label: beat ? `打敗${bossOf(lv).name}！` : bossOpen ? `頭目：${bossOf(lv).name}` : levelDone(p, g, lv) ? '破關了！' : '終點：頭目關' }, secretGate(p, g, lv))}</section>`;
     return;
   }
   const W = MAP_W, STEP = BAND, OFF = [0, 80, 0, -80];
@@ -6333,6 +6431,7 @@ function renderMap() {
       </svg>
       ${nodes}
       <button class="node trophy ${beat ? 'won' : ''} ${bossOpen && !beat ? 'boss-open' : ''}" style="left:${end.x - 44}px;top:${end.y - 44}px" data-act="boss" ${bossOpen ? '' : 'disabled'} aria-label="頭目關">${bossOpen ? BOSS_SVG() : ICONS.trophy}<small>${beat ? `打敗${bossOf(lv).name}！` : bossOpen ? `頭目關：${bossOf(lv).name}` : won ? '破關了！' : '終點：頭目關'}</small></button>
+      ${(gt => gt ? `<button class="node secret ${gt.open ? 'open' : 'locked'} ${gt.won ? 'won' : ''}" style="left:${end.x + 60}px;top:${end.y - 32}px" data-act="secret" aria-label="${esc(gt.label)}"><span class="secret-stone">${gt.face}</span><small>${esc(gt.label)}</small></button>` : '')(secretGate(p, g, lv))}
     </div>
   </section>`;
   if (firstOpen > 1) { const el = screen.querySelector(`[data-i="${firstOpen}"]`); el && el.scrollIntoView({ block: 'center' }); }
@@ -6353,7 +6452,7 @@ const slipsOf = q => Math.max(0, S.tried.length - graceOf(q));
 function renderGame() {
   const q = S.qs[S.idx], p = me();
   const lv = levelInfo(S.level);
-  setBar(S.mode === 'review' ? (S.subject && S.subject !== 'zh' ? '錯題複習' : '錯字複習') : S.mode === 'assign' ? '指定練習' : S.mode === 'boss' ? `${lv.name}・頭目關` : S.level === 'e-unit' ? `${bookName(S.grade)}・${unitName(S.grade)} ${S.stage + 1}` : S.qs[S.idx] && S.qs[S.idx].type === 'kz-match' ? `成語配對・${S.qs[S.idx].label}` : kzLessonBar() ? kzLessonBar() : String(S.level).startsWith('kz:') ? `${lv.name.length > 12 ? `安親班${(kzPaper(S.level) || {}).科目 || ''}${lv.name.endsWith('易錯題') ? '・易錯題' : ''}` : lv.name}${stagesOf(S.grade, S.level).length > 1 ? `・${S.stage + 1}／${stagesOf(S.grade, S.level).length} 段` : ''}` : `${lv.name}・第 ${S.stage + 1} 關`);
+  setBar(S.mode === 'review' ? (S.subject && S.subject !== 'zh' ? '錯題複習' : '錯字複習') : S.mode === 'assign' ? '指定練習' : S.mode === 'secret' ? secretOf().name : S.mode === 'boss' ? `${lv.name}・頭目關` : S.level === 'e-unit' ? `${bookName(S.grade)}・${unitName(S.grade)} ${S.stage + 1}` : S.qs[S.idx] && S.qs[S.idx].type === 'kz-match' ? `成語配對・${S.qs[S.idx].label}` : kzLessonBar() ? kzLessonBar() : String(S.level).startsWith('kz:') ? `${lv.name.length > 12 ? `安親班${(kzPaper(S.level) || {}).科目 || ''}${lv.name.endsWith('易錯題') ? '・易錯題' : ''}` : lv.name}${stagesOf(S.grade, S.level).length > 1 ? `・${S.stage + 1}／${stagesOf(S.grade, S.level).length} 段` : ''}` : `${lv.name}・第 ${S.stage + 1} 關`);
   const st = i => S.tried.includes(i) ? (q.kzWrong ? 'tried kz-picked' : 'tried') : (S.answered && isRight(q, i) ? (S.timedOut || q.kzWrong ? 'reveal' : 'right') : '');   // 安親班答錯：小朋友選的那個標紅框 ✗
   const dis = i => (S.tried.includes(i) || S.answered) ? 'disabled' : '';
   let body = '';
@@ -6430,12 +6529,12 @@ function renderGame() {
   screen.innerHTML = `<section class="stack game ${S.answered ? 'answered' : ''} ${q.type === 'vert' ? 'vert-game' : ''} ${hopOn() ? (q.phase === 'boss' ? 'hop-game hop-fight' : 'hop-game') : ''} ${padOn(q) ? 'pad-game' : ''} ${mult > 1 ? 'fire' : ''} ${chestOn ? 'golden' : ''} ${q.type === 'kz' ? `kz-game ${S.answered ? 'kz-done' : ''}` : ''}">
     <div class="hud">
       ${timerHTML}
-      <div class="hud-mid">${S.mode === 'boss' ? bossHUD() : hopBossNow() ? bossHUD(S.hop.hp, 9, S.hop.hearts, 3) : dotsHTML()}<span style="display:flex;gap:6px;flex-wrap:wrap;justify-content:center"><span class="place">${currentLand().name}</span>${q.diff === -1 ? '<span class="diff-chip">放慢模式：時間多一點</span>' : q.diff === 1 ? '<span class="diff-chip hard">挑戰模式</span>' : ''}${chestOn ? `<span class="chest-tag">${ICONS.chest}寶箱題</span>` : ''}<span class="combo ${S.combo >= 2 ? 'on' : ''}" id="combo">${ICONS.flame}連擊 ${S.combo}${mult > 1 ? `・×${mult}` : ''}</span></span></div>
+      <div class="hud-mid">${S.mode === 'boss' ? bossHUD() : S.mode === 'secret' ? bossHUD(S.mix.hp, secretOf().need, 0, 0) : hopBossNow() ? bossHUD(S.hop.hp, 9, S.hop.hearts, 3) : dotsHTML()}<span style="display:flex;gap:6px;flex-wrap:wrap;justify-content:center"><span class="place">${currentLand().name}</span>${q.diff === -1 ? '<span class="diff-chip">放慢模式：時間多一點</span>' : q.diff === 1 ? '<span class="diff-chip hard">挑戰模式</span>' : ''}${chestOn ? `<span class="chest-tag">${ICONS.chest}寶箱題</span>` : ''}<span class="combo ${S.combo >= 2 ? 'on' : ''}" id="combo">${ICONS.flame}連擊 ${S.combo}${mult > 1 ? `・×${mult}` : ''}</span></span></div>
       <div class="score" id="score"><small>得分</small><b>${S.roundScore}</b></div>
     </div>
     ${body}
     <div class="coach">${petOf(p)}<div class="bubble" id="bubble">${esc(hint)}</div>
-      ${S.answered ? `<button class="btn-next" data-act="next">${S.mode === 'boss' ? (S.bossHP <= 0 || S.hearts <= 0 || S.idx + 1 >= S.qs.length ? '看結果' : '下一題') : hopOn() && S.hop.lost ? '看結果' : S.idx + 1 < S.qs.length ? '下一題' : '看成績'}</button>` : ''}</div>
+      ${S.answered ? `<button class="btn-next" data-act="next">${S.mode === 'boss' ? (S.bossHP <= 0 || S.hearts <= 0 || S.idx + 1 >= S.qs.length ? '看結果' : '下一題') : S.mode === 'secret' ? (S.mix.hp <= 0 || S.mix.over || S.idx + 1 >= S.qs.length ? '看結果' : '下一題') : hopOn() && S.hop.lost ? '看結果' : S.idx + 1 < S.qs.length ? '下一題' : '看成績'}</button>` : ''}</div>
   </section>`;
   if (!S.answered && q.type === 'whack') setTimeout(startWhack, 0);
   if (S.answered && q.type === 'kz') kzFit();
@@ -6458,9 +6557,12 @@ function renderResult() {
   const R = S.result, p = me();
   setBar('');
   const bn = bossOf().name;
-  const head = R.boss ? (R.boss.win ? `打敗${bn}！` : '再挑戰一次！') : S.mode === 'review' ? '複習完成！' : R.passedNow ? '過關了！' : '差一點點！';
+  const head = R.secret ? (R.secret.win ? `${secretOf().name}勝利！` : '時間到！再挑戰一次') : R.boss ? (R.boss.win ? `打敗${bn}！` : '再挑戰一次！') : S.mode === 'review' ? '複習完成！' : R.passedNow ? '過關了！' : '差一點點！';
   const buttons = [];
-  if (R.boss) {
+  if (R.secret) {
+    buttons.push(`<button class="btn-big ${R.secret.win ? 'alt' : ''}" data-act="secret">${R.secret.win ? '再玩一次' : '再挑戰'}</button>`);
+    buttons.push(`<button class="btn-big ${R.secret.win ? '' : 'alt'}" data-act="toMap">回地圖</button>`);
+  } else if (R.boss) {
     if (!R.boss.win) buttons.push(`<button class="btn-big" data-act="boss">再挑戰</button>`);
     buttons.push(`<button class="btn-big ${R.boss.win ? '' : 'alt'}" data-act="toMap">回地圖</button>`);
   } else if (S.mode === 'review') {
@@ -6481,11 +6583,12 @@ function renderResult() {
     ${petOf(p, 'happy')}
     <div class="big-stars">${[1, 2, 3].map(i => `<span class="${i <= R.stars ? 'on' : ''}">${STAR}</span>`).join('')}</div>
     <h2>${head}</h2>
-    <p>${R.boss ? (R.boss.win ? `剩下 ${R.boss.hearts} 顆愛心就打贏了！` : `${bn}還剩一點血，下次一定可以！`) : `${R.total} ${R.match ? '對裡，一次就配對成功' : '題裡，一次就答對'} ${R.firstTry} ${R.match ? '對' : '題'}${S.mode === 'stage' && !R.passedNow ? `，拿到 ${PASS} 顆星就能過關` : ''}`}</p>
+    <p>${R.secret ? secretLine(R.secret) : R.boss ? (R.boss.win ? `剩下 ${R.boss.hearts} 顆愛心就打贏了！` : `${bn}還剩一點血，下次一定可以！`) : `${R.total} ${R.match ? '對裡，一次就配對成功' : '題裡，一次就答對'} ${R.firstTry} ${R.match ? '對' : '題'}${S.mode === 'stage' && !R.passedNow ? `，拿到 ${PASS} 顆星就能過關` : ''}`}</p>
     ${R.badgeNew ? `<div class="celebrate green">${v3d() ? v3i('rewards/badge_hero', 'cele-ic') : ''}拿到「${levelInfo(S.level).name}勇者徽章」＋${BOSS_COINS} 金幣！</div>` : ''}
+    ${R.secret && R.secret.first ? `<div class="celebrate green">${v3d() ? v3i('rewards/badge_hero', 'cele-ic') : ''}拿到「${secretOf().badge}」徽章、專屬裝扮「${SHOP_BY[secretOf().prize].name}」＋${secretOf().coins} 金幣！</div>` : ''}
     <p class="score-line">這回合得分 <b>${R.score}</b> 分・總分 ${fmtNum(p.score)} 分</p>
     <p class="score-line"><span class="coin">金</span> ＋${R.coins || 0} 金幣（共 ${fmtNum(p.coins)} 個）<span class="nw">・<button class="btn-small" data-act="shop" style="min-height:36px;padding:2px 14px">去商店</button></span></p>
-    <p class="gain">${R.gained ? `＋${R.gained} 顆新星星` : S.mode === 'stage' || R.boss ? (R.stars ? '這關最好的星星已經拿過了' : '這次沒有拿到星星') : '複習不加星星'}，總共 ${p.stars} 顆${R.bestCombo >= 3 ? `・最高連擊 ${R.bestCombo}` : ''}${R.newCards && R.newCards.length ? `・新字卡 ${R.newCards.length} 張` : ''}</p>
+    <p class="gain">${R.gained ? `＋${R.gained} 顆新星星` : S.mode === 'stage' || R.boss || R.secret ? (R.stars ? '這關最好的星星已經拿過了' : '這次沒有拿到星星') : '複習不加星星'}，總共 ${p.stars} 顆${R.bestCombo >= 3 ? `・最高連擊 ${R.bestCombo}` : ''}${R.newCards && R.newCards.length ? `・新字卡 ${R.newCards.length} 張` : ''}</p>
     ${R.chest ? `<div class="celebrate">${v3d() ? v3i('rewards/chest_open', 'cele-ic') : ''}打開寶箱：<b>${R.chest === 'coins' ? '30 金幣' : `「${SHOP_BY[R.chest].name}」`}</b>${R.chest === 'coins' ? '' : '（到商店穿上）'}</div>` : ''}
     ${R.dexPage ? `<div class="celebrate green">${CN_NUM[R.dexPage]}年級國字圖鑑集滿了！送你 ${DEX_REWARD} 金幣</div>` : ''}
     ${R.levelUp >= 0 ? `<div class="celebrate">${v3d() ? v3i('rewards/levelup_sparkles', 'cele-ic') : ''}升級了！你現在是<b>「${TITLES[R.levelUp].name}」</b></div>` : ''}
@@ -6572,6 +6675,7 @@ function beginRound(intro) {
   if (at) { askQ(S.qs[S.idx], `接著從第${at + 1}題寫。`); return; }
   if (mr) { askQ(S.qs[0], '接著配。'); return; }
   if (S.mode === 'boss') showBossIntro(() => askQ(S.qs[0]));
+  else if (S.mode === 'secret') { const sc = secretOf(); showBossIntro(() => askQ(S.qs[0]), { title: `隱藏關卡・${sc.name}`, tag: `${bossOf().name}又出現了！`, line: sc.line, rule: `${sc.sec} 秒內答對 ${sc.need} 題就贏，每答對一題多 ${sc.bonus} 秒。答錯可以再算一次。`, go: '開始！' }); }
   else askQ(S.qs[0], intro);
 }
 
@@ -6640,11 +6744,11 @@ function startBoss() {
   S.bossHP = BOSS_HP; S.hearts = HEARTS;
   beginRound('頭目關。');
 }
-function showBossIntro(done) {
-  const b = bossOf(), line = b.line;
+function showBossIntro(done, o = {}) {   // o：隱藏關卡換標題、台詞、規則
+  const b = bossOf(), line = o.line || b.line;
   const ov = document.createElement('div');
   ov.className = 'party guardian'; ov.setAttribute('role', 'dialog'); ov.setAttribute('aria-label', b.name);
-  ov.innerHTML = `<div class="party-wrap"><div class="party-card">${BOSS_SVG('big in')}<h2>頭目關・${b.name}</h2>${b.art ? `<p class="boss-tag">${levelInfo(S.level).name}的頭目</p>` : ''}<p>${esc(line)}</p><p style="font-size:max(var(--fs-min), 1rem * var(--fs-s));color:var(--muted)">第一次就答對才會攻擊（連續答對 5 題，傷害加倍）；同一題錯兩次或時間到，會掉一顆愛心。你有 ${HEARTS} 顆愛心！</p><button class="btn-big go" style="margin-top:12px">開戰！</button></div></div>`;
+  ov.innerHTML = `<div class="party-wrap"><div class="party-card">${BOSS_SVG('big in')}<h2>${o.title || `頭目關・${b.name}`}</h2>${o.tag ? `<p class="boss-tag">${esc(o.tag)}</p>` : b.art ? `<p class="boss-tag">${levelInfo(S.level).name}的頭目</p>` : ''}<p>${esc(line)}</p><p style="font-size:max(var(--fs-min), 1rem * var(--fs-s));color:var(--muted)">${o.rule || `第一次就答對才會攻擊（連續答對 5 題，傷害加倍）；同一題錯兩次或時間到，會掉一顆愛心。你有 ${HEARTS} 顆愛心！`}</p><button class="btn-big go" style="margin-top:12px">${o.go || '開戰！'}</button></div></div>`;
   document.body.appendChild(ov);
   narrate(line);
   let closed = false;
@@ -6655,7 +6759,7 @@ function bossHUD(hp = S.bossHP, maxHp = BOSS_HP, hearts = S.hearts, maxHearts = 
   const b = bossOf();
   return `<div class="boss-hud"><span class="boss-mini${b.art ? ' bzm' : ''}" id="bossMini">${BOSS_SVG()}</span>
     <span class="boss-bar"><b class="boss-name">${b.name}</b><span class="hp" role="meter" aria-label="${b.name}剩下 ${Math.max(0, hp)} 格血"><i style="width:${Math.max(0, hp) / maxHp * 100}%"></i></span>
-    <span class="hearts" aria-label="你還有 ${hearts} 顆愛心">${Array.from({ length: maxHearts }, (_, i) => heartSVG(i < hearts)).join('')}</span></span></div>`;   // 名字、血條、愛心疊成一欄，手機的窄 HUD 才放得下
+    ${maxHearts ? `<span class="hearts" aria-label="你還有 ${hearts} 顆愛心">${Array.from({ length: maxHearts }, (_, i) => heartSVG(i < hearts)).join('')}</span>` : ''}</span></div>`;   // 名字、血條、愛心疊成一欄，手機的窄 HUD 才放得下
 }
 /* 新頭目的動畫：關掉登場視窗時在血條旁邊彈出來；被打中閃白＋抖＋縮；被打倒轉圈縮小淡出、噴星星 */
 function bossEnter() { const z = $('#bossMini .bz'); if (z) { z.classList.remove('in'); void z.offsetWidth; z.classList.add('in'); } }
@@ -6735,6 +6839,7 @@ function updateTimer() {
 function timeUp() {
   const q = S.qs[S.idx];
   if (!q || S.answered) return;
+  if (S.mode === 'secret') { S.answered = true; S.timedOut = true; S.mix.over = true; S.combo = 0; S.bubble = `時間到！${bossOf().name}還剩 ${S.mix.hp} 格血`; sfx('wrong'); render(); owlAct('think'); narrate(S.bubble); return; }
   S.answered = true; S.timedOut = true; S.combo = 0; q.chestLost = true;
   if (!slipsOf(q)) addReview(q);
   recordOutcome(q, false);
@@ -6758,11 +6863,12 @@ function floatPoints(el, n) {
 const CONFETTI = ['#F6B12F', '#2F7DBF', '#3C9A66', '#D9665F', '#8B6CC4', '#FF9EC7'];
 function celebrate(R) {
   /* 沒過關（或沒打贏頭目）就不放彩帶，寶箱、升級等好消息改在成績畫面上列出來，訊息才不會矛盾 */
-  if ((S.mode === 'stage' || R.boss) && !R.passedNow) return;
-  const big = R.boss && R.boss.win ? `打敗${bossOf().name}！` : R.gradeBadge ? `${CN_NUM[S.grade]}年級破關！` : R.levelClear ? '關卡全破！' : (S.mode === 'stage' && R.passedNow) ? '過關！' : R.levelUp >= 0 ? '升級了！' : R.dexPage ? '圖鑑集滿！' : R.chest ? '打開寶箱！' : '';
+  if ((S.mode === 'stage' || R.boss || R.secret) && !R.passedNow) return;
+  const big = R.secret ? `${secretOf().name}勝利！` : R.boss && R.boss.win ? `打敗${bossOf().name}！` : R.gradeBadge ? `${CN_NUM[S.grade]}年級破關！` : R.levelClear ? '關卡全破！' : (S.mode === 'stage' && R.passedNow) ? '過關！' : R.levelUp >= 0 ? '升級了！' : R.dexPage ? '圖鑑集滿！' : R.chest ? '打開寶箱！' : '';
   if (!big) return;
   const subs = [];
   if (R.badgeNew) subs.push(`拿到「${levelInfo(S.level).name}勇者徽章」＋${BOSS_COINS} 金幣`);
+  if (R.secret) subs.push(R.secret.first ? `拿到「${secretOf().badge}」徽章和「${SHOP_BY[secretOf().prize].name}」` : `還剩 ${R.secret.left} 秒${R.secret.newBest ? '・新紀錄！' : ''}`);
   if (S.mode === 'stage' && R.passedNow) subs.push(S.level === 'e-unit' ? `${bookName(S.grade)}・${unitName(S.grade)} ${S.stage + 1} 完成` : String(S.level).startsWith('kz:') ? `「${levelInfo(S.level).name}」完成` : `${levelInfo(S.level).name}・第 ${S.stage + 1} 關完成`);
   if (R.levelUp >= 0) subs.push(`你現在是「${TITLES[R.levelUp].name}」`);
   if (R.chest) subs.push(R.chest === 'coins' ? '寶箱：30 金幣' : `寶箱：限定裝扮「${SHOP_BY[R.chest].name}」`);
@@ -6843,6 +6949,9 @@ function succeed(el, i) {
     } else if (hopBossNow()) {   // 九九跳石頭的關內頭目：答對就攻擊（答錯已經扣過愛心）
       S.hop.hp = Math.max(0, S.hop.hp - 1); const bn = bossOf().name;
       extra += S.hop.hp ? `・攻擊！${bn} −1` : `・打倒${bn}了！`; extraSay += S.hop.hp ? '攻擊成功！' : `你打倒${bn}了！`;
+    } else if (S.mode === 'secret') {   // 九九大混戰：答對就攻擊，倒數多加幾秒（最多加回開始的秒數）
+      const sc = secretOf(), bn = bossOf().name; S.mix.hp = Math.max(0, S.mix.hp - 1); S.timeLeft = Math.min(S.mix.full, S.timeLeft + sc.bonus * 10);
+      extra += S.mix.hp ? `・攻擊！＋${sc.bonus} 秒` : `・打倒${bn}了！`; extraSay += S.mix.hp ? '' : `你打倒${bn}了！`;
     }
     if (q.golden && first) {
       const it = openChest(p); S.chestGot = it ? it.id : 'coins';
@@ -6862,6 +6971,7 @@ function succeed(el, i) {
     if (q.golden && first) burst(screen.querySelector('.coach .pet'));
     if (S.mode === 'boss' && first) bossHit(S.bossHP <= 0);   // 被打中、被打倒
     if (hopBossNow()) bossHit(S.hop.hp <= 0);
+    if (S.mode === 'secret') { bossHit(S.mix.hp <= 0); secretAfter(q); }
     hopAfter(q);
     setTimeout(() => narrate(`${praise}${extraSay}${q.after}`), 380);
   }
@@ -6959,6 +7069,7 @@ function startWhack() {
 }
 
 function finishRound() {
+  if (S.mode === 'secret') return finishSecret();
   const mq = S.qs[0] && S.qs[0].type === 'kz-match' ? S.qs[0] : null;   // 成語配對：一關 6 對，星星照「一次就配對成功」的比例
   const p = me(), boss = S.mode === 'boss', total = boss ? Math.min(S.qs.length, S.idx + 1) : mq ? mq.pairs.length : S.qs.length;
   const stars = boss ? (S.bossHP <= 0 ? (S.hearts >= 4 ? 3 : S.hearts >= 3 ? 2 : 1) : 0) : hopOn() && S.hop.lost ? Math.min(1, starsFor(S.firstTry, total)) : starsFor(S.firstTry, total);   // 跳石頭愛心用完就不算過關
@@ -7025,6 +7136,7 @@ function finishRound() {
 function nextQ() {
   if (S.mode === 'boss' && (S.bossHP <= 0 || S.hearts <= 0)) return finishRound();
   if (hopOn() && S.hop.lost) return finishRound();
+  if (S.mode === 'secret' && (S.mix.hp <= 0 || S.mix.over)) return finishRound();
   S.idx++; S.tried = []; S.answered = false; S.bubble = ''; S.timedOut = false;
   if (S.idx >= S.qs.length) return finishRound();
   /* 安親班一段 20～30 題：每答完一題就記住寫到第幾題，中途離開下次從這一題接著寫 */
@@ -7037,7 +7149,7 @@ function nextQ() {
   render();
   startTimer(false);
   const nq = S.qs[S.idx];
-  if (hopOn() && nq.phase === 'boss' && S.qs[S.idx - 1].phase === 'hop') { showBossIntro(() => askQ(nq)); return; }   // 九顆石頭走完：頭目出場
+  if (hopOn() && nq.phase === 'boss' && S.qs[S.idx - 1].phase === 'hop') { showBossIntro(() => askQ(nq), { rule: '答對一題就攻擊一下；答錯會掉一顆愛心（同一題只掉一次）。你有 3 顆愛心！' }); return; }   // 九顆石頭走完：頭目出場
   askQ(nq, nq.golden ? '寶箱題！' : '');
 }
 
@@ -7163,6 +7275,7 @@ document.addEventListener('click', e => {
   else if (act === 'next') { sfx('tap'); nextQ(); }
   else if (act === 'again') { sfx('go'); startStage(S.stage); }
   else if (act === 'boss') { sfx('go'); startBoss(); }
+  else if (act === 'secret') { sfx('go'); startSecret(); }
   else if (act === 'assign') { sfx('go'); startAssign(); }
   else if (act === 'duel-setup') { sfx('tap'); if (S.screen !== 'duel') S.duelBack = S.screen; S.duel = null; go('duelSetup'); narrate('雙人對戰！選好兩個人，聽到題目誰先點對誰得分。'); }
   else if (act === 'duel-mode') { sfx('tap'); S.duelPick.mode = b.dataset.m; render(); narrate(b.dataset.m === 'remote' ? '各用各的平板！一個人開新房間，另一個人輸入一樣的房間號碼。' : '兩個人一起用這台平板比賽。'); }
