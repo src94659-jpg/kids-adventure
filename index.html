@@ -4074,7 +4074,7 @@ function mathQ(lv, a, b, ...rest) {
   return { type: 'math', show: `${a} ${sym[0]} ${b} ＝ ？`, answer: String(ans), options: numOpts(ans, near), say: `${a}${sym[1]}${b}，等於多少？`, after: `${a}${sym[1]}${b}，等於${ans}` };
 }
 function buildMath(lv, item) {
-  if (lv === 'm-99') { const q = mul99Q(item.t, item.n); q.mref = `${item.t}|${item.n}`; return q; }   // 九九照順序，不抽亂數
+  if (lv === 'm-99') { const q = mul99Q(item.t, item.n); q.mref = `${item.t}|${item.n}`; return q; }   // 九九就考這張表的這一題，不另外抽亂數
   const d = item.d !== undefined ? item.d : Math.min(MATH_STAGES - 1, Math.floor((item.k || 0) / STAGE_SIZE));
   for (let t = 0; ; t++) {   // 偶爾抽到算不出來的數字（例如分數相減等於 0）就重抽
     const args = mathArgs(lv, item.年級, d), q = mathQ(lv, ...args);
@@ -4290,13 +4290,15 @@ document.addEventListener('keydown', e => {
   else if (e.key === 'Enter') { e.preventDefault(); padOk(); }
 });
 
-/* ---------- 九九跳石頭的關卡：前 9 題照順序跳石頭，後 9 題同一張表打亂、打頭目（3 顆愛心，同一題只扣一次） ---------- */
+/* ---------- 九九跳石頭的關卡：前 9 題打亂跳石頭，後 9 題同一張表再打亂一次、打頭目（3 顆愛心，同一題只扣一次） ---------- */
 const hopOn = () => S.level === 'm-99' && S.mode === 'stage' && !!S.hop;
 const hopBossNow = () => hopOn() && !!curQ() && curQ().phase === 'boss';
 const hopWait = q => hopOn() && q.phase === 'hop' && !q.open && !S.answered;
 function hopStage(items) {
-  const hop = items.slice().sort((x, y) => x.n - y.n).map(it => Object.assign(makeQ('m-99', it), { phase: 'hop', noTimer: true }));
-  const boss = shuffle(items).map(it => Object.assign(makeQ('m-99', it), { phase: 'boss', noTimer: true }));
+  const hop = shuffle(items).map(it => Object.assign(makeQ('m-99', it), { phase: 'hop', noTimer: true }));
+  let order = shuffle(items);
+  if (order[0].n === hop[hop.length - 1].k) order.push(order.shift());   // 打頭目的第一題不要跟最後一顆石頭一樣
+  const boss = order.map(it => Object.assign(makeQ('m-99', it), { phase: 'boss', noTimer: true }));
   S.hop = { hp: 9, hearts: 3, lost: false };
   return [...hop, ...boss];
 }
@@ -4317,14 +4319,14 @@ function hopBody(q) {
   if (q.phase === 'boss') return `<div class="hop-boss">${BOSS_SVG()}</div><div class="math-q">${S.answered ? esc(q.show.replace('？', q.answer)) : esc(q.show).replace('？', padSlot(q))}</div>${S.answered ? '' : padHTML()}`;
   const at = S.idx, done = S.answered, t = q.t;
   const stones = Array.from({ length: 9 }, (_, i) => {
-    const k = i + 1, ok = i < at || (done && i === at), lit = i === at && !done;
+    const k = S.qs[i].k, ok = i < at || (done && i === at), lit = i === at && !done;
     return `<button class="stone ${ok ? 'ok' : lit ? 'lit' : ''}" style="left:${HOP_POS(i)[0]}%;top:${HOP_POS(i)[1]}%" ${lit ? 'data-act="hop-open"' : 'tabindex="-1"'} aria-label="${t} 乘 ${k}${ok ? `，${t * k}` : ''}">${ok ? t * k : `${t}×${k}`}</button>`;
   }).join('');
   const P = i => i < 0 ? [2.5, hopNarrow() ? 28 : 50] : HOP_POS(i), from = P(at - 1), to = P(done ? at : at - 1);
   return `<div class="hop-river ${hopNarrow() ? 'narrow' : ''}"><span class="hop-bank"></span><span class="hop-flag">${t} 的九九</span>${stones}
       <span class="hop-me" style="left:${from[0]}%;top:${from[1]}%" data-x="${to[0]}" data-y="${to[1]}">${petOf(me())}</span></div>
     ${q.open || done ? `<div class="math-q">${done ? esc(q.show.replace('？', q.answer)) : esc(q.show).replace('？', padSlot(q))}</div>${done ? '' : padHTML()}`
-      : `<button class="btn-big go hop-go" data-act="hop-open">點發亮的石頭：${t} × ${at + 1}</button>`}`;
+      : `<button class="btn-big go hop-go" data-act="hop-open">點發亮的石頭：${t} × ${q.k}</button>`}`;
 }
 function hopJump() {   // 答對後夥伴從上一顆石頭跳到這一顆
   const hm = screen.querySelector('.hop-me'); if (!hm || hm.style.left === hm.dataset.x + '%') return;
@@ -6622,7 +6624,7 @@ function startStage(i) {
   const items = stagesOf(S.grade, S.level)[i];
   const kz = String(S.level).startsWith('kz:');
   S.qs = kz ? (kzIsMatch(kzPaper(S.level)) ? [kzMatchStart(i)] : items.map(kzQ))   // 安親班照考卷的順序出；成語配對一關是一個盤面
-    : S.level === 'm-99' ? hopStage(items)   // 九九跳石頭：照順序跳石頭，再打亂打頭目
+    : S.level === 'm-99' ? hopStage(items)   // 九九跳石頭：打亂跳石頭，再打亂打頭目
     : spreadOut(S.level === 'e-unit' ? unitQuestions(items) : shuffle(items).map(it => makeQ(S.level, it)));   // 每個字只出一題；選項差不多的題目不要連著出
   if (S.level.startsWith('m-') && S.level !== 'm-99') { const seen = new Set(); S.qs = S.qs.map((q, k) => { for (let t = 0; t < 12 && seen.has(q.ref); t++) q = makeQ(S.level, items[k]); seen.add(q.ref); return q; }); }   // 同一關的算式不重複
   if (S.qs.length >= 4 && Math.random() < CHEST_RATE) S.qs[2 + Math.floor(Math.random() * (S.qs.length - 2))].golden = true;   // 有時會有一題寶箱題
