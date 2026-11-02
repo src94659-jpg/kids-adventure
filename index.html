@@ -1119,23 +1119,24 @@ body.lock-cleared .node.done::after, body.lock-cleared .rnode.done::after, body.
 .hop-river.narrow .hop-flag { top: auto; bottom: 6px; }
 .hop-river.narrow .stone { width: 15.5%; font-size: max(.85rem, min(1.25rem, 4.4vw)); }
 .hop-river.narrow .hop-me { width: 12%; }
+@media (max-aspect-ratio: 1/1) and (max-height: 720px) { .hop-river.narrow { height: min(23vh, 56vw); } .hop-game .nk { height: clamp(40px, 6vh, 68px); } .hop-game .hop-boss { width: min(150px, 14vh); } .hop-river.narrow .hop-flag { display: none; } }   /* 小手機直放：河、按鍵、頭目都矮一點，一個畫面放得下；「幾的九九」牌子會蓋到石頭，先收起來（題目就看得出來） */
 .hop-me { position: absolute; z-index: 2; width: min(9%, 64px); transform: translate(-50%, -112%); transition: left .6s ease-in-out, top .6s ease-in-out; pointer-events: none; }
 .hop-me .pet { width: 100%; }
 .hop-me.jump > * { animation: hopUp .6s ease-out; }
 @keyframes hopUp { 45% { transform: translateY(-55%); } }
-.hop-go { min-height: 54px; }
 .hop-boss { width: min(150px, 17vh); flex: none; }
 .hop-boss .bz, .hop-boss img.boss { width: 100%; height: auto; display: block; }
 .stack.hop-game { gap: min(12px, 1.4vh); }
+@media (min-aspect-ratio: 1/1) and (min-height: 451px) and (max-height: 820px) { .hop-game .numpad { grid-template-columns: repeat(6, minmax(0, 1fr)); width: min(100%, 560px); } }   /* 電腦、平板橫放比較矮：鍵盤排兩列，河和題目才放得下 */
 @media (max-height: 450px) and (orientation: landscape) {
   .numpad { grid-template-columns: repeat(6, minmax(0, 1fr)); width: min(100%, 500px); gap: 6px; }
   .nk { height: 40px; border-radius: 14px; }
   .vgrid { --cs: min(40px, 8.4vh); }
   .vbar li { line-height: 1.35; }
-  .hop-river { height: min(28vh, 106px); }
+  .hop-river { height: min(26vh, 106px); }
   .stone { width: 7.6%; }
   .hop-me { width: 7%; }
-  .hop-boss { width: 80px; }
+  .hop-boss { width: 56px; }   /* 手機橫放：頭目小一點，鍵盤第二排才不會被切掉 */
   .vert-game:not(.answered) .coach { display: none; }   /* 小幫手固定在左下角會蓋到直式格子；答錯的提示在格子旁邊 */
 }
 .r-setup .duel-col { width: 100%; max-width: 520px; }
@@ -1959,7 +1960,7 @@ const MATH_LEVELS = [
   { id: 'm-vert',  sub: 'math', gs: [2, 3, 4, 5, 6], name: '直式計算', desc: '一位一位算', say: '直式計算。從個位開始，一位一位算，算好寫進格子。', noDuel: true },
   { id: 'm-cmp',   sub: 'math', gs: [1, 2], name: '比大小', desc: '大於、小於、等於', say: '比大小。選出大於、小於，還是等於。' },
   { id: 'm-mul',   sub: 'math', gs: [2, 3, 4, 5, 6], name: '乘法', desc: '九九乘法', say: '乘法。想想九九乘法，算出答案。' },
-  { id: 'm-99',    sub: 'math', gs: [2, 3], name: '九九跳石頭', desc: '一關一張九九表', say: '九九跳石頭。點發亮的石頭，算對了就跳過去！', noDuel: true },
+  { id: 'm-99',    sub: 'math', gs: [2, 3], name: '九九跳石頭', desc: '一關一張九九表', say: '九九跳石頭。用數字鍵盤算答案，算對了就跳到下一顆石頭！', noDuel: true },
   { id: 'm-div',   sub: 'math', gs: [3, 4, 5, 6], name: '除法', desc: '平分成幾份', say: '除法。算算看，平分以後是多少？' },
   { id: 'm-ops',   sub: 'math', gs: [4, 5, 6], name: '四則運算', desc: '先乘除、後加減', say: '四則運算。記得先算括號，再算乘除，最後算加減。' },
   { id: 'm-frac',  sub: 'math', gs: [4, 5, 6], name: '分數', desc: '分數的加減乘除', say: '分數。算算看，答案是幾分之幾？' },
@@ -4250,7 +4251,6 @@ const padSlot = q => `<span class="pad-ans ${q.typed ? 'on' : ''}">${esc(q.typed
 const curQ = () => S.qs && S.qs[S.idx];
 function padType(d) {
   const q = curQ(); if (!padOn(q) || S.answered) return;
-  if (hopWait(q)) { hopOpen(); return; }   // 還沒點石頭就按數字：先幫他點開
   const t = q.typed || ''; if (t.length >= 7) return;
   q.typed = t === '0' ? String(d) : t + d; sfx('tap'); padShow(q);
 }
@@ -4266,7 +4266,6 @@ function padHint(q) {
 function padOk() {
   const q = curQ(); if (!padOn(q) || S.answered) return;
   if (q.type === 'vert') return vertOk(q);
-  if (hopWait(q)) { hopOpen(); return; }
   if (!q.typed) { padNudge(); return; }
   const el = screen.querySelector('.math-q');
   if (q.typed === q.answer) { succeed(el); return; }
@@ -4293,7 +4292,6 @@ document.addEventListener('keydown', e => {
 /* ---------- 九九跳石頭的關卡：前 9 題打亂跳石頭，後 9 題同一張表再打亂一次、打頭目（3 顆愛心，同一題只扣一次） ---------- */
 const hopOn = () => S.level === 'm-99' && S.mode === 'stage' && !!S.hop;
 const hopBossNow = () => hopOn() && !!curQ() && curQ().phase === 'boss';
-const hopWait = q => hopOn() && q.phase === 'hop' && !q.open && !S.answered;
 function hopStage(items) {
   const hop = shuffle(items).map(it => Object.assign(makeQ('m-99', it), { phase: 'hop', noTimer: true }));
   let order = shuffle(items);
@@ -4302,10 +4300,9 @@ function hopStage(items) {
   S.hop = { hp: 9, hearts: 3, lost: false };
   return [...hop, ...boss];
 }
-function hopOpen() { const q = curQ(); if (!q || !hopWait(q)) return; q.open = true; sfx('tap'); render(); }
-function hopAfter(q) {   // 跳石頭答完：夥伴跳過去，自動換下一顆
+function hopAfter(q) {   // 跳石頭答完：夥伴跳過去，自動換下一顆（題目直接出來，不用再點石頭）
   if (!hopOn() || q.phase !== 'hop') return;
-  setTimeout(() => { if (S.screen === 'game' && S.answered && curQ() === q && !$('.party')) nextQ(); }, 1500);
+  setTimeout(() => { if (S.screen === 'game' && S.answered && curQ() === q && !$('.party')) nextQ(); }, 1100);
 }
 function hopHeart() {
   S.hop.hearts = Math.max(0, S.hop.hearts - 1);
@@ -4320,13 +4317,12 @@ function hopBody(q) {
   const at = S.idx, done = S.answered, t = q.t;
   const stones = Array.from({ length: 9 }, (_, i) => {
     const k = S.qs[i].k, ok = i < at || (done && i === at), lit = i === at && !done;
-    return `<button class="stone ${ok ? 'ok' : lit ? 'lit' : ''}" style="left:${HOP_POS(i)[0]}%;top:${HOP_POS(i)[1]}%" ${lit ? 'data-act="hop-open"' : 'tabindex="-1"'} aria-label="${t} 乘 ${k}${ok ? `，${t * k}` : ''}">${ok ? t * k : `${t}×${k}`}</button>`;
+    return `<button class="stone ${ok ? 'ok' : lit ? 'lit' : ''}" style="left:${HOP_POS(i)[0]}%;top:${HOP_POS(i)[1]}%" tabindex="-1" aria-label="${t} 乘 ${k}${ok ? `，${t * k}` : ''}">${ok ? t * k : `${t}×${k}`}</button>`;
   }).join('');
   const P = i => i < 0 ? [2.5, hopNarrow() ? 28 : 50] : HOP_POS(i), from = P(at - 1), to = P(done ? at : at - 1);
   return `<div class="hop-river ${hopNarrow() ? 'narrow' : ''}"><span class="hop-bank"></span><span class="hop-flag">${t} 的九九</span>${stones}
       <span class="hop-me" style="left:${from[0]}%;top:${from[1]}%" data-x="${to[0]}" data-y="${to[1]}">${petOf(me())}</span></div>
-    ${q.open || done ? `<div class="math-q">${done ? esc(q.show.replace('？', q.answer)) : esc(q.show).replace('？', padSlot(q))}</div>${done ? '' : padHTML()}`
-      : `<button class="btn-big go hop-go" data-act="hop-open">點發亮的石頭：${t} × ${q.k}</button>`}`;
+    <div class="math-q">${done ? esc(q.show.replace('？', q.answer)) : esc(q.show).replace('？', padSlot(q))}</div>${done ? '' : padHTML()}`;
 }
 function hopJump() {   // 答對後夥伴從上一顆石頭跳到這一顆
   const hm = screen.querySelector('.hop-me'); if (!hm || hm.style.left === hm.dataset.x + '%') return;
@@ -6522,7 +6518,7 @@ function renderGame() {
   const chestOn = q.golden && !q.chestLost && !S.answered;
   const hint = S.bubble || (chestOn ? '寶箱題！第一次就答對，就能打開寶箱！' : { listen: '聽聽看，是哪一個字？', zhuyin: '這個字怎麼唸？', typo: '找出寫錯的字', similar: '哪一個字放進去才對？',
     build: '兩個部件合起來是哪個字？', whack: '聽到的字跑出來就打它！', spell: '照順序點注音符號', stroke: '照筆順一筆一筆點',
-    math: hopWait(q) ? '點發亮的石頭！' : padOn(q) ? '打出答案，再按確認' : '算算看，答案是多少？', vert: '一位一位算，算好按確認', 'm-count': '數數看，一共有幾個？', 'm-cmp': '要填 ＞、＜ 還是 ＝？', 'en-listen': '聽聽看，是哪一張圖？', 'en-pic': '這個東西的英文是什麼？', 'en-mean': '這個英文是什麼意思？', 'en-miss': '缺了哪個字母？', 'en-spell': '哪一個拼對了？', 'en-sent': '空格要填哪一個？', 'en-def': '哪一個單字符合這個解釋？', kz: q.subj === '數學' ? '慢慢算，算好再選' : '仔細讀題，想一想再選', 'kz-match': '先點一個成語，再點它的意思' }[q.type]);
+    math: padOn(q) ? '打出答案，再按確認' : '算算看，答案是多少？', vert: '一位一位算，算好按確認', 'm-count': '數數看，一共有幾個？', 'm-cmp': '要填 ＞、＜ 還是 ＝？', 'en-listen': '聽聽看，是哪一張圖？', 'en-pic': '這個東西的英文是什麼？', 'en-mean': '這個英文是什麼意思？', 'en-miss': '缺了哪個字母？', 'en-spell': '哪一個拼對了？', 'en-sent': '空格要填哪一個？', 'en-def': '哪一個單字符合這個解釋？', kz: q.subj === '數學' ? '慢慢算，算好再選' : '仔細讀題，想一想再選', 'kz-match': '先點一個成語，再點它的意思' }[q.type]);
   const total = S.qTotal || timeFor(S.grade) * 10, left = Math.max(0, S.timeLeft);
   /* 安親班不倒數：計時圈換成「不限時」 */
   const timerHTML = q.noTimer ? '<div class="timer free" aria-label="不限時"><b>∞</b><span>不限時</span></div>'
@@ -7273,7 +7269,6 @@ document.addEventListener('click', e => {
   else if (act === 'key') { padType(b.dataset.d); }
   else if (act === 'key-clr') { padBack(true); }
   else if (act === 'key-ok') { padOk(); }
-  else if (act === 'hop-open') { hopOpen(); }
   else if (act === 'next') { sfx('tap'); nextQ(); }
   else if (act === 'again') { sfx('go'); startStage(S.stage); }
   else if (act === 'boss') { sfx('go'); startBoss(); }
