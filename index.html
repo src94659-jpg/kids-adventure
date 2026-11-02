@@ -12,15 +12,21 @@
   }
   if (!gl2) return;
   r.classList.add('boot3d');
-  ['planet_art/map/sky_' + (night ? 'night' : 'day') + '.webp', 'fantasy_art/characters/owl_3d.webp'].forEach(function (h) {
+  /* 上次畫好的島嶼畫面（同樣大小、同樣日夜）：一打開就先貼這張，等 3D 星球畫好再換上，不會先看到空的天空 */
+  try { var pp = JSON.parse(ls('zizi-plposter') || 'null'); if (pp && pp.u && pp.n === (night ? 1 : 0) && Math.abs(pp.w - innerWidth) <= pp.w * .06 && Math.abs(pp.h - innerHeight) <= pp.h * .06) { window.ZZ_POSTER = pp; r.classList.add('boot-poster'); r.style.setProperty('--poster', 'url(' + pp.u + ')'); } } catch (e) {}
+  ['planet_art/map/sky_' + (night ? 'night' : 'day') + '.webp', 'fantasy_art/characters/owl_3d.webp', 'planet_art/map/map_' + (night ? 'night' : 'day') + '.webp',
+   'planet_art/halls/hall_chinese.webp', 'planet_art/halls/hall_english.webp', 'planet_art/halls/hall_math.webp', 'planet_art/halls/hall_afterschool.webp'].forEach(function (h) {
     var l = document.createElement('link'); l.rel = 'preload'; l.as = 'image'; l.href = h; document.head.appendChild(l);
   });
+  var m = document.createElement('link'); m.rel = 'modulepreload'; m.crossOrigin = 'anonymous'; m.href = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/0.170.0/three.module.min.js'; document.head.appendChild(m);   // 3D 程式庫也一開始就下載
 })();
 </script>
 <style>
 /* 開機畫面（只有會進 3D 的人）：跟星球入口同一片天空、同一個「星球準備中…」，第一次畫好就交給星球 */
 :root.boot3d { background: #CFE3F0 url(planet_art/map/sky_day.webp) center bottom / cover no-repeat fixed; }
 :root.boot3d.night { background-color: #142046; background-image: url(planet_art/map/sky_night.webp); }
+:root.boot3d.boot-poster { background: #CFE3F0 var(--poster) center / 100% 100% no-repeat fixed; }   /* 上次的島嶼畫面 */
+:root.boot3d.boot-poster #boot { display: none; }   /* 有島嶼畫面就不用開機的「星球準備中」 */
 html:root.boot3d body { background: transparent; }   /* 要壓過後面白天、黑夜的 2D 底 */
 :root.boot3d .bar, :root.boot3d #sky, :root.boot3d #scene { visibility: hidden; }
 #boot { display: none; }
@@ -456,6 +462,12 @@ body.pl-full #screen { padding: 0; overflow: hidden; }
 .pl-load b { font-size: max(var(--fs-min), 1.2rem * var(--fs-m)); font-weight: 400; } .pl-load em { font-style: normal; color: var(--muted); font-size: max(var(--fs-min), .9rem * var(--fs-s)); }
 .pl-load .meter { width: min(60vw, 260px); }
 .pl-load .meter i { width: 0; transition: width .25s; }
+.pl-poster { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }   /* 星球還沒畫好前先貼上次的島嶼畫面 */
+.pl-load.mini { inset: auto 0 calc(env(safe-area-inset-bottom, 0px) + 10px); }   /* 有島嶼畫面時「準備中」縮成底下一小條 */
+.pl-load.mini .pet, .pl-load.mini svg, .pl-load.mini em { display: none; }
+.pl-load.mini b { font-size: max(var(--fs-min), .95rem * var(--fs-s)); padding: 2px 14px; border-radius: 99px; background: rgba(255, 253, 247, .85); }
+.pl-load.mini .meter { width: min(40vw, 160px); height: 6px; }
+body.pl-calm .pl-modal { animation: none; }   /* 星球畫好重畫一次時，玩家視窗不要再淡入一次（會閃） */
 .pl-hall { position: absolute; padding: 0; border: 0; background: transparent; border-radius: 22px; }
 .pl-hall .pl-tag { pointer-events: auto; z-index: 3; }   /* 招牌疊在所有館的按鈕上面、點了就是自己那一館（後排館的招牌會落在前排館的屋頂上） */
 .pl-hall:focus-visible { outline: 4px solid var(--c); outline-offset: 2px; }
@@ -952,7 +964,9 @@ body.lock-cleared .node.done::after, body.lock-cleared .rnode.done::after, body.
 .hole.up .mole { transform: translateY(0); }
 .hole.shake .mole { animation: shake .4s; }
 .seq-area { display: flex; flex-direction: column; align-items: center; gap: 8px; width: 100%; }
-.stroke-box svg { width: min(56vw, 34vh, 260px); height: auto; touch-action: manipulation; }
+.stroke-box svg { width: min(64vw, 42vh, 320px); height: auto; touch-action: none; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }   /* 用手指描筆畫：畫的時候頁面不要跟著捲動、縮放 */
+.stroke-box .trace-line { fill: none; stroke: #2F7DBF; stroke-width: 5; stroke-linecap: round; stroke-linejoin: round; opacity: .75; pointer-events: none; }   /* 手指畫過的軌跡 */
+.stroke-box .trace-line.out { opacity: 0; transition: opacity .3s; }
 .stroke-box .glow { animation: pulse .9s ease-in-out infinite; transform-origin: center; }
 .slots { display: flex; gap: 6px; }
 .slot { min-width: 46px; height: 52px; border-radius: 12px; border: 3px dashed var(--line); background: var(--paper); display: grid; place-items: center; font-size: max(var(--fs-min), 1.8rem * var(--fs-l)); }
@@ -1099,13 +1113,14 @@ body.lock-cleared .node.done::after, body.lock-cleared .rnode.done::after, body.
 .hop-flag { position: absolute; right: 8px; top: 6px; padding: 0 10px; border-radius: 999px; background: rgba(255, 253, 247, .9); font-size: max(var(--fs-min), min(1rem, 2.2vh) * var(--fs-s)); }
 .stone { position: absolute; width: 9.6%; aspect-ratio: 1.2; transform: translate(-50%, -50%); padding: 0; border-radius: 50%; border: 3px solid #8C8F95;
   background: radial-gradient(circle at 35% 30%, #F1F2F4, #A9ADB4); box-shadow: 0 5px 0 #6B6F76; color: #4A4F57; font-size: max(.72rem, min(1.15rem, 2.4vw, 2.6vh)); line-height: 1; font-variant-numeric: tabular-nums; }
-.stone.lit { background: radial-gradient(circle at 35% 30%, #FFF6C9, #F6B12F); border-color: #D98E0C; box-shadow: 0 5px 0 #B9842A, 0 0 0 5px rgba(255, 230, 120, .55); color: #5A3A00; animation: stoneGlow .9s ease-in-out infinite alternate; cursor: pointer; }
+.stone.lit { background: radial-gradient(circle at 35% 30%, #FFF6C9, #F6B12F); border-color: #D98E0C; box-shadow: 0 5px 0 #B9842A, 0 0 0 5px rgba(255, 230, 120, .55); color: #5A3A00; cursor: pointer; }
 .stone.ok { background: radial-gradient(circle at 35% 30%, #E4F7E8, #6CC28A); border-color: #3C9A66; box-shadow: 0 5px 0 #2E7A50; color: #1F4D33; font-size: max(.8rem, min(1.35rem, 2.8vw, 3vh)); }
 .stone:not(.lit):not(.ok) { opacity: .75; pointer-events: none; }
 /* 隱藏關卡的「？」石頭：沒打開是灰色，打開了發亮，打贏過變綠色 */
 .secret-stone { display: grid; place-items: center; width: 100%; aspect-ratio: 1.15; border-radius: 50%; border: 3px solid #8C8F95; background: radial-gradient(circle at 35% 30%, #F1F2F4, #9EA3AB); box-shadow: 0 5px 0 #6B6F76; color: #5A5F68; font-weight: 900; line-height: 1; }
-.open > .secret-stone { background: radial-gradient(circle at 35% 30%, #FFF6C9, #F6B12F); border-color: #D98E0C; box-shadow: 0 5px 0 #B9842A, 0 0 0 6px rgba(255, 230, 120, .55); color: #6A3F00; animation: stoneGlow .9s ease-in-out infinite alternate; }
-.won > .secret-stone { background: radial-gradient(circle at 35% 30%, #E4F7E8, #6CC28A); border-color: #3C9A66; box-shadow: 0 5px 0 #2E7A50; color: #1F4D33; animation: none; }
+.open > .secret-stone { position: relative; background: radial-gradient(circle at 35% 30%, #FFF6C9, #F6B12F); border-color: #D98E0C; box-shadow: 0 5px 0 #B9842A, 0 0 0 6px rgba(255, 230, 120, .55); color: #6A3F00; }
+.won > .secret-stone { background: radial-gradient(circle at 35% 30%, #E4F7E8, #6CC28A); border-color: #3C9A66; box-shadow: 0 5px 0 #2E7A50; color: #1F4D33; }
+.won > .secret-stone::after { display: none; }
 .rnode.rsecret { transform: translate(-50%, -50%); }
 .portrait .rnode.rsecret { width: 12cqw; } .portrait .rsecret .secret-stone { font-size: 6cqw; }
 .landscape .rnode.rsecret { width: 7.4cqw; } .landscape .rsecret .secret-stone { font-size: 3.6cqw; }
@@ -1114,7 +1129,9 @@ body.lock-cleared .node.done::after, body.lock-cleared .rnode.done::after, body.
 .node.secret { width: 64px; height: 64px; border: 0; background: none; box-shadow: none; padding: 0; animation: none; }
 .node.secret .secret-stone { font-size: 1.8rem; }
 .node.secret small { top: auto; bottom: 74px; }
-@keyframes stoneGlow { to { box-shadow: 0 5px 0 #B9842A, 0 0 0 10px rgba(255, 230, 120, .25); } }
+/* 發亮的石頭外面一圈光一明一暗：只動外圈的透明度（手機上不用每一格重畫整顆石頭，原本動 box-shadow 會讓換題卡卡的） */
+.stone.lit::after, .open > .secret-stone::after { content: ""; position: absolute; inset: -3px; border-radius: 50%; box-shadow: 0 0 0 10px rgba(255, 230, 120, .3); opacity: 0; pointer-events: none; animation: stoneGlow .9s ease-in-out infinite alternate; }
+@keyframes stoneGlow { to { opacity: 1; } }
 .hop-river.narrow { height: min(30vh, 56vw, 250px); }
 .hop-river.narrow .hop-flag { top: auto; bottom: 6px; }
 .hop-river.narrow .stone { width: 15.5%; font-size: max(.85rem, min(1.25rem, 4.4vw)); }
@@ -1435,7 +1452,7 @@ body.v3d .hud-mid { gap: 5px; }
 #bg3d { position: fixed; inset: 0; z-index: 0; display: none; pointer-events: none; overflow: hidden; }
 #bg3d.on { display: block; }
 /* 兩層輪流用：新背景載好後淡入、舊的淡出，換場景不會一下跳掉 */
-#bg3d .bgl { position: absolute; inset: 0; background: var(--d) center / cover no-repeat; opacity: 0; transition: opacity .38s ease; }
+#bg3d .bgl { position: absolute; inset: 0; background: var(--d) center / cover no-repeat; opacity: 0; transition: opacity .38s ease; will-change: opacity; }   /* 先升成獨立圖層：換場景淡入淡出時不用臨時建圖層（iPad 會頓一下） */
 :root.night #bg3d .bgl { background-image: var(--n); }
 #bg3d .bgl.show { opacity: 1; }
 #bg3d .bgl.blur { inset: -30px; filter: blur(12px) brightness(.86); }   /* 房門、路線圖完整顯示，背後用同一張模糊的補滿 */
@@ -1851,7 +1868,7 @@ const LEVELS = [
   { id: 'typo',    name: '找出錯字',   desc: '詞語裡藏了一個錯字',   say: '找出錯字。詞語裡藏了一個錯字，把它找出來。' },
   { id: 'similar', name: '形近字分辨', desc: '長得很像的字，選對的', say: '形近字分辨。這些字長得很像，選出對的那一個。' },
   { id: 'spell',   name: '注音拼字',   desc: '用注音拼出字的讀音',   say: '注音拼字。用注音符號，一個一個拼出這個字怎麼唸。' },
-  { id: 'stroke',  name: '筆順小遊戲', desc: '照筆順一筆一筆點',     say: '筆順小遊戲。照著寫字的順序，一筆一筆點出來。' },
+  { id: 'stroke',  name: '筆順小遊戲', desc: '照筆順一筆一筆畫',     say: '筆順小遊戲。照著寫字的順序，用手指一筆一筆畫出來。' },
   { id: 'whack',   name: '打地鼠',     desc: '聽到的字跑出來就打它', say: '打地鼠。聽到的字從洞裡跑出來，就快點打它！' },
   { id: 'build',   name: '部件組字',   desc: '把部件拼成一個字',     say: '部件組字。把部件合起來，會變成哪一個字？' }
 ];
@@ -1880,7 +1897,7 @@ function newQTime() {
   if (S.mode === 'secret') { S.qTotal = S.mix.full; return; }   // 九九大混戰：整回合共用一個倒數，換題不重算
   if (q && q.noTimer) { S.qTotal = 10; S.timeLeft = 0; return; }   // 安親班不倒數，也沒有時間加分（首答 10 分）
   /* 新題型要做的事比較多，給比較長的時間 */
-  S.qTotal = !q ? base : q.type === 'stroke' ? Math.max(base, q.strokes.length * 45) : q.type === 'spell' ? Math.round(base * 1.4) : q.type === 'whack' || q.type === 'en-spell' || q.type === 'en-miss' ? Math.round(base * 1.2) : q.type === 'en-sent' || q.type === 'en-def' ? Math.round(base * 1.6) : q.sub === 'math' && q.type !== 'm-count' && q.type !== 'm-cmp' ? Math.round(base * (S.grade >= 4 ? 3 : 1.5)) : base;   // 計算題要多一點時間（高年級的直式計算更久）
+  S.qTotal = !q ? base : q.type === 'stroke' ? Math.max(base, q.strokes.length * 60) : q.type === 'spell' ? Math.round(base * 1.4) : q.type === 'whack' || q.type === 'en-spell' || q.type === 'en-miss' ? Math.round(base * 1.2) : q.type === 'en-sent' || q.type === 'en-def' ? Math.round(base * 1.6) : q.sub === 'math' && q.type !== 'm-count' && q.type !== 'm-cmp' ? Math.round(base * (S.grade >= 4 ? 3 : 1.5)) : base;   // 計算題要多一點時間（高年級的直式計算更久）
   if (padOn(q)) S.qTotal = Math.round(S.qTotal * 1.25);   // 用數字鍵盤打答案比點選項慢一點
   S.timeLeft = S.qTotal;
 }
@@ -3257,7 +3274,7 @@ const SND = (() => {
     if (!cur || !running()) return;
     const now = G.c.currentTime;
     if (cur.next < now) cur.next = now + 0.03;   // 卡住太久就從現在接，不補放
-    while (cur.next < now + 0.3) {
+    while (cur.next < now + 0.6) {   // 往前排 0.6 秒：換關、換題時畫面忙一下，音樂也不會斷斷續續
       schedStep(G, cur.g, cur.s, cur.k, cur.next, cur.lvl, st.night);
       cur.next += stepDur(cur.s, st.night); cur.k = (cur.k + 1) % cur.s.total;
     }
@@ -3407,7 +3424,7 @@ const STROKES = {
 function buildStroke(w) {
   const strokes = STROKES[w.字];
   return { type: 'stroke', char: w.字, word: w.例詞[0], answer: w.字, strokes, seq: strokes.map((_, i) => i), pos: 0, miss: 0,
-           say: `${sayWord(w)}。照筆順，一筆一筆點出來。`, after: `${w.字}，一共${strokes.length}畫` };
+           say: `${sayWord(w)}。照筆順，一筆一筆畫出來。`, after: `${w.字}，一共${strokes.length}畫` };
 }
 const uniqueBy = (arr, key) => { const seen = new Set(); return arr.filter(x => { const k = key(x); if (seen.has(k)) return false; seen.add(k); return true; }); };
 /* 把一個年級的字平均切成幾個小關（每關最多 10 個字），同一關裡每個字只出現一次 */
@@ -4635,7 +4652,7 @@ function v3dSync() {
         nx.style.cssText = css; nx.dataset.css = want; nx.classList.toggle('blur', !!b.blur);
         void nx.offsetWidth;   // 先套好圖再開始淡入
         nx.classList.add('show'); if (cur) cur.classList.remove('show');
-      });
+      }, true);
     }
   }
   if (v3d() && (on || PL.state === 'ready')) v3Pre(v3NextArt());   // 星球入口要等星球畫好才開始預先載入，不搶星球的圖
@@ -4644,11 +4661,12 @@ function v3dSync() {
 const V3_IMG = new Map(), V3_Q = [];
 let v3Busy = false;
 const v3o = () => innerWidth > innerHeight - 170 ? 'landscape' : 'portrait';   // 大廳、路線圖用直的還是橫的（扣掉上方工具列和個人卡）
-function v3Load(u, cb) {
+function v3Load(u, cb, dec) {   // dec：先解碼好再回呼（換背景用，淡入時才不會邊解碼邊畫而頓一下）
   let img = V3_IMG.get(u);
   if (!img) { img = new Image(); img.decoding = 'async'; img.src = u; V3_IMG.set(u, img); }   // 留著 Image 物件，瀏覽器才不會把圖丟掉
   if (!cb) return;
-  if (img.complete) cb(); else { img.addEventListener('load', cb, { once: true }); img.addEventListener('error', cb, { once: true }); }
+  const done = dec && img.decode ? () => img.decode().catch(() => {}).then(cb) : cb;
+  if (img.complete) done(); else { img.addEventListener('load', done, { once: true }); img.addEventListener('error', cb, { once: true }); }
 }
 function v3Pre(names) {
   const t = plNight() ? 'night' : 'day';
@@ -4679,7 +4697,7 @@ function v3NextArt() {
   if (s === 'grade' && (sub === 'zh' || sub === 'math')) return [`interiors/${sub === 'math' ? 'math' : 'chinese'}_activity_{t}`, ...st(sub === 'math'), ...route];
   if (s === 'grade' && sub === 'en') return [`interiors/english_books_${o}_{t}`, 'interiors/english_learning_{t}', ...reward];
   if (s === 'level') return [...route, ...reward];
-  if (s === 'map' && S.level) { const p = me(), n = stagesOf(S.grade, S.level).length; const i = Math.max(0, Array.from({ length: n }, (_, k) => k).find(k => unlocked(p, S.grade, S.level, k) && !peek(p, S.grade, S.level, k).cleared) ?? 0); return [land(i), ...reward, bossArt(), ...(bossOf().art ? [] : ['characters/wind_boss_hit', 'characters/wind_boss_defeated'])]; }   // 進了這個玩法的路線才預載它的頭目
+  if (s === 'map' && S.level) { const p = me(), n = stagesOf(S.grade, S.level).length, ks = Array.from({ length: n }, (_, k) => k); const i = Math.max(0, ks.find(k => unlocked(p, S.grade, S.level, k) && !peek(p, S.grade, S.level, k).cleared) ?? 0); return [...new Set([land(i), ...ks.filter(k => unlocked(p, S.grade, S.level, k)).map(land)]), ...reward, bossArt(), ...(bossOf().art ? [] : ['characters/wind_boss_hit', 'characters/wind_boss_defeated'])]; }   // 打開的關卡風景都先載，點哪一關都不用等   // 進了這個玩法的路線才預載它的頭目
   if (s === 'result' && S.mode === 'stage' && S.level && !String(S.level).startsWith('kz:')) return [land(S.stage + 1)];
   return ui;
 }
@@ -5847,10 +5865,11 @@ function planetHTML(p, extra = '') {
     ['shop', '<span class="coin">金</span>', '商店', `商店，${fmtNum(p.coins)} 金幣`, fmtNum(p.coins)], ['dex', ICONS.book, '圖鑑', '國字圖鑑'], ['heroes', ICONS.trophy, '英雄榜', '英雄榜'],
     ['duel-setup', PL_IC.duel, '對戰', '雙人對戰'], ['report', PL_IC.report, '報告', '學習報告（大人看）'],
   ].map(([a, ic, t, lab, n]) => `<button class="pl-ic" data-act="${a}" aria-label="${lab}">${ic}${n ? `<i>${n}</i>` : ''}<span>${t}</span></button>`).join('')}</nav>` : '';
+  const pp = window.ZZ_POSTER, poster = pp && PL.state !== 'ready' && pp.d === (p ? 1 : 0) && pp.n === (night ? 1 : 0) ? pp : null;   // 上次的島嶼畫面（有沒有下面那排圖示要一樣，島才會在同一個位置）
   return `<div class="planet full" id="planet">${planetSkyHTML()}<div class="pl-gl"></div>
     <div class="pl-top">${who}<h1 class="pl-title"><button class="pl-owl" data-act="buddy" aria-label="摸摸貓頭鷹">${owlSVG()}</button><span>國英數<em>大冒險</em></span></h1>
       <div class="pl-tools">${sndBtn()}<button class="icon-btn theme pl-theme" data-act="theme" aria-label="${night ? '換成白天模式' : '換成黑夜模式'}">${THEME_ICON[night ? 'night' : 'day']}</button><button class="icon-btn sound" data-act="say-now" aria-label="唸給我聽">${ICONS.speaker}</button></div></div>
-    ${PL.state === 'ready' ? '' : `<div class="pl-load" id="plLoad">${owlSVG()}<b>星球準備中…</b><span class="meter"><i></i></span><em>0%</em></div>`}${halls}${dock}${extra}</div>`;
+    ${PL.state === 'ready' ? '' : `${poster ? `<img class="pl-poster" src="${poster.u}" alt="">` : ''}<div class="pl-load ${poster ? 'mini' : ''}" id="plLoad">${owlSVG()}<b>星球準備中…</b><span class="meter"><i></i></span><em>0%</em></div>`}${halls}${dock}${extra}</div>`;
 }
 function planetSkyHTML() {   // 太陽／月亮、雲：星球準備好才放進來（延後載入）
   if (PL.state !== 'ready') return '';
@@ -5895,7 +5914,7 @@ async function planetLoad() {
     clearTimeout(timer);
     planetBuild(map, halls, night);
     PL.state = 'ready';
-    if ($('#planet')) render();   // 重畫一次，把太陽、雲放進來（星球入口或星球上的玩家視窗）
+    if ($('#planet')) { document.body.classList.add('pl-calm'); render(); setTimeout(() => document.body.classList.remove('pl-calm'), 400); }   // 重畫一次，把太陽、雲放進來（星球入口或星球上的玩家視窗）
     planetDecor();
   } catch (e) { clearTimeout(timer); console.warn('3D 星球載入失敗，改用平面畫面', e); planetFail('load'); }
 }
@@ -5996,7 +6015,34 @@ function planetAttach(box) {
   if (!PL.ro) PL.ro = new ResizeObserver(() => planetFit());
   PL.ro.disconnect(); PL.ro.observe(box);
   planetFit();
+  try { PL.renderer.render(PL.scene, PL.cam); } catch (e) {}   // 馬上畫第一張，換掉島嶼畫面時不會空一下
   planetStart();
+  clearTimeout(PL.posterT); PL.posterT = setTimeout(planetPoster, 3000);   // 裝飾都放上去之後，記住這個畫面
+}
+/* 把畫好的島嶼（連同天空）存成一張小圖，下次打開先貼這張（開機和星球入口都用） */
+function planetPoster() {
+  const box = PL.box;
+  if (PL.state !== 'ready' || !box || !box.isConnected || document.hidden) return;
+  const w = box.clientWidth, h = box.clientHeight, night = plNight(), key = `${w}x${h}|${night}|${box.querySelector('.pl-dock') ? 1 : 0}`;
+  if (PL.posterKey === key) return;   // 這次打開已經存過同一個畫面
+  const sky = new Image();
+  sky.onload = () => {
+    try {
+      if (PL.state !== 'ready' || !box.isConnected || plNight() !== night) return;
+      const k = Math.min(1, 900 / Math.max(w, h)), cv = document.createElement('canvas'), g = cv.getContext('2d');
+      cv.width = Math.round(w * k); cv.height = Math.round(h * k);
+      const gr = g.createLinearGradient(0, 0, 0, cv.height);   // 跟 .planet 的底一樣：漸層＋天空圖（置中、貼底、蓋滿）
+      gr.addColorStop(0, night ? '#0B1640' : '#8FD3FF'); gr.addColorStop(1, night ? '#1E2E66' : '#FFF4CF');
+      g.fillStyle = gr; g.fillRect(0, 0, cv.width, cv.height);
+      const sc = Math.max(cv.width / sky.width, cv.height / sky.height), dw = sky.width * sc, dh = sky.height * sc;
+      g.drawImage(sky, (cv.width - dw) / 2, cv.height - dh, dw, dh);
+      PL.renderer.render(PL.scene, PL.cam);   // 同一個工作裡畫完馬上拿，WebGL 畫布才不會是空的
+      g.drawImage(PL.renderer.domElement, 0, 0, cv.width, cv.height);
+      localStorage.setItem('zizi-plposter', JSON.stringify({ w, h, n: night ? 1 : 0, d: box.querySelector('.pl-dock') ? 1 : 0, u: cv.toDataURL('image/jpeg', .72) }));
+      PL.posterKey = key;
+    } catch (e) { /* 存不下就算了，下次照舊先顯示「星球準備中」 */ }
+  };
+  sky.src = `${PL_ART}map/sky_${night ? 'night' : 'day'}.webp`;
 }
 /* 鏡頭：看上下兩列中間那塊空間的長寬比——寬的用低一點的角度（約 36～42°），直立平板約 58°，又高又窄的手機約 66°；
    找一個距離讓圓盤和 4 棟館都放進上方一列和下方圖示列中間 */
@@ -6375,7 +6421,7 @@ applyTheme(lsGet(THEME_KEY) === 'night' ? 'night' : 'day');
 let sceneName = '';
 function setScene(on) {
   sceneEl.classList.toggle('on', on);
-  if (!on) return;
+  if (!on || v3d()) return;   // 3D 模式看不到 2D 風景，不用畫
   const t = currentLand();
   if (sceneName === t.name) return;
   sceneName = t.name;
@@ -6518,7 +6564,7 @@ function renderGame() {
   }
   const chestOn = q.golden && !q.chestLost && !S.answered;
   const hint = S.bubble || (chestOn ? '寶箱題！第一次就答對，就能打開寶箱！' : { listen: '聽聽看，是哪一個字？', zhuyin: '這個字怎麼唸？', typo: '找出寫錯的字', similar: '哪一個字放進去才對？',
-    build: '兩個部件合起來是哪個字？', whack: '聽到的字跑出來就打它！', spell: '照順序點注音符號', stroke: '照筆順一筆一筆點',
+    build: '兩個部件合起來是哪個字？', whack: '聽到的字跑出來就打它！', spell: '照順序點注音符號', stroke: '照筆順，用手指一筆一筆畫下來',
     math: padOn(q) ? '打出答案，再按確認' : '算算看，答案是多少？', vert: '一位一位算，算好按確認', 'm-count': '數數看，一共有幾個？', 'm-cmp': '要填 ＞、＜ 還是 ＝？', 'en-listen': '聽聽看，是哪一張圖？', 'en-pic': '這個東西的英文是什麼？', 'en-mean': '這個英文是什麼意思？', 'en-miss': '缺了哪個字母？', 'en-spell': '哪一個拼對了？', 'en-sent': '空格要填哪一個？', 'en-def': '哪一個單字符合這個解釋？', kz: q.subj === '數學' ? '慢慢算，算好再選' : '仔細讀題，想一想再選', 'kz-match': '先點一個成語，再點它的意思' }[q.type]);
   const total = S.qTotal || timeFor(S.grade) * 10, left = Math.max(0, S.timeLeft);
   /* 安親班不倒數：計時圈換成「不限時」 */
@@ -7018,7 +7064,7 @@ function seqTap(i) {
     if (q.type === 'stroke') narrate(`第${q.pos + 1}筆`);
   } else {
     q.miss = (q.miss || 0) + 1;
-    fail(el, 's' + S.tried.length, q.type === 'stroke' ? (q.miss >= 2 ? '下一筆在發亮的地方，點點看' : '不是這一筆喔，想想看先寫哪一筆') : (String(token).startsWith('t') ? '聲調不對喔，再聽一次' : '不是這個符號喔，再聽聽看'), true);
+    fail(el, 's' + S.tried.length, q.type === 'stroke' ? (q.miss >= 2 ? '下一筆在發亮的地方，從開頭順著畫' : '不是這一筆喔，想想看先寫哪一筆') : (String(token).startsWith('t') ? '聲調不對喔，再聽一次' : '不是這個符號喔，再聽聽看'), true);
     if (q.type === 'stroke' && q.miss >= 2) renderSeq(q);
   }
 }
@@ -7043,6 +7089,69 @@ function seqHTML(q) {
       : `<div class="zy-tiles">${q.pool.map((c, k) => `<button class="opt zy ${q.used.includes(String(k)) ? 'tried' : ''}" data-act="seq" data-i="${k}" ${q.used.includes(String(k)) ? 'disabled' : ''}>${esc(c)}</button>`).join('')}</div>`}</div>`;
 }
 const firstPt = d => { const m = d.match(/M\s*([\d.]+)\s+([\d.]+)/); return m ? [+m[1], +m[2]] : [50, 50]; };
+/* 筆順：用手指（或滑鼠）順著筆畫畫下來。起點要在筆畫開頭附近、方向要對、路線要貼著筆畫（小手指粗，容許度放寬）；
+   描對就跟以前點對一樣往下一筆、描到別的筆畫算順序錯；亂畫、方向反了只提醒，不算答錯。短短點一下還是可以（備用） */
+const TRACE = { on: false };
+const svgPt = (svg, e) => { const m = svg.getScreenCTM(); if (!m) return [0, 0]; const p = new DOMPoint(e.clientX, e.clientY).matrixTransform(m.inverse()); return [p.x, p.y]; };
+const segDist = (p, a, b) => { const dx = b[0] - a[0], dy = b[1] - a[1], L = dx * dx + dy * dy, t = L ? Math.max(0, Math.min(1, ((p[0] - a[0]) * dx + (p[1] - a[1]) * dy) / L)) : 0; return Math.hypot(p[0] - a[0] - t * dx, p[1] - a[1] - t * dy); };
+const lineDist = (p, pts) => pts.slice(1).reduce((m, b, i) => Math.min(m, segDist(p, pts[i], b)), pts.length === 1 ? Math.hypot(p[0] - pts[0][0], p[1] - pts[0][1]) : Infinity);
+function strokePts(el) {   // 沿著筆畫取 24 個點
+  const L = el.getTotalLength(), n = 24;
+  return { L, pts: Array.from({ length: n + 1 }, (_, i) => { const q = el.getPointAtLength(L * i / n); return [q.x, q.y]; }) };
+}
+function traceMatch(tr, sp) {   // tr：畫的路線；sp：筆畫上的點。回傳 { ok, rev }
+  const { L, pts } = sp, s = tr[0], e = tr[tr.length - 1];
+  const tol = 12, near = L < 18 ? 16 : 14;   // 筆畫寬 8；手指粗，容許度放寬
+  const mean = tr.reduce((a, p) => a + lineDist(p, pts), 0) / tr.length;
+  const cover = pts.filter(p => lineDist(p, tr) <= near).length / pts.length;
+  const fit = mean <= tol && cover >= (L < 18 ? .55 : .7);
+  const d0 = Math.hypot(s[0] - pts[0][0], s[1] - pts[0][1]), d1 = Math.hypot(s[0] - pts[pts.length - 1][0], s[1] - pts[pts.length - 1][1]);
+  const fwd = d0 <= Math.max(18, L * .35) && d0 <= d1, back = Math.hypot(e[0] - pts[0][0], e[1] - pts[0][1]) <= Math.max(18, L * .35) && d1 < d0;
+  return { ok: fit && fwd, rev: fit && back, mean };
+}
+function traceHint(msg, good) { S.bubble = msg; const b = $('#bubble'); if (b) b.textContent = msg; owlAct(good ? 'happy' : 'think'); }
+document.addEventListener('pointerdown', e => {
+  const svg = e.target.closest && e.target.closest('.stroke-box svg'), q = S.qs && S.qs[S.idx];
+  if (!svg || S.screen !== 'game' || S.answered || !q || q.type !== 'stroke' || e.button > 0 || $('.party')) return;
+  e.preventDefault();
+  try { svg.setPointerCapture(e.pointerId); } catch (_) {}
+  TRACE.line && TRACE.line.remove();
+  const line = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
+  line.setAttribute('class', 'trace-line');
+  svg.appendChild(line);
+  const hit = e.target.closest('[data-act="seq"]');
+  Object.assign(TRACE, { on: true, id: e.pointerId, svg, line, q, hit: hit ? +hit.dataset.i : -1, pts: [svgPt(svg, e)] });
+  line.setAttribute('points', TRACE.pts.map(p => p.join(',')).join(' '));
+});
+document.addEventListener('pointermove', e => {
+  if (!TRACE.on || e.pointerId !== TRACE.id) return;
+  const evs = e.getCoalescedEvents ? e.getCoalescedEvents() : [];
+  (evs.length ? evs : [e]).forEach(v => { const p = svgPt(TRACE.svg, v), l = TRACE.pts[TRACE.pts.length - 1]; if (Math.hypot(p[0] - l[0], p[1] - l[1]) >= .8) TRACE.pts.push(p); });
+  TRACE.line.setAttribute('points', TRACE.pts.map(p => p.join(',')).join(' '));
+});
+['pointerup', 'pointercancel'].forEach(type => document.addEventListener(type, e => {
+  if (!TRACE.on || e.pointerId !== TRACE.id) return;
+  TRACE.on = false;
+  const { pts, q, line, svg, hit } = TRACE;
+  const fade = () => { line.classList.add('out'); setTimeout(() => line.remove(), 350); };
+  if (type === 'pointercancel' || S.qs[S.idx] !== q || S.answered) return fade();
+  const len = pts.slice(1).reduce((a, p, i) => a + Math.hypot(p[0] - pts[i][0], p[1] - pts[i][1]), 0);
+  const want = q.seq[q.pos], sps = [...svg.querySelectorAll('[data-act="seq"]')].map(el => ({ k: +el.dataset.i, sp: strokePts(el) }));
+  const done = k => { seqTap(k); if (k === want && !S.answered) traceHint(`畫對了！接著畫第 ${q.pos + 1} 筆`, true); };
+  if (len < 5) {   // 只是點一下：照以前點筆畫的玩法（點到好幾筆重疊的地方，正確的那一筆優先）
+    line.remove();
+    const near = sps.map(c => ({ k: c.k, d: lineDist(pts[0], c.sp.pts) })).filter(c => c.d <= 11).sort((a, b) => a.d - b.d);
+    if (near.length) done(near.some(c => c.k === want) ? want : near[0].k); else if (hit >= 0) done(hit);
+    return;
+  }
+  const good = sps.map(c => ({ k: c.k, m: traceMatch(pts, c.sp) })), ok = good.filter(c => c.m.ok).sort((a, b) => a.m.mean - b.m.mean);
+  if (ok.length) { const k = ok.some(c => c.k === want) ? want : ok[0].k; if (k !== want) fade(); done(k); return; }   // 描對了就往下一筆（整區重畫，線跟著換掉）；描到別的筆畫＝順序錯
+  fade();
+  if (good.some(c => c.k === want && c.m.rev)) traceHint('方向反了喔，從筆畫的開頭畫過去');
+  else traceHint((q.miss || 0) >= 2 ? '順著發亮的筆畫，從開頭畫過去' : '順著灰色的筆畫，從開頭一口氣畫下來');
+}));
+/* 筆順區的點擊都交給上面處理（不然手指放開時又被當成點一下） */
+document.addEventListener('click', e => { if (e.target.closest && e.target.closest('.stroke-box svg')) { e.stopPropagation(); e.preventDefault(); } }, true);
 /* 打地鼠：每 1 秒換一批跑出來的字，要打的字常常會出現 */
 let whackTimer = 0;
 function startWhack() {
@@ -7346,8 +7455,9 @@ function bootDone() {
   const r = document.documentElement, b = document.getElementById('boot');
   if (b) b.remove();
   if (!r.classList.contains('boot3d')) return;
-  if (!document.body.classList.contains('pl-full')) { r.classList.remove('boot3d'); return; }
-  setTimeout(() => r.classList.remove('boot3d'), 400);   // 不用 requestAnimationFrame：分頁在背景時它不會跑
+  const off = () => { r.classList.remove('boot3d', 'boot-poster'); r.style.removeProperty('--poster'); };   // 島嶼畫面（很長的圖片字串）用完就拿掉
+  if (!document.body.classList.contains('pl-full')) { off(); return; }
+  setTimeout(off, 400);   // 不用 requestAnimationFrame：分頁在背景時它不會跑
 }
 async function start(saved) {
   try { planetWarm(); } catch (e) { /* 3D 預先下載失敗不影響遊戲 */ }
