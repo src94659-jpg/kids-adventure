@@ -1048,6 +1048,84 @@ body.lock-cleared .node.done::after, body.lock-cleared .rnode.done::after, body.
 .r-pad { display: grid; grid-template-columns: repeat(3, 78px); gap: 10px; }
 .r-pad button { height: min(64px, 8.5vh); font-size: max(var(--fs-min), 1.6rem * var(--fs-l)); border-radius: 18px; border: 3px solid var(--line); background: var(--paper); box-shadow: 0 4px 0 var(--line); }
 .r-pad button:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--line); }
+/* 數字鍵盤作答（加減乘除、四則、九九、直式） */
+.numpad { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: min(10px, 1.2vh); width: min(100%, 340px); }
+.nk { height: clamp(44px, 7vh, 68px); padding: 0; font-size: max(var(--fs-min), min(2rem, 4.2vh) * var(--fs-l)); color: var(--ink); font-variant-numeric: tabular-nums;
+  border: 3px solid var(--line); border-radius: 18px; background: var(--paper); box-shadow: 0 5px 0 var(--line); }
+.nk:active { transform: translateY(4px); box-shadow: 0 1px 0 var(--line); }
+.nk.fn { font-size: max(var(--fs-min), min(1.2rem, 2.8vh) * var(--fs-m)); background: #FFF1E6; }
+.nk.ok { font-size: max(var(--fs-min), min(1.3rem, 3vh) * var(--fs-m)); background: var(--leaf-soft); border-color: var(--leaf); box-shadow: 0 5px 0 var(--leaf); }
+.pad-ans { display: inline-block; min-width: 1.4em; padding: 0 .15em; margin-left: .1em; border-bottom: .09em solid var(--sky); color: var(--sky-deep); text-align: center; line-height: 1.1; }
+.pad-ans.on { color: var(--ink); border-bottom-color: var(--sun-deep); }
+.pad-game .math-q { margin-top: 2px; }
+/* 直式計算：左邊格子、右邊（手機在下面）這一步的小算式和鍵盤 */
+.vx { display: flex; flex-direction: column; align-items: center; gap: min(8px, 1vh); width: 100%; max-width: 820px; }
+.vleft, .vright { display: flex; flex-direction: column; align-items: center; gap: min(8px, 1vh); }
+@media (min-aspect-ratio: 1/1) { .vx { flex-direction: row; justify-content: center; align-items: center; gap: 16px; } .vleft { flex: none; max-width: 58%; } .vright { flex: 1 1 0; min-width: 0; max-width: 340px; } .vright .numpad { width: 100%; } }
+.vbar { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; max-width: 420px; }
+.vbar li { padding: 0 9px; border-radius: 999px; border: 2px solid var(--line); background: var(--paper); font-size: max(var(--fs-min), min(.9rem, 2.1vh) * var(--fs-s)); line-height: 1.6; white-space: nowrap; }
+.vbar li.now { background: var(--sun); border-color: var(--sun-deep); }
+.vbar li.ok { background: var(--leaf-soft); border-color: var(--leaf); }
+.vgrid { --cs: min(52px, 11vw, 5.6vh); display: grid; grid-template-columns: repeat(var(--w), var(--cs)); background: rgba(255, 253, 247, .95); border: 3px solid var(--line); border-radius: 18px; padding: 2px 10px 6px; font-variant-numeric: tabular-nums; }
+.vc { height: var(--cs); display: grid; place-items: center; position: relative; font-size: calc(var(--cs) * .68); line-height: 1; }
+.vc.vh { height: calc(var(--cs) * .56); font-size: max(var(--fs-min), calc(var(--cs) * .3)); color: var(--sky-deep); white-space: nowrap; }
+.vc.vcar { height: calc(var(--cs) * .48); }
+.vc .cy { font-style: normal; font-size: calc(var(--cs) * .38); color: #E07A1F; }
+.vc.hot { background: rgba(246, 177, 47, .24); }
+.vc.vh.hot { border-radius: 10px 10px 0 0; }
+.vc.use { color: var(--sky-deep); }
+.vc.wr { color: #2E6B47; }
+.vc.lz { opacity: .25; }
+.vc.vop { color: var(--sky-deep); }
+.vc.vop small { font-size: .6em; }
+.vc .vq { font-style: normal; width: 82%; height: 82%; display: grid; place-items: center; color: var(--sun-deep); border: 2px dashed var(--sun-deep); border-radius: 8px; background: #FFF8E1; }
+.vc s { text-decoration-color: #D9665F; text-decoration-thickness: 2px; opacity: .55; }
+.vc .nv { position: absolute; top: -12%; right: 0; font-style: normal; font-size: calc(var(--cs) * .36); color: #D9665F; }
+.vc .b10 { font-style: normal; font-size: calc(var(--cs) * .36); color: #D9665F; align-self: start; margin-top: 8%; }
+.vc:has(.b10) { grid-auto-flow: column; justify-content: center; place-items: initial; align-items: center; }
+.vxline { grid-column: 1 / -1; border-top: 3px solid var(--ink); margin: 1px 0 2px; }
+.vtitle { margin: 0; font-size: max(var(--fs-min), min(1.25rem, 2.9vh) * var(--fs-m)); }
+.veq { font-size: min(2.6rem, 9vw, 5.6vh); padding: 2px 18px; }
+.vhint { margin: 0; max-width: 360px; color: #9A4320; background: #FFF4E5; border: 2px solid #F3C38B; border-radius: 12px; padding: 2px 10px; font-size: max(var(--fs-min), min(1.05rem, 2.5vh) * var(--fs-s)); }
+.vchk { max-width: 340px; background: rgba(255, 253, 247, .95); border: 3px solid var(--leaf); border-radius: 16px; padding: 6px 14px; font-size: max(var(--fs-min), min(1.2rem, 2.8vh) * var(--fs-m)); line-height: 1.5; }
+.vgo { min-height: 52px; }
+.stack.vert-game { gap: min(8px, 1vh); }
+/* 直式在直的螢幕：鍵盤排成兩排六欄，格子才有地方 */
+@media (max-aspect-ratio: 1/1) { .vert-game .numpad { grid-template-columns: repeat(6, minmax(0, 1fr)); width: min(100%, 460px); gap: 6px; } .vert-game .nk { height: clamp(44px, 6vh, 64px); border-radius: 14px; } .vert-game .nk.fn, .vert-game .nk.ok { font-size: max(var(--fs-min), min(1.05rem, 2.4vh) * var(--fs-m)); } }
+/* 九九跳石頭：河上九顆石頭，夥伴答對一題跳一顆 */
+.hop-river { position: relative; flex: none; width: min(100%, 700px); height: min(23vh, 31vw, 200px); border-radius: 26px; overflow: visible;
+  background: linear-gradient(180deg, rgba(150, 214, 240, .92), rgba(74, 152, 212, .92)); border: 3px solid rgba(255, 255, 255, .85); box-shadow: inset 0 -10px 0 rgba(40, 110, 170, .25); }
+.hop-bank { position: absolute; left: 0; top: 0; bottom: 0; width: 5%; border-radius: 24px 0 0 24px; background: linear-gradient(90deg, #7CC46A, #5FAF55); }
+.hop-flag { position: absolute; right: 8px; top: 6px; padding: 0 10px; border-radius: 999px; background: rgba(255, 253, 247, .9); font-size: max(var(--fs-min), min(1rem, 2.2vh) * var(--fs-s)); }
+.stone { position: absolute; width: 9.6%; aspect-ratio: 1.2; transform: translate(-50%, -50%); padding: 0; border-radius: 50%; border: 3px solid #8C8F95;
+  background: radial-gradient(circle at 35% 30%, #F1F2F4, #A9ADB4); box-shadow: 0 5px 0 #6B6F76; color: #4A4F57; font-size: max(.72rem, min(1.15rem, 2.4vw, 2.6vh)); line-height: 1; font-variant-numeric: tabular-nums; }
+.stone.lit { background: radial-gradient(circle at 35% 30%, #FFF6C9, #F6B12F); border-color: #D98E0C; box-shadow: 0 5px 0 #B9842A, 0 0 0 5px rgba(255, 230, 120, .55); color: #5A3A00; animation: stoneGlow .9s ease-in-out infinite alternate; cursor: pointer; }
+.stone.ok { background: radial-gradient(circle at 35% 30%, #E4F7E8, #6CC28A); border-color: #3C9A66; box-shadow: 0 5px 0 #2E7A50; color: #1F4D33; font-size: max(.8rem, min(1.35rem, 2.8vw, 3vh)); }
+.stone:not(.lit):not(.ok) { opacity: .75; pointer-events: none; }
+@keyframes stoneGlow { to { box-shadow: 0 5px 0 #B9842A, 0 0 0 10px rgba(255, 230, 120, .25); } }
+.hop-river.narrow { height: min(30vh, 56vw, 250px); }
+.hop-river.narrow .hop-flag { top: auto; bottom: 6px; }
+.hop-river.narrow .stone { width: 15.5%; font-size: max(.85rem, min(1.25rem, 4.4vw)); }
+.hop-river.narrow .hop-me { width: 12%; }
+.hop-me { position: absolute; z-index: 2; width: min(9%, 64px); transform: translate(-50%, -112%); transition: left .6s ease-in-out, top .6s ease-in-out; pointer-events: none; }
+.hop-me .pet { width: 100%; }
+.hop-me.jump > * { animation: hopUp .6s ease-out; }
+@keyframes hopUp { 45% { transform: translateY(-55%); } }
+.hop-go { min-height: 54px; }
+.hop-boss { width: min(150px, 17vh); flex: none; }
+.hop-boss .bz, .hop-boss img.boss { width: 100%; height: auto; display: block; }
+.stack.hop-game { gap: min(12px, 1.4vh); }
+@media (max-height: 450px) and (orientation: landscape) {
+  .numpad { grid-template-columns: repeat(6, minmax(0, 1fr)); width: min(100%, 500px); gap: 6px; }
+  .nk { height: 40px; border-radius: 14px; }
+  .vgrid { --cs: min(40px, 8.4vh); }
+  .vbar li { line-height: 1.35; }
+  .hop-river { height: min(28vh, 106px); }
+  .stone { width: 7.6%; }
+  .hop-me { width: 7%; }
+  .hop-boss { width: 80px; }
+  .vert-game:not(.answered) .coach { display: none; }   /* 小幫手固定在左下角會蓋到直式格子；答錯的提示在格子旁邊 */
+}
 .r-setup .duel-col { width: 100%; max-width: 520px; }
 
 /* 頭目關、難度、休息 */
@@ -1740,7 +1818,8 @@ const v3dn = name => `--d:url(${V3}${name}_day.webp);--n:url(${V3}${name}_night.
 const v3i = (name, cls = '') => `<img class="v3i ${cls}" src="${V3}${name}.webp" alt="" aria-hidden="true" draggable="false">`;
 const QUIZ_ART = { 森林: 'forest', 高原: 'highland', 冰原: 'icefield', 台北: 'taipei', 埃及: 'egypt', 日本: 'japan', 法國: 'france', 海島: 'island' };
 const STATION_ART = { listen: 'chinese_listen', zhuyin: 'chinese_phonetic', typo: 'chinese_error', similar: 'chinese_similar', spell: 'chinese_spelling', stroke: 'chinese_stroke', whack: 'chinese_mole', build: 'chinese_components',
-  'm-count': 'math_count', 'm-add': 'math_addition', 'm-sub': 'math_subtraction', 'm-cmp': 'math_compare', 'm-mul': 'math_multiplication', 'm-div': 'math_division', 'm-ops': 'math_arithmetic', 'm-frac': 'math_fractions', 'm-dec': 'math_decimals' };
+  'm-count': 'math_count', 'm-add': 'math_addition', 'm-sub': 'math_subtraction', 'm-cmp': 'math_compare', 'm-mul': 'math_multiplication', 'm-div': 'math_division', 'm-ops': 'math_arithmetic', 'm-frac': 'math_fractions', 'm-dec': 'math_decimals',
+  'm-vert': 'math_arithmetic', 'm-99': 'math_multiplication' };   // 直式、九九還沒有自己的站點圖，先借用（要請 GPT 畫）
 /* 年級大廳（國語、數學）和英文 Book 房間：六間房的範圍、門上牌子的位置（美術 layout.json，比例座標） */
 const HALL_LAYOUT = {
   portrait: { lx: [0.205, 0.5, 0.795], ly: [0.276, 0.574], r: [[0.07, 0.235, 0.34, 0.485], [0.355, 0.235, 0.645, 0.485], [0.66, 0.235, 0.93, 0.485], [0.07, 0.535, 0.34, 0.79], [0.355, 0.535, 0.645, 0.79], [0.66, 0.535, 0.93, 0.79]] },
@@ -1788,6 +1867,7 @@ function newQTime() {
   if (q && q.noTimer) { S.qTotal = 10; S.timeLeft = 0; return; }   // 安親班不倒數，也沒有時間加分（首答 10 分）
   /* 新題型要做的事比較多，給比較長的時間 */
   S.qTotal = !q ? base : q.type === 'stroke' ? Math.max(base, q.strokes.length * 45) : q.type === 'spell' ? Math.round(base * 1.4) : q.type === 'whack' || q.type === 'en-spell' || q.type === 'en-miss' ? Math.round(base * 1.2) : q.type === 'en-sent' || q.type === 'en-def' ? Math.round(base * 1.6) : q.sub === 'math' && q.type !== 'm-count' && q.type !== 'm-cmp' ? Math.round(base * (S.grade >= 4 ? 3 : 1.5)) : base;   // 計算題要多一點時間（高年級的直式計算更久）
+  if (padOn(q)) S.qTotal = Math.round(S.qTotal * 1.25);   // 用數字鍵盤打答案比點選項慢一點
   S.timeLeft = S.qTotal;
 }
 function prepQ(q) {   // 每題開始時套用一次「放慢模式」：拿掉一個錯的選項
@@ -1843,7 +1923,7 @@ const ICONS = {
   trophy: '<svg viewBox="0 0 48 48"><path d="M14 6h20v10a10 10 0 0 1-20 0z" fill="#F6B12F"/><path d="M14 9H7v4a7 7 0 0 0 7 7M34 9h7v4a7 7 0 0 1-7 7" fill="none" stroke="#C98510" stroke-width="3"/><rect x="21" y="26" width="6" height="8" fill="#C98510"/><rect x="14" y="34" width="20" height="6" rx="2" fill="#C98510"/></svg>'
 };
 const LEVEL_ICON = { listen: ICONS.speaker, zhuyin: 'ㄅ', typo: ICONS.search, similar: '己', spell: '<span class="duo">ㄕㄢ</span>', stroke: '筆', whack: '鎚', build: '組',
-  'm-count': '<span class="duo">123</span>', 'm-add': '＋', 'm-sub': '－', 'm-cmp': '＞', 'm-mul': '×', 'm-div': '÷', 'm-ops': '<span class="duo">＋×</span>', 'm-frac': '½', 'm-dec': '<span class="duo">0.5</span>', 'e-listen': ICONS.speaker, 'e-pic': '圖', 'e-mean': '<span class="duo">英中</span>',
+  'm-count': '<span class="duo">123</span>', 'm-add': '＋', 'm-sub': '－', 'm-cmp': '＞', 'm-mul': '×', 'm-div': '÷', 'm-ops': '<span class="duo">＋×</span>', 'm-frac': '½', 'm-dec': '<span class="duo">0.5</span>', 'm-vert': '<span class="duo">直式</span>', 'm-99': '<span class="duo">99</span>','e-listen': ICONS.speaker, 'e-pic': '圖', 'e-mean': '<span class="duo">英中</span>',
   'e-miss': '<span class="duo">c_t</span>', 'e-spell': '<span class="duo">ABC</span>', 'e-sent': '句', 'e-def': '<span class="duo">EN</span>' };
 
 /* ---------- 科目：國語（上面的 LEVELS）、英文、數學 ----------
@@ -1863,8 +1943,10 @@ const MATH_LEVELS = [
   { id: 'm-count', sub: 'math', gs: [1], name: '數一數', desc: '數數看一共有幾個', say: '數一數。數數看，一共有幾個？' },
   { id: 'm-add',   sub: 'math', name: '加法',   desc: '加起來是多少',     say: '加法。算算看，加起來是多少？' },
   { id: 'm-sub',   sub: 'math', name: '減法',   desc: '減掉以後剩多少',   say: '減法。算算看，減掉以後剩下多少？' },
+  { id: 'm-vert',  sub: 'math', gs: [2, 3, 4, 5, 6], name: '直式計算', desc: '一位一位算', say: '直式計算。從個位開始，一位一位算，算好寫進格子。', noDuel: true },
   { id: 'm-cmp',   sub: 'math', gs: [1, 2], name: '比大小', desc: '大於、小於、等於', say: '比大小。選出大於、小於，還是等於。' },
   { id: 'm-mul',   sub: 'math', gs: [2, 3, 4, 5, 6], name: '乘法', desc: '九九乘法', say: '乘法。想想九九乘法，算出答案。' },
+  { id: 'm-99',    sub: 'math', gs: [2, 3], name: '九九跳石頭', desc: '一關一張九九表', say: '九九跳石頭。點發亮的石頭，算對了就跳過去！', noDuel: true },
   { id: 'm-div',   sub: 'math', gs: [3, 4, 5, 6], name: '除法', desc: '平分成幾份', say: '除法。算算看，平分以後是多少？' },
   { id: 'm-ops',   sub: 'math', gs: [4, 5, 6], name: '四則運算', desc: '先乘除、後加減', say: '四則運算。記得先算括號，再算乘除，最後算加減。' },
   { id: 'm-frac',  sub: 'math', gs: [4, 5, 6], name: '分數', desc: '分數的加減乘除', say: '分數。算算看，答案是幾分之幾？' },
@@ -1878,6 +1960,7 @@ const levelInfo = id => ALL_LEVELS.find(l => l.id === id) || kzLevel(id);
 const subLevels = sub => sub === 'en' ? EN_LEVELS : sub === 'math' ? MATH_LEVELS : LEVELS;
 const levelForGrade = (l, g) => !l.gs || l.gs.includes(g);
 const MATH_STAGES = 5;   // 數學每種題目 5 關，一關比一關難
+const VERT_SIZE = 4;     // 直式計算一關 4 題（一題要算好幾步）
 const STAR = '<svg viewBox="0 0 100 100"><path class="s" d="M50 6l13 27 30 4-22 21 5 30-26-14-26 14 5-30L7 37l30-4z"/></svg>';
 
 /* 動物夥伴：累計星星越多，裝扮越多（帽子 → 圍巾 → 眼鏡 → 博士帽）。
@@ -3223,6 +3306,8 @@ function poolFor(g, ok, need) {
 const similarOk = w => (w.形近字 || []).length > 0 && w.例詞.some(t => t.includes(w.字));
 const sayWord = (w, word) => `${word || w.例詞[0]}的${w.字}`;
 function levelItems(g, lv) {
+  if (lv === 'm-99') return Array.from({ length: 72 }, (_, k) => ({ 字: `m-99#${k}`, 年級: g, k, t: 2 + Math.floor(k / 9), n: k % 9 + 1 }));   // 2～9 的九九表，一關一張表 9 題
+  if (lv === 'm-vert') return Array.from({ length: MATH_STAGES * VERT_SIZE }, (_, k) => ({ 字: `m-vert#${k}`, 年級: g, k, d: Math.floor(k / VERT_SIZE) }));
   if (lv.startsWith('m-')) return Array.from({ length: MATH_STAGES * STAGE_SIZE }, (_, k) => ({ 字: `${lv}#${k}`, 年級: g, k }));
   if (lv === 'e-sent') return SENT.filter(s => s.年級 === g).map(s => ({ ...s, 字: s.句子 }));
   if (lv === 'e-unit') return EN.filter(w => w.冊 === g).map(w => ({ ...w, 字: w.英文 }));
@@ -3312,7 +3397,7 @@ function stagesOf(g, lv) {
   if (lv === 'e-unit') return Array.from({ length: unitCount(g) }, (_, i) => unitWords(g, i + 1));   // 英文：第 i 關就是 Unit i+1（還沒有資料的課是空的）
   const items = levelItems(g, lv), n = items.length;
   if (!n) return [];
-  const k = Math.ceil(n / STAGE_SIZE);
+  const k = Math.ceil(n / (lv === 'm-vert' ? VERT_SIZE : lv === 'm-99' ? 9 : STAGE_SIZE));   // 直式一關 4 題（每題好幾步）、九九一關 9 顆石頭
   return Array.from({ length: k }, (_, i) => uniqueBy(items.slice(Math.floor(i * n / k), Math.floor((i + 1) * n / k)), x => x.字));
 }
 const levelOpen = (g, lv) => {
@@ -3851,6 +3936,7 @@ function mathArgs(lv, g, d) {
     const dv = rnd(2, [5, 6, 9, 9, 9][d]); return [dv * rnd(1, 9), dv];
   }
   if (lv === 'm-ops') return opsArgs(g, d);
+  if (lv === 'm-vert') return vertArgs(g, d);
   if (lv === 'm-frac') return fracArgs(g, d);
   return decArgs(g, d);
 }
@@ -3946,6 +4032,8 @@ function decQ(op, x, y, p) {
 function mathQ(lv, a, b, ...rest) {
   if (lv === 'm-frac') return fracQ(a, b, ...rest);
   if (lv === 'm-dec') return decQ(a, b, ...rest);
+  if (lv === 'm-vert') return vertQ(a, b, ...rest);
+  if (lv === 'm-99') return mul99Q(a, b);
   if (lv === 'm-ops') {
     const F = OPS_FORMS[a]; if (!F) return null;
     const [expr, ans, slip, say] = F(b, ...rest);
@@ -3968,11 +4056,261 @@ function mathQ(lv, a, b, ...rest) {
   return { type: 'math', show: `${a} ${sym[0]} ${b} ＝ ？`, answer: String(ans), options: numOpts(ans, near), say: `${a}${sym[1]}${b}，等於多少？`, after: `${a}${sym[1]}${b}，等於${ans}` };
 }
 function buildMath(lv, item) {
-  const d = Math.min(MATH_STAGES - 1, Math.floor((item.k || 0) / STAGE_SIZE));
+  if (lv === 'm-99') { const q = mul99Q(item.t, item.n); q.mref = `${item.t}|${item.n}`; return q; }   // 九九照順序，不抽亂數
+  const d = item.d !== undefined ? item.d : Math.min(MATH_STAGES - 1, Math.floor((item.k || 0) / STAGE_SIZE));
   for (let t = 0; ; t++) {   // 偶爾抽到算不出來的數字（例如分數相減等於 0）就重抽
     const args = mathArgs(lv, item.年級, d), q = mathQ(lv, ...args);
     if (q || t > 30) { (q || {}).mref = args.join('|'); return q; }
   }
+}
+
+/* ---------- 九九跳石頭：一關一張九九表（n×1～n×9 九顆石頭），走完打石頭關的頭目 ---------- */
+const CN_D = ['零', '一', '二', '三', '四', '五', '六', '七', '八', '九'];
+/* 九九口訣：三七二十一、二三得六（積是一位數說「得」）、二五一十 */
+const chant = (t, k) => { const v = t * k; return CN_D[t] + CN_D[k] + (v < 10 ? '得' + CN_D[v] : v === 10 ? '一十' : (v >= 20 ? CN_D[Math.floor(v / 10)] : '') + '十' + (v % 10 ? CN_D[v % 10] : '')); };
+function mul99Q(t, k) {
+  if (!(t >= 1 && k >= 1)) return null;
+  const v = t * k;
+  return { type: 'math', show: `${t} × ${k} ＝ ？`, answer: String(v), options: numOpts(v, [t * (k + 1), t * (k - 1), (t + 1) * k].filter(x => x > 0)),
+    say: `${t}乘以${k}，等於多少？`, after: `${chant(t, k)}，${t}乘以${k}等於${v}`, t, k };
+}
+const hint99 = q => q.k > 1 ? `提示：${q.t}×${q.k - 1}＝${q.t * (q.k - 1)}，再加一個 ${q.t} 就是答案` : `提示：${q.t} 乘以 1，就是 ${q.t} 自己`;
+
+/* ---------- 直式計算：從個位開始一位一位算，答案寫進格子 ---------- */
+/* 每個年級 5 關考哪幾種：a 加、s 減、m 乘，後面是位數（m32＝三位數×二位數）；一關裡從清單隨機挑 */
+const VERT_PLAN = {
+  2: [['a2'], ['s2'], ['a3'], ['s3'], ['a3', 's3']],
+  3: [['a4'], ['s4'], ['m21'], ['m31'], ['a4', 's4', 'm21', 'm31']],
+  4: [['m31'], ['m22'], ['m22'], ['m32'], ['m22', 'm32', 'a5', 's5']],
+  5: [['a5', 's5'], ['m22'], ['m32'], ['m32'], ['m42']],
+  6: [['a5', 's5'], ['m32'], ['m42'], ['m42'], ['m32', 'm42', 'a5', 's5']]
+};
+const rndN = n => rnd(10 ** (n - 1), 10 ** n - 1);
+function vertArgs(g, d) {
+  const kind = pick((VERT_PLAN[g] || VERT_PLAN[2])[d] || ['a2']), n = +kind[1], m = +kind[2] || 0;
+  for (let t = 0; t < 300; t++) {
+    if (kind[0] === 'a') { const a = rndN(n), b = rndN(n); if ((n <= 4 && a + b >= 10 ** n) || noCarry(a, b) === a + b) continue; return [0, a, b]; }   // 一定要進位；四位數以內答案不會多一位
+    if (kind[0] === 's') { let a = rndN(n), b = rndN(Math.random() < 0.3 ? n - 1 : n); if (a < b) [a, b] = [b, a]; if (a === b || noBorrow(a, b) === a - b) continue; return [1, a, b]; }   // 一定要借位
+    const a = rndN(n), b = m === 1 ? rnd(2, 9) : rnd(11, 99);
+    if (b % 10 === 0 || a % 10 === 0) continue;   // 乘 0 的那一層太簡單，不出
+    return [2, a, b];
+  }
+  return [0, 38, 47];
+}
+const COL_NAME = ['個位', '十位', '百位', '千位', '萬位', '十萬位'];
+const digitsOf = n => String(n).split('').reverse().map(Number);   // 個位在最前面
+/* 每一步：要算的小算式(eq)、答案(ans)、寫進哪一格(post)、算之前要先畫的借位記號(pre)、答錯時的提示(hint)；
+   只有一個數字可以直接寫下來的位（例如乘法第二行的空格）是 auto，不用問 */
+function addSteps(X, Y, row, ph, out, skipY0, rows = ['A', 'B']) {
+  let c = 0;
+  const n = Math.max(X.length, Y.length);
+  for (let i = 0; i < n; i++) {
+    const x = X[i], y = skipY0 && i === 0 ? undefined : Y[i], c0 = c, last = i === n - 1;
+    const parts = [c0 || undefined, x, y].filter(v => v !== undefined), s = parts.reduce((a, b) => a + b, 0), nm = COL_NAME[i];
+    const post = [{ k: 'w', row, col: i, v: s % 10 }];
+    if (s >= 10) post.push(last ? { k: 'w', row, col: i + 1, v: Math.floor(s / 10) } : { k: 'c', col: i + 1, v: Math.floor(s / 10), ph });
+    c = s >= 10 ? 1 : 0;
+    if (parts.length === 1) { out.push({ ph, col: i, row, auto: true, pre: [], post }); continue; }
+    out.push({ ph, col: i, row, label: nm, eq: `${parts.join(' ＋ ')} ＝ `, ans: s, pre: [], post, use: [[rows[0], i], [rows[1], i]],
+      hint: `${nm} ${parts.join('＋')}＝${s}${c0 ? `（${c0} 是進位）` : ''}，${s >= 10 && !last ? `寫 ${s % 10} 進 1` : `寫 ${s}`}` });
+  }
+}
+function subSteps(A, B, out) {
+  const top = A.slice();
+  for (let i = 0; i < A.length; i++) {
+    const y = B[i], nm = COL_NAME[i], pre = [];
+    let x = top[i], borrowed = false;
+    if (y !== undefined && x < y) {   // 不夠減：向前一位借 1（前一位是 0 就再往前借，中間的 0 變 9）
+      let j = i + 1; while (top[j] === 0) j++;
+      top[j]--; pre.push({ k: 'x', col: j, v: top[j] });
+      for (let m = j - 1; m > i; m--) { top[m] = 9; pre.push({ k: 'x', col: m, v: 9 }); }
+      top[i] = x + 10; x = top[i]; borrowed = true; pre.push({ k: 'b', col: i });
+    }
+    const r = x - (y || 0), post = [{ k: 'w', row: 'R', col: i, v: r }];
+    if (y === undefined) { out.push({ ph: 'sub', col: i, row: 'R', auto: true, pre, post }); continue; }
+    out.push({ ph: 'sub', col: i, row: 'R', label: nm, eq: `${x} － ${y} ＝ `, ans: r, pre, post, use: [['A', i], ['B', i]],
+      hint: borrowed ? `${nm} ${x - 10} 不夠減 ${y}，向前一位借 1 變成 ${x}，${x}－${y}＝${r}` : `${nm} ${x}－${y}＝${r}` });
+  }
+}
+function mulSteps(A, y, shift, row, ph, out, who) {
+  let c = 0;
+  A.forEach((x, i) => {
+    const v = x * y + c, c0 = c, last = i === A.length - 1, nm = COL_NAME[i];
+    const post = [{ k: 'w', row, col: i + shift, v: v % 10 }];
+    if (v >= 10) post.push(last ? { k: 'w', row, col: i + shift + 1, v: Math.floor(v / 10) } : { k: 'c', col: i + shift + 1, v: Math.floor(v / 10), ph });
+    out.push({ ph, col: i + shift, row, label: nm, eq: `${x} × ${y}${c0 ? ` ＋ ${c0}` : ''} ＝ `, ans: v, pre: [], post, use: [['A', i], ['B', shift]],
+      hint: `${who}${nm}${who ? '：' : ' '}${x}×${y}＝${x * y}${c0 ? `，再加進位的 ${c0}＝${v}` : ''}，${last || v < 10 ? `寫 ${v}` : `寫 ${v % 10} 進 ${Math.floor(v / 10)}`}` });
+    c = Math.floor(v / 10);
+  });
+}
+const roundTop = n => { const p = 10 ** (String(n).length - 1); return Math.round(n / p) * p; };
+function vertQ(op, a, b) {
+  if (!(a > 0 && b > 0) || ![0, 1, 2].includes(op) || (op === 1 && a <= b)) return null;
+  const A = digitsOf(a), B = digitsOf(b), steps = [], two = op === 2 && b >= 10;
+  const ans = [a + b, a - b, a * b][op], sym = ['＋', '－', '×'][op], word = ['加', '減', '乘以'][op];
+  if (op === 0) addSteps(A, B, 'R', 'add', steps);
+  else if (op === 1) subSteps(A, B, steps);
+  else if (!two) mulSteps(A, b, 0, 'R', 'mul', steps, '');
+  else {   // 乘數是二位數：先用個位乘（第一行）、再用十位乘（第二行從十位寫起），最後兩行加起來
+    mulSteps(A, B[0], 0, 'P1', 'm1', steps, `用個位的 ${B[0]} 乘 ${a} 的`);
+    mulSteps(A, B[1], 1, 'P2', 'm2', steps, `用十位的 ${B[1]} 乘 ${a} 的`);
+    addSteps(digitsOf(a * B[0]), digitsOf(a * B[1] * 10), 'R', 'sum', steps, true, ['P1', 'P2']);
+  }
+  const ra = roundTop(a), rb = b < 10 ? b : roundTop(b);
+  const chk = op === 0 ? `驗算：${ans} － ${b} ＝ ${a}，對了！` : op === 1 ? `驗算：${ans} ＋ ${b} ＝ ${a}，對了！`
+    : `估一估：${a} 大約 ${ra}${b >= 10 ? `，${b} 大約 ${rb}` : ''}，${ra} × ${rb} ＝ ${ra * rb}，答案 ${ans} 差不多，對了！`;
+  steps.push({ ph: 'chk', check: true, label: '檢查', eq: chk, pre: [], post: [] });
+  const q = { type: 'vert', op, a, b, two, sym, steps, pos: 0, answer: String(ans), noTimer: true, dmg: 3, options: [],
+    say: `${a}${word}${b}，用直式從個位開始，一位一位算。`, after: `${a}${word}${b}，等於${ans}` };
+  vertSkip(q);
+  return q;
+}
+function vertSkip(q) { while (q.steps[q.pos] && q.steps[q.pos].auto) q.pos++; }
+/* 照目前算到第幾步，算出格子裡要顯示什麼：R/P1/P2 寫好的數字、c 進位、x 借位後的新數字、b 借來的 1 */
+function vertState(q, done) {
+  const st = { R: {}, P1: {}, P2: {}, c: {}, x: {}, b: {} };
+  const put = e => { if (e.k === 'w') st[e.row][e.col] = e.v; else if (e.k === 'c') st.c[e.col] = e; else if (e.k === 'x') st.x[e.col] = e.v; else st.b[e.col] = 1; };
+  q.steps.forEach((s, i) => { if (i <= q.pos) s.pre.forEach(put); if (i < q.pos || done) s.post.forEach(put); });
+  return st;
+}
+const vertChips = q => q.two ? ['乘個位', '乘十位', '加起來', '檢查'] : q.steps.filter(s => !s.auto).map(s => s.label);
+const vertChipAt = q => q.two ? { m1: 0, m2: 1, sum: 2, chk: 3 }[q.steps[q.pos].ph] : q.steps.slice(0, q.pos).filter(s => !s.auto).length;
+function vertHTML(q) {
+  const done = S.answered, cur = q.steps[q.pos], st = vertState(q, done), A = digitsOf(q.a), B = digitsOf(q.b);
+  const W = Math.max(String(q.a).length, String(q.b).length, q.answer.length);
+  const ph = cur.check ? q.steps[q.steps.length - 2].ph : cur.ph, hot = !done && !cur.check ? cur.col : -1;
+  const use = new Set(!done && cur.use ? cur.use.map(([r, c]) => r + c) : []);
+  const cell = (r, c, html, cls = '') => `<span class="vc ${c === hot ? 'hot' : ''} ${use.has(r + c) ? 'use' : ''} ${cls}">${html}</span>`;
+  const cols = Array.from({ length: W }, (_, j) => W - 1 - j);   // 由左到右：最高位 → 個位
+  let g = `<span class="vc vh"></span>${cols.map(c => `<span class="vc vh ${c === hot ? 'hot' : ''}">${W > 4 ? COL_NAME[c].replace('位', '') : COL_NAME[c]}</span>`).join('')}`;
+  g += `<span class="vc vcar"></span>${cols.map(c => cell('c', c, st.c[c] && st.c[c].ph === ph ? `<i class="cy">${st.c[c].v}</i>` : '', 'vcar')).join('')}`;
+  (q.two ? ['A', 'B', '-', 'P1', 'P2', '-', 'R'] : ['A', 'B', '-', 'R']).forEach(r => {
+    if (r === '-') { g += '<span class="vxline"></span>'; return; }
+    g += `<span class="vc vop">${r === 'B' ? q.sym : r === 'P2' ? '<small>＋</small>' : ''}</span>` + cols.map(c => {
+      if (r === 'A') { const d = A[c]; return d === undefined ? cell(r, c, '') : cell(r, c, `${st.b[c] ? '<i class="b10">1</i>' : ''}${st.x[c] !== undefined ? `<s>${d}</s><i class="nv">${st.x[c]}</i>` : d}`); }
+      if (r === 'B') return cell(r, c, B[c] === undefined ? '' : B[c]);
+      const v = st[r][c], target = hot === c && cur.row === r;
+      if (v === undefined) return cell(r, c, target ? '<i class="vq">?</i>' : '', target ? 'tgt' : '');
+      return cell(r, c, v, r === 'R' && v === 0 && c >= q.answer.length ? 'lz' : 'wr');   // 答案前面多出來的 0 淡淡的（不用寫）
+    }).join('');
+  });
+  const chips = vertChips(q), ci = done ? chips.length : vertChipAt(q);
+  const title = done ? '算完了！' : cur.check ? '檢查' : q.two ? (cur.ph === 'sum' ? `兩行加起來・${cur.label}` : `用${cur.ph === 'm1' ? `個位的 ${B[0]}` : `十位的 ${B[1]}`} 乘 ${q.a} 的${cur.label}`) : `${ci === 0 ? '先' : '再'}算${cur.label}`;
+  const eq = done ? `<div class="math-q veq">${q.a} ${q.sym} ${q.b} ＝ ${q.answer}</div>`
+    : cur.check ? `<div class="vchk">${esc(cur.eq)}</div>`
+    : `<div class="math-q veq">${cur.eq}<span class="pad-ans ${q.typed ? 'on' : ''}">${esc(q.typed || '？')}</span></div>`;
+  return `<div class="vx">
+    <div class="vleft"><ol class="vbar">${chips.map((t, i) => `<li class="${i < ci ? 'ok' : i === ci ? 'now' : ''}">${i < ci ? '✓' : i + 1} ${t}</li>`).join('')}</ol>
+      <div class="vgrid" style="--w:${W + 1}" aria-label="${q.a} ${q.sym} ${q.b} 的直式">${g}</div></div>
+    <div class="vright"><p class="vtitle">${done ? title : `步驟${CN_D[ci + 1] || ci + 1}：${title}`}</p>${eq}
+      ${!done && q.hintAt === q.pos ? `<p class="vhint">${esc(cur.hint)}</p>` : ''}
+      ${done ? '' : cur.check ? '<button class="btn-big go vgo" data-act="key-ok">✓ 檢查好了</button>' : padHTML()}</div></div>`;
+}
+function renderVert(q) { const box = screen.querySelector('.vx'); if (box) box.outerHTML = vertHTML(q); }
+function vertOk(q) {
+  const s = q.steps[q.pos]; if (!s) return;
+  if (s.check) { succeed(screen.querySelector('.vgrid')); return; }
+  if (!q.typed) { padNudge(); return; }
+  if (+q.typed === s.ans) {
+    q.typed = ''; q.pos++; vertSkip(q); sfx('tap');
+    renderVert(q);
+    const n = q.steps[q.pos], b = $('#bubble'); if (b) b.textContent = n.check ? '算完了！最後檢查一下' : `答對了！接著算${n.label}`;
+    narrate(n.check ? '算完了！最後檢查一下' : `接著算${n.label}`);
+    return;
+  }
+  q.typed = ''; q.hintAt = q.pos;
+  renderVert(q);
+  fail(screen.querySelector('.veq'), 'v' + S.tried.length, s.hint, true);
+}
+
+/* ---------- 數字鍵盤作答：2 年級起的加減乘除、四則運算、九九跳石頭、直式計算 ----------
+   1 年級（數字小、剛學）和數一數、比大小、分數、小數維持選擇題；雙人對戰也維持選擇題（搶答要快） */
+const PAD_LV = ['m-add', 'm-sub', 'm-mul', 'm-div', 'm-ops', 'm-99'];
+const padOn = q => !!q && (q.type === 'vert' || (q.type === 'math' && PAD_LV.includes(q.lv) && (q.g || S.grade) >= 2));
+const padHTML = () => `<div class="numpad" role="group" aria-label="數字鍵盤">${[1, 2, 3, 4, 5, 6, 7, 8, 9].map(n => `<button class="nk" data-act="key" data-d="${n}">${n}</button>`).join('')}<button class="nk fn" data-act="key-clr">清除</button><button class="nk" data-act="key" data-d="0">0</button><button class="nk ok" data-act="key-ok">確認</button></div>`;
+const padSlot = q => `<span class="pad-ans ${q.typed ? 'on' : ''}">${esc(q.typed || '？')}</span>`;
+const curQ = () => S.qs && S.qs[S.idx];
+function padType(d) {
+  const q = curQ(); if (!padOn(q) || S.answered) return;
+  if (hopWait(q)) { hopOpen(); return; }   // 還沒點石頭就按數字：先幫他點開
+  const t = q.typed || ''; if (t.length >= 7) return;
+  q.typed = t === '0' ? String(d) : t + d; sfx('tap'); padShow(q);
+}
+function padBack(all) { const q = curQ(); if (!padOn(q) || S.answered) return; q.typed = all ? '' : (q.typed || '').slice(0, -1); sfx('tap'); padShow(q); }
+function padShow(q) { const el = screen.querySelector('.pad-ans'); if (el) { el.textContent = q.typed || '？'; el.classList.toggle('on', !!q.typed); } }
+function padNudge() { const b = $('#bubble'); if (b) b.textContent = '先按數字，再按確認'; sfx('wrong'); }
+function padHint(q) {
+  const n = S.tried.length;   // 這一題之前錯過幾次
+  if (q.lv === 'm-99') return hint99(q);
+  if (n === 0) return q.lv === 'm-ops' ? '記得：先算括號，再算乘除，最後算加減' : pick(RETRY);
+  return `提示：答案的個位數是 ${+q.answer % 10}`;
+}
+function padOk() {
+  const q = curQ(); if (!padOn(q) || S.answered) return;
+  if (q.type === 'vert') return vertOk(q);
+  if (hopWait(q)) { hopOpen(); return; }
+  if (!q.typed) { padNudge(); return; }
+  const el = screen.querySelector('.math-q');
+  if (q.typed === q.answer) { succeed(el); return; }
+  const msg = padHint(q);
+  q.typed = ''; padShow(q);
+  fail(el, 'p' + S.tried.length, msg, true);
+  if (!S.answered && S.tried.length >= 3) padReveal(q);   // 錯 3 次就公布答案，不要一直卡住
+}
+function padReveal(q) {
+  stopTimer(); S.answered = true; S.timedOut = true;
+  S.bubble = `答案是 ${q.answer}，記起來，下次就會了！`;
+  render(); owlAct('think'); narrate(`答案是${q.answer}。${q.after}`);
+  hopAfter(q);
+}
+/* 電腦、平板接鍵盤：數字鍵、Backspace、Enter 也能作答 */
+document.addEventListener('keydown', e => {
+  if (S.screen !== 'game' || e.ctrlKey || e.metaKey || e.altKey || $('.party')) return;
+  const q = curQ(); if (!padOn(q) || S.answered) return;
+  if (/^[0-9]$/.test(e.key)) { e.preventDefault(); padType(e.key); }
+  else if (e.key === 'Backspace') { e.preventDefault(); padBack(false); }
+  else if (e.key === 'Enter') { e.preventDefault(); padOk(); }
+});
+
+/* ---------- 九九跳石頭的關卡：前 9 題照順序跳石頭，後 9 題同一張表打亂、打頭目（3 顆愛心，同一題只扣一次） ---------- */
+const hopOn = () => S.level === 'm-99' && S.mode === 'stage' && !!S.hop;
+const hopBossNow = () => hopOn() && !!curQ() && curQ().phase === 'boss';
+const hopWait = q => hopOn() && q.phase === 'hop' && !q.open && !S.answered;
+function hopStage(items) {
+  const hop = items.slice().sort((x, y) => x.n - y.n).map(it => Object.assign(makeQ('m-99', it), { phase: 'hop', noTimer: true }));
+  const boss = shuffle(items).map(it => Object.assign(makeQ('m-99', it), { phase: 'boss', noTimer: true }));
+  S.hop = { hp: 9, hearts: 3, lost: false };
+  return [...hop, ...boss];
+}
+function hopOpen() { const q = curQ(); if (!q || !hopWait(q)) return; q.open = true; sfx('tap'); render(); }
+function hopAfter(q) {   // 跳石頭答完：夥伴跳過去，自動換下一顆
+  if (!hopOn() || q.phase !== 'hop') return;
+  setTimeout(() => { if (S.screen === 'game' && S.answered && curQ() === q && !$('.party')) nextQ(); }, 1500);
+}
+function hopHeart() {
+  S.hop.hearts = Math.max(0, S.hop.hearts - 1);
+  const hs = screen.querySelector('.hearts'); if (hs) hs.innerHTML = Array.from({ length: 3 }, (_, i) => heartSVG(i < S.hop.hearts)).join('');
+  if (S.hop.hearts <= 0 && !S.answered) { S.hop.lost = true; S.answered = true; stopTimer(); S.bubble = `愛心用完了…${bossOf().name}好強！再挑戰一次吧！`; render(); narrate(S.bubble); }
+}
+/* 九顆石頭在河上一高一低排過去；手機直放太窄，改成兩排（上排往右、下排往回走） */
+const hopNarrow = () => innerWidth < 600 && innerHeight > innerWidth;
+const HOP_POS = i => hopNarrow() ? (i < 5 ? [12 + i * 19, 28] : [81 - (i - 5) * 19, 74]) : [9 + i * 10.4, i % 2 ? 36 : 66];
+function hopBody(q) {
+  if (q.phase === 'boss') return `<div class="hop-boss">${BOSS_SVG()}</div><div class="math-q">${S.answered ? esc(q.show.replace('？', q.answer)) : esc(q.show).replace('？', padSlot(q))}</div>${S.answered ? '' : padHTML()}`;
+  const at = S.idx, done = S.answered, t = q.t;
+  const stones = Array.from({ length: 9 }, (_, i) => {
+    const k = i + 1, ok = i < at || (done && i === at), lit = i === at && !done;
+    return `<button class="stone ${ok ? 'ok' : lit ? 'lit' : ''}" style="left:${HOP_POS(i)[0]}%;top:${HOP_POS(i)[1]}%" ${lit ? 'data-act="hop-open"' : 'tabindex="-1"'} aria-label="${t} 乘 ${k}${ok ? `，${t * k}` : ''}">${ok ? t * k : `${t}×${k}`}</button>`;
+  }).join('');
+  const P = i => i < 0 ? [2.5, hopNarrow() ? 28 : 50] : HOP_POS(i), from = P(at - 1), to = P(done ? at : at - 1);
+  return `<div class="hop-river ${hopNarrow() ? 'narrow' : ''}"><span class="hop-bank"></span><span class="hop-flag">${t} 的九九</span>${stones}
+      <span class="hop-me" style="left:${from[0]}%;top:${from[1]}%" data-x="${to[0]}" data-y="${to[1]}">${petOf(me())}</span></div>
+    ${q.open || done ? `<div class="math-q">${done ? esc(q.show.replace('？', q.answer)) : esc(q.show).replace('？', padSlot(q))}</div>${done ? '' : padHTML()}`
+      : `<button class="btn-big go hop-go" data-act="hop-open">點發亮的石頭：${t} × ${at + 1}</button>`}`;
+}
+function hopJump() {   // 答對後夥伴從上一顆石頭跳到這一顆
+  const hm = screen.querySelector('.hop-me'); if (!hm || hm.style.left === hm.dataset.x + '%') return;
+  requestAnimationFrame(() => requestAnimationFrame(() => { hm.style.left = hm.dataset.x + '%'; hm.style.top = hm.dataset.y + '%'; hm.classList.add('jump'); }));
 }
 
 function buildListen(w, g) {
@@ -4506,7 +4844,7 @@ function duelQ(sub, g, k, shared, used) {
   let lv, item;
   const fresh = (list, key) => { const pool = list.filter(x => !used.has(key(x))); const it = pick(pool.length ? pool : list); used.add(key(it)); return it; };
   if (sub === 'math') {
-    lv = pick(MATH_LEVELS.filter(l => levelForGrade(l, g)).map(l => l.id));
+    lv = pick(MATH_LEVELS.filter(l => levelForGrade(l, g) && !l.noDuel).map(l => l.id));   // 直式、跳石頭要一步一步算，不適合搶答
     item = { 字: `${lv}#${k}`, 年級: g, k: rnd(0, 2) * STAGE_SIZE + rnd(0, STAGE_SIZE - 1) };   // 前三關的難度，搶答才答得完
   } else if (sub === 'en') {
     /* 英文：同一冊（Book）的單字，和英文課一樣只出英英選擇、句子填空，兩種輪流 */
@@ -6005,9 +6343,11 @@ function dotsHTML() {
   /* 題目很多（安親班一份考卷 30 幾題）時，圓點排不下，改成進度條 */
   if (S.qs.length > 20) { const n = S.idx + (S.answered ? 1 : 0); return `<div class="prog-bar" aria-label="第 ${S.idx + 1} 題，共 ${S.qs.length} 題"><i style="width:${(n / S.qs.length * 100).toFixed(1)}%"></i></div>`; }
   return `<div class="dots" aria-label="第 ${S.idx + 1} 題，共 ${S.qs.length} 題">${S.qs.map((_, i) => `<i class="${i < S.idx || (i === S.idx && S.answered) ? 'done' : ''} ${i === S.idx ? 'now' : ''}"></i>`).join('')}</div>`; }
+/* 算式框：依算式有多寬（數字約 .6 個字寬、全形符號 1 個字寬）縮字，手機上大數字也不會超出螢幕 */
+const mFit = s => { const em = [...String(s)].reduce((w, c) => w + (/[\x00-\x7F]/.test(c) ? (c === ' ' ? .3 : .62) : 1), 0); return ` style="font-size:min(3.6rem, 8.5vh, calc((min(100vw, 760px) - 96px) / ${Math.max(6, em).toFixed(1)}))"`; };
 const isRight = (q, i) => q.type === 'typo' ? i === q.idx : q.options[i] === q.answer;
 /* 要依序點好幾下的題型（注音拼字、筆順）每題可以先錯一次；slips＝扣掉這次之後真正算錯的次數 */
-const graceOf = q => q && (q.type === 'spell' || q.type === 'stroke') ? 1 : 0;
+const graceOf = q => q && (q.type === 'spell' || q.type === 'stroke' || q.type === 'vert') ? 1 : 0;   // 直式一題好幾步，也可以先錯一次
 const slipsOf = q => Math.max(0, S.tried.length - graceOf(q));
 
 function renderGame() {
@@ -6053,12 +6393,14 @@ function renderGame() {
     body = kzMatchBody(q);
   } else if (q.type === 'kz') {
     body = kzBody(q, st, dis);
+  } else if (q.type === 'vert') {
+    body = vertHTML(q);
+  } else if (hopOn() && q.lv === 'm-99') {
+    body = hopBody(q);
   } else if (q.sub) {
     /* 英文、數學：上面是題目，下面四個（比大小三個）選項 */
     const cls = { math: 'num', 'm-count': 'num', 'm-cmp': 'num', 'en-listen': 'pic', 'en-pic': 'en', 'en-mean': 'zhm', 'en-miss': 'en', 'en-spell': 'en', 'en-sent': 'en', 'en-def': 'en' }[q.type];
-    /* 算式框：依算式有多寬（數字約 .6 個字寬、全形符號 1 個字寬）縮字，手機上大數字也不會超出螢幕 */
-    const mFit = s => { const em = [...String(s)].reduce((w, c) => w + (/[\x00-\x7F]/.test(c) ? (c === ' ' ? .3 : .62) : 1), 0); return ` style="font-size:min(3.6rem, 8.5vh, calc((min(100vw, 760px) - 96px) / ${Math.max(6, em).toFixed(1)}))"`; };
-    const top = q.type === 'math' ? `<div class="math-q"${mFit(q.show.replace('？', q.answer + '？'))}>${mathHTML(S.answered ? q.show.replace('？', q.answer) : q.show)}</div>`
+    const top = q.type === 'math' ? `<div class="math-q"${mFit(q.show.replace('？', q.answer + '？'))}>${S.answered ? mathHTML(q.show.replace('？', q.answer)) : padOn(q) ? mathHTML(q.show).replace('？', padSlot(q)) : mathHTML(q.show)}</div>`
       : q.type === 'm-cmp' ? `<div class="math-q"${mFit(q.show.replace('◯', q.answer))}>${esc(S.answered ? q.show.replace('◯', q.answer) : q.show)}</div>`
       : q.type === 'm-count' ? `<div class="count-pic">${Array.from({ length: Math.ceil(q.n / 5) }, (_, r) => `<div>${q.pic.repeat(Math.min(5, q.n - r * 5))}</div>`).join('')}</div>`
       : q.type === 'en-listen' ? `<button class="listen-btn" data-act="replay" aria-label="再聽一次">${ICONS.speaker}<span>再聽一次</span></button>${S.answered ? `<p class="example"><b class="en-font">${esc(q.word)}</b></p>` : ''}`
@@ -6073,30 +6415,32 @@ function renderGame() {
     /* 英文選項：照這一題最長的字決定字級，四個按鈕一樣大小（9～11 個字母 long、12 個以上 xlong） */
     const maxLen = cls === 'en' ? Math.max(...q.options.map(o => String(o).length)) : 0;
     const enSize = maxLen >= 12 ? 'xlong' : maxLen >= 9 ? 'long' : '';
-    body = `${top}<div class="opts ${three ? 'three' : ''}">${q.options.map((o, i) => `<button class="opt ${cls} ${enSize} ${st(i)}" data-act="pick" data-i="${i}" ${dis(i)}>${q.sub === 'math' ? mathHTML(o) : esc(o)}</button>`).join('')}</div>`;
+    body = padOn(q) ? `${top}${S.answered ? '' : padHTML()}`   // 數字鍵盤作答
+      : `${top}<div class="opts ${three ? 'three' : ''}">${q.options.map((o, i) => `<button class="opt ${cls} ${enSize} ${st(i)}" data-act="pick" data-i="${i}" ${dis(i)}>${q.sub === 'math' ? mathHTML(o) : esc(o)}</button>`).join('')}</div>`;
   }
   const chestOn = q.golden && !q.chestLost && !S.answered;
   const hint = S.bubble || (chestOn ? '寶箱題！第一次就答對，就能打開寶箱！' : { listen: '聽聽看，是哪一個字？', zhuyin: '這個字怎麼唸？', typo: '找出寫錯的字', similar: '哪一個字放進去才對？',
     build: '兩個部件合起來是哪個字？', whack: '聽到的字跑出來就打它！', spell: '照順序點注音符號', stroke: '照筆順一筆一筆點',
-    math: '算算看，答案是多少？', 'm-count': '數數看，一共有幾個？', 'm-cmp': '要填 ＞、＜ 還是 ＝？', 'en-listen': '聽聽看，是哪一張圖？', 'en-pic': '這個東西的英文是什麼？', 'en-mean': '這個英文是什麼意思？', 'en-miss': '缺了哪個字母？', 'en-spell': '哪一個拼對了？', 'en-sent': '空格要填哪一個？', 'en-def': '哪一個單字符合這個解釋？', kz: q.subj === '數學' ? '慢慢算，算好再選' : '仔細讀題，想一想再選', 'kz-match': '先點一個成語，再點它的意思' }[q.type]);
+    math: hopWait(q) ? '點發亮的石頭！' : padOn(q) ? '打出答案，再按確認' : '算算看，答案是多少？', vert: '一位一位算，算好按確認', 'm-count': '數數看，一共有幾個？', 'm-cmp': '要填 ＞、＜ 還是 ＝？', 'en-listen': '聽聽看，是哪一張圖？', 'en-pic': '這個東西的英文是什麼？', 'en-mean': '這個英文是什麼意思？', 'en-miss': '缺了哪個字母？', 'en-spell': '哪一個拼對了？', 'en-sent': '空格要填哪一個？', 'en-def': '哪一個單字符合這個解釋？', kz: q.subj === '數學' ? '慢慢算，算好再選' : '仔細讀題，想一想再選', 'kz-match': '先點一個成語，再點它的意思' }[q.type]);
   const total = S.qTotal || timeFor(S.grade) * 10, left = Math.max(0, S.timeLeft);
   /* 安親班不倒數：計時圈換成「不限時」 */
   const timerHTML = q.noTimer ? '<div class="timer free" aria-label="不限時"><b>∞</b><span>不限時</span></div>'
     : `<div class="timer ${left <= 50 && !S.answered ? 'low' : ''}" id="timer" style="--p:${(left / total).toFixed(3)}" role="timer" aria-label="剩下 ${Math.ceil(left / 10)} 秒"><b>${Math.ceil(left / 10)}</b><span>秒</span></div>`;
   const mult = comboMult(S.combo);
-  screen.innerHTML = `<section class="stack game ${mult > 1 ? 'fire' : ''} ${chestOn ? 'golden' : ''} ${q.type === 'kz' ? `kz-game ${S.answered ? 'kz-done' : ''}` : ''}">
+  screen.innerHTML = `<section class="stack game ${S.answered ? 'answered' : ''} ${q.type === 'vert' ? 'vert-game' : ''} ${hopOn() ? (q.phase === 'boss' ? 'hop-game hop-fight' : 'hop-game') : ''} ${padOn(q) ? 'pad-game' : ''} ${mult > 1 ? 'fire' : ''} ${chestOn ? 'golden' : ''} ${q.type === 'kz' ? `kz-game ${S.answered ? 'kz-done' : ''}` : ''}">
     <div class="hud">
       ${timerHTML}
-      <div class="hud-mid">${S.mode === 'boss' ? bossHUD() : dotsHTML()}<span style="display:flex;gap:6px;flex-wrap:wrap;justify-content:center"><span class="place">${currentLand().name}</span>${q.diff === -1 ? '<span class="diff-chip">放慢模式：時間多一點</span>' : q.diff === 1 ? '<span class="diff-chip hard">挑戰模式</span>' : ''}${chestOn ? `<span class="chest-tag">${ICONS.chest}寶箱題</span>` : ''}<span class="combo ${S.combo >= 2 ? 'on' : ''}" id="combo">${ICONS.flame}連擊 ${S.combo}${mult > 1 ? `・×${mult}` : ''}</span></span></div>
+      <div class="hud-mid">${S.mode === 'boss' ? bossHUD() : hopBossNow() ? bossHUD(S.hop.hp, 9, S.hop.hearts, 3) : dotsHTML()}<span style="display:flex;gap:6px;flex-wrap:wrap;justify-content:center"><span class="place">${currentLand().name}</span>${q.diff === -1 ? '<span class="diff-chip">放慢模式：時間多一點</span>' : q.diff === 1 ? '<span class="diff-chip hard">挑戰模式</span>' : ''}${chestOn ? `<span class="chest-tag">${ICONS.chest}寶箱題</span>` : ''}<span class="combo ${S.combo >= 2 ? 'on' : ''}" id="combo">${ICONS.flame}連擊 ${S.combo}${mult > 1 ? `・×${mult}` : ''}</span></span></div>
       <div class="score" id="score"><small>得分</small><b>${S.roundScore}</b></div>
     </div>
     ${body}
     <div class="coach">${petOf(p)}<div class="bubble" id="bubble">${esc(hint)}</div>
-      ${S.answered ? `<button class="btn-next" data-act="next">${S.mode === 'boss' ? (S.bossHP <= 0 || S.hearts <= 0 || S.idx + 1 >= S.qs.length ? '看結果' : '下一題') : S.idx + 1 < S.qs.length ? '下一題' : '看成績'}</button>` : ''}</div>
+      ${S.answered ? `<button class="btn-next" data-act="next">${S.mode === 'boss' ? (S.bossHP <= 0 || S.hearts <= 0 || S.idx + 1 >= S.qs.length ? '看結果' : '下一題') : hopOn() && S.hop.lost ? '看結果' : S.idx + 1 < S.qs.length ? '下一題' : '看成績'}</button>` : ''}</div>
   </section>`;
   if (!S.answered && q.type === 'whack') setTimeout(startWhack, 0);
   if (S.answered && q.type === 'kz') kzFit();
   fsFit(screen.querySelector('.stack.game'));
+  if (S.answered) hopJump();
 }
 /* 字體放大後，特別長的題目（長英文句、長的安親班題）一屏放不下時，這一題的字放大比例退一步、再退回原本大小 */
 function fsFit(sec) {
@@ -6171,12 +6515,13 @@ function lockedStage(i) {
 }
 function startStage(i) {
   if (lockedStage(i)) return;
-  S.mode = 'stage'; S.stage = i;
+  S.mode = 'stage'; S.stage = i; S.hop = null;
   const items = stagesOf(S.grade, S.level)[i];
   const kz = String(S.level).startsWith('kz:');
   S.qs = kz ? (kzIsMatch(kzPaper(S.level)) ? [kzMatchStart(i)] : items.map(kzQ))   // 安親班照考卷的順序出；成語配對一關是一個盤面
+    : S.level === 'm-99' ? hopStage(items)   // 九九跳石頭：照順序跳石頭，再打亂打頭目
     : spreadOut(S.level === 'e-unit' ? unitQuestions(items) : shuffle(items).map(it => makeQ(S.level, it)));   // 每個字只出一題；選項差不多的題目不要連著出
-  if (S.level.startsWith('m-')) { const seen = new Set(); S.qs = S.qs.map((q, k) => { for (let t = 0; t < 12 && seen.has(q.ref); t++) q = makeQ(S.level, items[k]); seen.add(q.ref); return q; }); }   // 同一關的算式不重複
+  if (S.level.startsWith('m-') && S.level !== 'm-99') { const seen = new Set(); S.qs = S.qs.map((q, k) => { for (let t = 0; t < 12 && seen.has(q.ref); t++) q = makeQ(S.level, items[k]); seen.add(q.ref); return q; }); }   // 同一關的算式不重複
   if (S.qs.length >= 4 && Math.random() < CHEST_RATE) S.qs[2 + Math.floor(Math.random() * (S.qs.length - 2))].golden = true;   // 有時會有一題寶箱題
   beginRound(S.level === 'e-unit' ? `«${unitName(S.grade)} ${i + 1}»。` : kz ? `${levelInfo(S.level).name}。` : `第${i + 1}關。`);
 }
@@ -6251,7 +6596,10 @@ const BOSSES = {
   'm-div':  { art: 'crab',         name: '切切蟹',     line: '蛋糕要分得一樣大，你會分嗎？' },
   'm-ops':  { art: 'magician',     name: '括號魔術師', line: '先算哪一個？看我的括號魔法把你搞糊塗！' },
   'm-frac': { art: 'pizza',        name: '披薩怪',     line: '我少了幾片？你說得出是幾分之幾嗎？' },
-  'm-dec':  { art: 'ladybug',      name: '小數點瓢蟲', line: '小數點跑來跑去，你抓得住它嗎？' }
+  'm-dec':  { art: 'ladybug',      name: '小數點瓢蟲', line: '小數點跑來跑去，你抓得住它嗎？' },
+  /* 直式、九九還沒有自己的頭目圖，先借用（直式：拆字機器人的圖；九九：只在 1 年級出現的藏寶松鼠），之後請 GPT 畫 */
+  'm-vert': { art: 'robot',        name: '直式機器人', line: '嗶嗶！我把數字的位數弄亂了，你能從個位開始，一位一位算對嗎？' },
+  'm-99':   { art: 'squirrel',     name: '跳跳松鼠',   line: '我在石頭上藏了九九乘法的答案，你跳得過來嗎？' }
 };
 const WIND_BOSS = { name: '大風怪', line: '我是大風怪！想破關，先打贏我吧！' };
 const bossOf = (lv = S.level) => (v3d() && BOSSES[lv]) || WIND_BOSS;
@@ -6303,11 +6651,11 @@ function showBossIntro(done) {
   const close = () => { if (closed) return; closed = true; ov.classList.add('out'); setTimeout(() => ov.remove(), 280); bossEnter(); done && done(); };
   ov.addEventListener('click', close);
 }
-function bossHUD() {
+function bossHUD(hp = S.bossHP, maxHp = BOSS_HP, hearts = S.hearts, maxHearts = HEARTS) {   // 九九跳石頭的關內頭目：血 9 格、愛心 3 顆
   const b = bossOf();
   return `<div class="boss-hud"><span class="boss-mini${b.art ? ' bzm' : ''}" id="bossMini">${BOSS_SVG()}</span>
-    <span class="boss-bar"><b class="boss-name">${b.name}</b><span class="hp" role="meter" aria-label="${b.name}剩下 ${Math.max(0, S.bossHP)} 格血"><i style="width:${Math.max(0, S.bossHP) / BOSS_HP * 100}%"></i></span>
-    <span class="hearts" aria-label="你還有 ${S.hearts} 顆愛心">${Array.from({ length: HEARTS }, (_, i) => heartSVG(i < S.hearts)).join('')}</span></span></div>`;   // 名字、血條、愛心疊成一欄，手機的窄 HUD 才放得下
+    <span class="boss-bar"><b class="boss-name">${b.name}</b><span class="hp" role="meter" aria-label="${b.name}剩下 ${Math.max(0, hp)} 格血"><i style="width:${Math.max(0, hp) / maxHp * 100}%"></i></span>
+    <span class="hearts" aria-label="你還有 ${hearts} 顆愛心">${Array.from({ length: maxHearts }, (_, i) => heartSVG(i < hearts)).join('')}</span></span></div>`;   // 名字、血條、愛心疊成一欄，手機的窄 HUD 才放得下
 }
 /* 新頭目的動畫：關掉登場視窗時在血條旁邊彈出來；被打中閃白＋抖＋縮；被打倒轉圈縮小淡出、噴星星 */
 function bossEnter() { const z = $('#bossMini .bz'); if (z) { z.classList.remove('in'); void z.offsetWidth; z.classList.add('in'); } }
@@ -6390,7 +6738,7 @@ function timeUp() {
   S.answered = true; S.timedOut = true; S.combo = 0; q.chestLost = true;
   if (!slipsOf(q)) addReview(q);
   recordOutcome(q, false);
-  S.bubble = '時間到！綠色的是正確答案';
+  S.bubble = padOn(q) ? `時間到！答案是 ${q.answer}` : '時間到！綠色的是正確答案';
   if (S.mode === 'boss') { S.hearts = Math.max(0, S.hearts - 1); if (S.hearts <= 0) S.bubble = '時間到，愛心用完了…再挑戰一次吧！'; }
   sfx('wrong');
   render();
@@ -6488,10 +6836,13 @@ function succeed(el, i) {
     if (mult > 1) { extra = `・連擊 ${S.combo}！×${mult}` + extra; extraSay = `連擊${S.combo}！`; }
     recordOutcome(q, first);
     if (S.mode === 'boss') {   // 第一次就答對才攻擊；連續答對 5 題起傷害 2
-      const dmg = first ? (S.combo >= 5 ? 2 : 1) : 0; S.bossHP = Math.max(0, S.bossHP - dmg);
+      const dmg = first ? (q.dmg || (S.combo >= 5 ? 2 : 1)) : 0; S.bossHP = Math.max(0, S.bossHP - dmg);   // 直式一題好幾步，答對一題傷害 3
       const bn = bossOf().name;
       extra += !dmg ? '・要第一次就答對才能攻擊喔' : S.bossHP <= 0 ? `・打倒${bn}了！` : `・攻擊！${bn} −${dmg}`;
       extraSay += !dmg ? '' : S.bossHP <= 0 ? `你打倒${bn}了！` : '攻擊成功！';
+    } else if (hopBossNow()) {   // 九九跳石頭的關內頭目：答對就攻擊（答錯已經扣過愛心）
+      S.hop.hp = Math.max(0, S.hop.hp - 1); const bn = bossOf().name;
+      extra += S.hop.hp ? `・攻擊！${bn} −1` : `・打倒${bn}了！`; extraSay += S.hop.hp ? '攻擊成功！' : `你打倒${bn}了！`;
     }
     if (q.golden && first) {
       const it = openChest(p); S.chestGot = it ? it.id : 'coins';
@@ -6505,11 +6856,13 @@ function succeed(el, i) {
     render();
     const nel = screen.querySelector(`[data-act="pick"][data-i="${i}"]`);
     nel && nel.classList.add('pop');
-    floatPoints(nel || screen.querySelector('.seq-area, .holes, .tzg') || el, gain);
+    floatPoints(nel || screen.querySelector('.seq-area, .holes, .tzg, .vgrid, .math-q') || el, gain);
     if (q.type === 'similar') { const t = screen.querySelector('.tile.right'); t && t.classList.add('pop'); }
     owlAct('happy');
     if (q.golden && first) burst(screen.querySelector('.coach .pet'));
     if (S.mode === 'boss' && first) bossHit(S.bossHP <= 0);   // 被打中、被打倒
+    if (hopBossNow()) bossHit(S.hop.hp <= 0);
+    hopAfter(q);
     setTimeout(() => narrate(`${praise}${extraSay}${q.after}`), 380);
   }
 }
@@ -6538,7 +6891,8 @@ function fail(el, key, msgOverride, keep) {
     const b = $('#bubble'); if (b) b.textContent = msg;
     owlAct('think');
     narrate(msg);
-    if (S.mode === 'boss' && slips === 2) loseHeart();   // 頭目關：同一題錯第二次才掉一顆愛心（第一次錯只是不能攻擊）
+    if (S.mode === 'boss' && slips === (q.lv === 'm-99' ? 1 : 2)) loseHeart();   // 頭目關：同一題錯第二次才掉一顆愛心（第一次錯只是不能攻擊）；九九錯一次就扣，同一題不再扣
+    else if (hopBossNow() && !q.heartLost) { q.heartLost = true; hopHeart(); }
   }
 }
 /* 依序點的題型（注音拼字、筆順）：點對就往下一個，點錯算答錯一次 */
@@ -6607,7 +6961,7 @@ function startWhack() {
 function finishRound() {
   const mq = S.qs[0] && S.qs[0].type === 'kz-match' ? S.qs[0] : null;   // 成語配對：一關 6 對，星星照「一次就配對成功」的比例
   const p = me(), boss = S.mode === 'boss', total = boss ? Math.min(S.qs.length, S.idx + 1) : mq ? mq.pairs.length : S.qs.length;
-  const stars = boss ? (S.bossHP <= 0 ? (S.hearts >= 4 ? 3 : S.hearts >= 3 ? 2 : 1) : 0) : starsFor(S.firstTry, total);
+  const stars = boss ? (S.bossHP <= 0 ? (S.hearts >= 4 ? 3 : S.hearts >= 3 ? 2 : 1) : 0) : hopOn() && S.hop.lost ? Math.min(1, starsFor(S.firstTry, total)) : starsFor(S.firstTry, total);   // 跳石頭愛心用完就不算過關
   p.daily = p.daily || {}; const dd = p.daily[today()] || (p.daily[today()] = { n: 0, ok: 0, score: 0, sec: 0 }); dd.score += S.roundScore;
   const before = tierOf(p.stars);
   /* 星星只算「比這一關以前最好的成績多拿的」，同一關重玩不會一直加（複習、指定練習不加星星） */
@@ -6670,6 +7024,7 @@ function finishRound() {
 
 function nextQ() {
   if (S.mode === 'boss' && (S.bossHP <= 0 || S.hearts <= 0)) return finishRound();
+  if (hopOn() && S.hop.lost) return finishRound();
   S.idx++; S.tried = []; S.answered = false; S.bubble = ''; S.timedOut = false;
   if (S.idx >= S.qs.length) return finishRound();
   /* 安親班一段 20～30 題：每答完一題就記住寫到第幾題，中途離開下次從這一題接著寫 */
@@ -6682,6 +7037,7 @@ function nextQ() {
   render();
   startTimer(false);
   const nq = S.qs[S.idx];
+  if (hopOn() && nq.phase === 'boss' && S.qs[S.idx - 1].phase === 'hop') { showBossIntro(() => askQ(nq)); return; }   // 九顆石頭走完：頭目出場
   askQ(nq, nq.golden ? '寶箱題！' : '');
 }
 
@@ -6800,6 +7156,10 @@ document.addEventListener('click', e => {
   else if (act === 'replay') { speak(S.qs[S.idx].say); }
   else if (act === 'pick') { choose(+b.dataset.i); }
   else if (act === 'seq') { seqTap(b.dataset.i); }
+  else if (act === 'key') { padType(b.dataset.d); }
+  else if (act === 'key-clr') { padBack(true); }
+  else if (act === 'key-ok') { padOk(); }
+  else if (act === 'hop-open') { hopOpen(); }
   else if (act === 'next') { sfx('tap'); nextQ(); }
   else if (act === 'again') { sfx('go'); startStage(S.stage); }
   else if (act === 'boss') { sfx('go'); startBoss(); }
