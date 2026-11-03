@@ -2695,26 +2695,14 @@ function cloudMsg(res, kind) {
   return {
     net: '連不上雲端，請檢查網路再試一次', taken: '這個 ID 已經有人用了，換一個吧', bad_id: 'ID 只能用中文、英文字母或數字，2～8 個字',
     bad_pin: kind === 'login' || kind === 'pin' ? `${kind === 'pin' ? '現在的' : ''}序號不對，再試一次${res.left ? `（還可以試 ${res.left} 次）` : ''}` : '序號要是 6 位數字',
-    weak_pin: PIN_WEAK, same_pin: '新序號跟現在的一樣，換一個吧',
+    weak_pin: '雲端程式還是舊的規則（會擋好猜的號碼）：請大人重新部署 Code.gs，或先換一組號碼', same_pin: '新序號跟現在的一樣，換一個吧',
     locked: `序號錯太多次，請 ${res.wait >= 60 ? `${Math.ceil(res.wait / 60)} 小時` : `${res.wait || 10} 分鐘`}後再試（或請大人在試算表解除鎖定）`, no_id: '找不到這個 ID，檢查一下有沒有打錯',
     too_big: '進度資料太大，存不進雲端', auth: '序號改過了，請重新登入',
     bad_request: kind === 'pin' ? '雲端程式還沒更新：請大人先照說明重新部署，或在試算表選單「重設序號」' : ''
   }[res.err] || '雲端出了點問題，請等一下再試';
 }
-/* 新設、改的序號：6 位數字，而且不能太好猜（跟 Code.gs 的 weakPin 一樣）；以前設的 4～5 位數照樣能登入 */
-const PIN_WEAK = '這個序號太好猜了（像 123456、111111、121212、生日），換一個吧';
-function weakPin(pin) {
-  const d = pin.split('').map(Number);
-  if (new Set(d).size <= 2) return true;
-  const step = (d[1] - d[0] + 10) % 10;
-  if ((step === 1 || step === 9) && d.every((x, i) => !i || (x - d[i - 1] + 10) % 10 === step)) return true;
-  if (pin.slice(0, 3) === pin.slice(3) || pin === pin.split('').reverse().join('')) return true;
-  if (['147258', '258369', '369258', '159357', '147369', '123654', '456123', '520520', '520131', '521521', '131420'].includes(pin)) return true;
-  const yy = n => n <= 26 || n >= 50, md = (m, dd) => m >= 1 && m <= 12 && dd >= 1 && dd <= 31;
-  const n2 = i => Number(pin.slice(i, i + 2));
-  return (yy(n2(0)) && md(n2(2), n2(4))) || (md(n2(0), n2(2)) && yy(n2(4)));
-}
-const pinProblem = pin => (!/^\d{6}$/.test(pin) ? '序號要是 6 位數字' : weakPin(pin) ? PIN_WEAK : '');
+/* 新設、改的序號：只要是 6 位數字就可以；以前設的 4～5 位數照樣能登入 */
+const pinProblem = pin => (!/^\d{6}$/.test(pin) ? '序號要是 6 位數字' : '');
 /* 登入紀錄（試算表 log 分頁）上的裝置：「iPad Safari #K3F9」，# 後面是這台隨機的代號，大人看得出是不是陌生的裝置；不送 IP、不送序號 */
 function devName() {
   const u = navigator.userAgent || '';
@@ -2856,7 +2844,7 @@ async function loginCloud(id, pin) {
   }
   p.name = res.id;
   const dirty = SYNC[p.id] ? SYNC[p.id].dirty : 0;
-  SYNC[p.id] = { cid: res.id, token: res.token, ver: res.updated, dirty, err: '', weak: res.weak !== undefined ? !!res.weak : !!pinProblem(pin) };   // 舊的 4～5 位數或太好猜：提醒大人改
+  SYNC[p.id] = { cid: res.id, token: res.token, ver: res.updated, dirty, err: '', weak: res.weak !== undefined ? !!res.weak : !!pinProblem(pin) };   // 舊的 4～5 位數：提醒大人改成 6 位數
   saveLocal(); saveSync(); syncUI(); heroAt = 0; keepStorage();
   if (dirty) queueSync(500);
   return { p, weak: SYNC[p.id].weak };
@@ -5797,7 +5785,7 @@ function renderCloudForm() {
       let got = null, weak = false;
       if (!(await cloudCreate(null, id, pin, async () => { const r = await loginCloud(id, pin); got = r.p; weak = r.weak; return r.msg || ''; }))) return;
       S.cf = null; setCur(got.id); S.greet = null; S.manage = false; enterGame();
-      if (weak) toast('這個序號太短或太好猜，請大人到「管理玩家」→「改序號」換成 6 位數');
+      if (weak) toast('這個序號只有 4～5 位數，請大人到「管理玩家」→「改序號」換成 6 位數');
       else narrate(`歡迎回來，${got.name}！`);
       return;
     }
