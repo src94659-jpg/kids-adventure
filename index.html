@@ -5629,14 +5629,22 @@ function renderHeroes3d(list, weekly, range, note) {
   </section>`;
   lbFit(); requestAnimationFrame(lbFit);
 }
-/* 名次列一頁放幾列：量名次區剩下的高度，放不下才出現分頁鈕 */
+/* 名次列一頁放幾列：量名次區剩下的高度，放不下才出現分頁鈕。
+   名次列全部放得下還有空位（上榜不到 10 人）時，頒獎台放大把空位用掉（台高 = 0.64 × 寬 + 40） */
 function lbFit() {
-  const box = $('#lbList'), pg = $('#lbPager');
+  const box = $('#lbList'), pg = $('#lbPager'), podw = $('.lb-podw');
   if (!box || !pg) return;
   const rows = [...box.querySelectorAll('.lb-row')], cs = getComputedStyle(box);
   const cols = cs.display === 'grid' ? +cs.getPropertyValue('--cols') || 1 : 1;
   const lay = n => { if (cols > 1) box.style.gridTemplateRows = `repeat(${Math.max(1, Math.ceil(n / cols))}, auto)`; };   // 兩欄時先排滿左欄再排右欄
   rows.forEach(r => { r.hidden = false; }); pg.hidden = true; lay(rows.length);
+  if (podw) podw.style.width = '';
+  if (podw && box.getBoundingClientRect().top >= podw.getBoundingClientRect().bottom - 1) {   // 手機橫放時兩個是左右並排，不放大
+    const top = box.getBoundingClientRect().top, none = box.querySelector('.lb-none');   // 「下一個名次還空著」那句是上下置中的，只算它自己的高度
+    const need = rows.length ? Math.max(...rows.map(r => r.getBoundingClientRect().bottom)) - top : none ? none.offsetHeight + 12 : 0;
+    const free = box.clientHeight - need - 6, w = podw.offsetWidth, cap = Math.min(podw.parentElement.clientWidth, 640);
+    if (free > 8 && cap > w + 4) podw.style.width = `${Math.min(cap, w + free / .64)}px`;
+  }
   if (rows.length < 2) return;
   const gap = parseFloat(cs.rowGap) || 0, rh = rows[0].offsetHeight + gap;
   const fit = () => Math.max(1, Math.floor((box.clientHeight + gap) / rh)) * cols;
