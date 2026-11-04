@@ -663,7 +663,7 @@ body.lock-cleared .node.done::after, body.lock-cleared .rnode.done::after, body.
 /* 選夥伴：左右滑（或滾滑鼠滾輪、按兩邊箭頭）的轉盤，停在正中間的就是選到的，放大顯示 */
 .ani-wheel { --aw: 44px; --gap: 4px; --cw: 100px; container-type: inline-size; width: min(640px, calc(100vw - 32px)); align-self: center; display: flex; align-items: center; gap: var(--gap); }
 .animals { position: relative; flex: 1; min-width: 0; display: flex; gap: 8px; overflow-x: auto; overflow-y: hidden; scroll-snap-type: x mandatory; scrollbar-width: none;
-  padding: 15px calc((100cqw - 2 * var(--aw) - 2 * var(--gap)) / 2 - var(--cw) / 2);   /* 左右留白讓第一個和最後一個也能轉到正中間 */
+  padding: 26px calc((100cqw - 2 * var(--aw) - 2 * var(--gap)) / 2 - var(--cw) / 2);   /* 左右留白讓第一個和最後一個也能轉到正中間；上下留白給放大的那張 */
   -webkit-mask-image: linear-gradient(90deg, transparent, #000 14%, #000 86%, transparent); mask-image: linear-gradient(90deg, transparent, #000 14%, #000 86%, transparent); }
 .animals::-webkit-scrollbar { display: none; }
 .animal {
@@ -676,7 +676,7 @@ body.lock-cleared .node.done::after, body.lock-cleared .rnode.done::after, body.
 }
 .animal .pet { width: 100%; max-width: 88px; }
 .animal .long { display: inline-block; transform: scaleX(.86); }   /* 名字長的（30號籃球英雄）橫向擠一點，才放得進卡片 */
-.animal[aria-pressed="true"] { transform: scale(1.22); opacity: 1; border-color: var(--sky); background: var(--sky-soft); box-shadow: 0 0 0 3px var(--sky); }
+.animal[aria-pressed="true"] { transform: scale(1.45); z-index: 1; opacity: 1; border-color: var(--sky); background: var(--sky-soft); box-shadow: 0 0 0 3px var(--sky); }
 .ani-arrow { flex: none; width: var(--aw); height: var(--aw); display: grid; place-items: center; padding: 0; border: 3px solid var(--line); border-radius: 50%; background: var(--paper); color: var(--ink); font-size: max(var(--fs-min), 1.6rem * var(--fs-l)); line-height: 1; box-shadow: 0 3px 0 var(--line); }
 .ani-arrow:active { transform: translateY(2px); box-shadow: none; }
 .ani-arrow:disabled { opacity: .35; box-shadow: none; }
@@ -1436,7 +1436,7 @@ body.v3d .hud-mid { gap: 5px; }
   #preview .pet { width: min(24vw, 100px); }
   body.v3d #screen #preview { background-size: min(40vw, 170px) auto; }
   .swatch { width: 50px; height: 50px; }
-  .animal { min-height: 104px; padding-block: 4px; } .animal .pet { max-width: 76px; } .animals { padding-block: 12px; } .animal[aria-pressed="true"] { transform: scale(1.15); }
+  .animal { min-height: 104px; padding-block: 4px; } .animal .pet { max-width: 76px; } .animals { padding-block: 22px; } .animal[aria-pressed="true"] { transform: scale(1.35); }
 }
 /* 手機橫放（很矮）：用 ID 登入、存到雲端、改序號：夥伴放左邊、表單放右邊，一個畫面放得下 */
 @media (max-height: 520px) and (min-width: 561px) {
@@ -1467,6 +1467,23 @@ body.v3d .hud-mid { gap: 5px; }
   .duel-who .pet { width: 40px; }
   .duel-grades { margin-top: 6px; gap: 4px; }
   .duel-grades .btn-small { min-height: 34px; padding: 0 8px; font-size: max(var(--fs-min), .88rem * var(--fs-s)); }
+}
+/* 新增玩家：上面的預覽是主角，放大看得清楚；下排轉盤選到的那張只放大一點，手機直拿一頁放得下 */
+@media (max-width: 560px) {
+  .np .form { gap: 5px; }
+  .np .form label { font-size: max(var(--fs-min), 1.05rem * var(--fs-m)); }
+  .np .form input[type=text] { min-height: 50px; font-size: max(var(--fs-min), 1.4rem * var(--fs-m)); }
+  .np #preview .pet { width: min(40vw, 156px); }
+  body.v3d .np #preview { background-size: min(66vw, 250px) auto; }
+  .np .swatch { width: 48px; height: 48px; }
+  .np .animals { padding-block: 13px; } .np .animal .pet { max-width: 64px; } .np .animal[aria-pressed="true"] { transform: scale(1.2); }
+}
+/* 寬但矮的螢幕（平板橫放、筆電）：預覽移到表單左邊的空白、放大，下面不用捲 */
+@media (min-width: 900px) and (max-height: 860px) {
+  #screen .stack.np { position: relative; }
+  .np #preview { position: absolute; left: 0; top: 0; width: calc((100% - 440px) / 2); display: grid; justify-items: center; }
+  .np #preview .pet { width: min(100%, 160px); }
+  body.v3d #screen .np #preview { background-size: 100% auto; }
 }
 /* ---------- 3D 場景（v50_art）：body.v3d＝3D 星球模式下星球以外的畫面；3D 打不開退回平面時不受影響 ---------- */
 #bg3d { position: fixed; inset: 0; z-index: 0; display: none; pointer-events: none; overflow: hidden; }
@@ -2694,15 +2711,15 @@ async function api(action, body = {}, opts = {}) {
 function cloudMsg(res, kind) {
   return {
     net: '連不上雲端，請檢查網路再試一次', taken: '這個 ID 已經有人用了，換一個吧', bad_id: 'ID 只能用中文、英文字母或數字，2～8 個字',
-    bad_pin: kind === 'login' || kind === 'pin' ? `${kind === 'pin' ? '現在的' : ''}序號不對，再試一次${res.left ? `（還可以試 ${res.left} 次）` : ''}` : '序號要是 6 位數字',
-    weak_pin: '雲端程式還是舊的規則（會擋好猜的號碼）：請大人重新部署 Code.gs，或先換一組號碼', same_pin: '新序號跟現在的一樣，換一個吧',
-    locked: `序號錯太多次，請 ${res.wait >= 60 ? `${Math.ceil(res.wait / 60)} 小時` : `${res.wait || 10} 分鐘`}後再試（或請大人在試算表解除鎖定）`, no_id: '找不到這個 ID，檢查一下有沒有打錯',
-    too_big: '進度資料太大，存不進雲端', auth: '序號改過了，請重新登入',
-    bad_request: kind === 'pin' ? '雲端程式還沒更新：請大人先照說明重新部署，或在試算表選單「重設序號」' : ''
+    bad_pin: kind === 'login' || kind === 'pin' ? `${kind === 'pin' ? '現在的' : ''}登入序號不對，再試一次${res.left ? `（還可以試 ${res.left} 次）` : ''}` : '登入序號要是 6 位數字',
+    weak_pin: '雲端程式還是舊的規則（會擋好猜的號碼）：請大人重新部署 Code.gs，或先換一組號碼', same_pin: '新登入序號跟現在的一樣，換一個吧',
+    locked: `登入序號錯太多次，請 ${res.wait >= 60 ? `${Math.ceil(res.wait / 60)} 小時` : `${res.wait || 10} 分鐘`}後再試（或請大人在試算表解除鎖定）`, no_id: '找不到這個 ID，檢查一下有沒有打錯',
+    too_big: '進度資料太大，存不進雲端', auth: '登入序號改過了，請重新登入',
+    bad_request: kind === 'pin' ? '雲端程式還沒更新：請大人先照說明重新部署，或在試算表選單「重設登入序號」' : ''
   }[res.err] || '雲端出了點問題，請等一下再試';
 }
 /* 新設、改的序號：只要是 6 位數字就可以；以前設的 4～5 位數照樣能登入 */
-const pinProblem = pin => (!/^\d{6}$/.test(pin) ? '序號要是 6 位數字' : '');
+const pinProblem = pin => (!/^\d{6}$/.test(pin) ? '登入序號要是 6 位數字' : '');
 /* 登入紀錄（試算表 log 分頁）上的裝置：「iPad Safari #K3F9」，# 後面是這台隨機的代號，大人看得出是不是陌生的裝置；不送 IP、不送序號 */
 function devName() {
   const u = navigator.userAgent || '';
@@ -2907,7 +2924,7 @@ function copyMove() {
   ov.className = 'dex-modal mv-modal';
   ov.innerHTML = `<div class="mv-card" role="dialog" aria-label="搬家代碼"><h3>搬家代碼（${PLAYERS.length} 位玩家）</h3>
     <p id="mvMsg">正在產生…</p><textarea id="mvCode" class="mv-text" rows="4" readonly></textarea>
-    <p class="save-note">打開網站版 src94659-jpg.github.io/kids-adventure →「用 ID 登入」→「貼上搬家代碼」，再幫每位玩家設一個序號。</p>
+    <p class="save-note">打開網站版 src94659-jpg.github.io/kids-adventure →「用 ID 登入」→「貼上搬家代碼」，再幫每位玩家設一個登入序號。</p>
     <div class="btn-row"><button class="btn-small wear" data-act="mv-again" hidden>按這裡複製</button><button class="btn-big" data-act="mv-close">關閉</button></div></div>`;
   document.body.appendChild(ov);
   const msg = t => { $('#mvMsg').textContent = t; };
@@ -4612,8 +4629,8 @@ function currentSay() {
     case 'home': return '歡迎來到國英數大冒險！按下開始玩。';
     case 'voice': return VOICE_SAMPLE.zh;
     case 'players': return PLAYERS.length ? '誰要來玩？按一下你的名字。也可以用遊客玩。' : '請大人幫你建立 ID，或是先用遊客玩。';
-    case 'newPlayer': return API && !S.editId ? '請大人幫忙輸入 ID 和序號，再選一個動物夥伴和顏色。序號要記下來，換平板登入要用。' : '請大人幫忙輸入 ID，再選一個動物夥伴和顏色。不想輸入 ID，也可以用遊客玩。';
-    case 'cloudForm': return '請大人幫忙輸入 ID 和序號。';
+    case 'newPlayer': return API && !S.editId ? '請大人幫忙輸入 ID 和登入序號，再選一個動物夥伴和顏色。登入序號要記下來，換平板登入要用。' : '請大人幫忙輸入 ID，再選一個動物夥伴和顏色。不想輸入 ID，也可以用遊客玩。';
+    case 'cloudForm': return '請大人幫忙輸入 ID 和登入序號。';
     case 'movePaste': return '請大人把搬家代碼貼上來。';
     case 'grade': return S.hub ? '你想玩哪一科？按一下國語、英文、數學還是安親班。' : S.subject === 'kz' ? '安親班專區。點一座島，就能開始寫。' : S.subject === 'en' ? (S.enSet ? '選一冊。' : '選一個英文項目。') : '按一下你的年級。';
     case 'level': return '選一個關卡。';
@@ -4803,7 +4820,7 @@ function saveNote() {
   if (!store.checked) return '';
   if (API && INAPP) return `<p class="notice">現在是在 LINE／Facebook 裡面打開，關掉後可能要重新登入。請按右上角「⋯」選「用瀏覽器開啟」再玩。</p>`;
   if (API) return PLAYERS.some(synced) ? `<p class="save-note"><b>●</b> 有 ID 的玩家，進度存在雲端</p>`
-    : `<p class="save-note">建立 ID＋序號，進度就會存到雲端，換平板也能接著玩</p>`;
+    : `<p class="save-note">建立 ID＋登入序號，進度就會存到雲端，換平板也能接著玩</p>`;
   if (SITE) return `<p class="save-note">進度存在這台裝置。iPad 用 Safari 的「加入主畫面」來玩，進度最穩</p>`;
   return `<p class="save-note">進度只存在這台裝置。用登入 claude.ai 的瀏覽器打開，就能跨平板保存</p>`;
 }
@@ -5465,13 +5482,13 @@ function renderPlayers() {
   let cards;
   if (S.manage) {
     cards = PLAYERS.map(p => S.delArm === p.id
-      ? (synced(p) ? `<div class="confirm"><p>要把「${esc(p.name)}」從這台移除嗎？雲端的進度還在，之後用 ID＋序號可以再登入。</p>
+      ? (synced(p) ? `<div class="confirm"><p>要把「${esc(p.name)}」從這台移除嗎？雲端的進度還在，之後用 ID＋登入序號可以再登入。</p>
           <div class="manage-row"><button class="btn-small" data-act="del-cancel">不要</button><button class="btn-small danger" data-act="del-yes" data-id="${p.id}">確定移除</button></div></div>`
         : `<div class="confirm"><p>確定要刪除「${esc(p.name)}」和所有進度嗎？刪除後找不回來。</p>
           <div class="manage-row"><button class="btn-small" data-act="del-cancel">不要刪</button><button class="btn-small danger" data-act="del-yes" data-id="${p.id}">確定刪除</button></div></div>`)
       : `<div class="card manage"><span class="num">${petOf(p)}</span>
-          <span class="txt"><span class="name">${esc(p.name)}</span><span class="desc">★ ${p.stars}${API ? (synced(p) ? '・存在雲端' : '・只存這台') : ''}${synced(p) && SYNC[p.id].weak ? '<b class="pin-weak">・⚠ 請改序號</b>' : ''}</span>${lockMark(p)}</span>
-          <span class="manage-row" style="margin-left:auto;width:auto">${API && !synced(p) ? `<button class="btn-small wear" data-act="cloud-save" data-id="${p.id}">存到雲端</button>` : ''}${synced(p) ? `<button class="btn-small wear" data-act="cloud-pin" data-id="${p.id}">改序號</button>` : ''}<button class="btn-small" data-act="edit" data-id="${p.id}">修改</button><button class="btn-small danger" data-act="del-arm" data-id="${p.id}">${synced(p) ? '移除' : '刪除'}</button></span>
+          <span class="txt"><span class="name">${esc(p.name)}</span><span class="desc">★ ${p.stars}${API ? (synced(p) ? '・存在雲端' : '・只存這台') : ''}${synced(p) && SYNC[p.id].weak ? '<b class="pin-weak">・⚠ 請改登入序號</b>' : ''}</span>${lockMark(p)}</span>
+          <span class="manage-row" style="margin-left:auto;width:auto">${API && !synced(p) ? `<button class="btn-small wear" data-act="cloud-save" data-id="${p.id}">存到雲端</button>` : ''}${synced(p) ? `<button class="btn-small wear" data-act="cloud-pin" data-id="${p.id}">改登入序號</button>` : ''}<button class="btn-small" data-act="edit" data-id="${p.id}">修改</button><button class="btn-small danger" data-act="del-arm" data-id="${p.id}">${synced(p) ? '移除' : '刪除'}</button></span>
           <button class="lock-sw" role="switch" aria-checked="${!!p.lockCleared}" data-act="lock-cleared" data-id="${p.id}"><span class="sw" aria-hidden="true"></span><span>${p.lockCleared ? '🔒' : '🔓'} 已通過的關卡不能再玩<b>${p.lockCleared ? '開' : '關'}</b></span></button></div>`).join('');
     cards = `<p class="manage-tip">大人設定：打開玩家卡片下面的「已通過的關卡不能再玩」，這位小朋友過關的關卡就鎖住，只能玩還沒過的（錯題複習照常）。</p>`
       + (!SITE && PLAYERS.length ? `<button class="btn-small" data-act="move-copy">複製搬家代碼（搬到網站版）</button>` : '') + cards;
@@ -5670,11 +5687,11 @@ function renderNewPlayer() {
   const previewTier = editing ? Math.max(1, tierOf(editing.stars)) : fromGuest ? Math.max(1, tierOf(GUEST.stars)) : 1;
   const cloudNew = API && !editing, lockName = editing && synced(editing);   // 網站版：新玩家同時設序號存到雲端；雲端玩家的 ID 不能改
   if (cloudNew) fetchHeroes();
-  screen.innerHTML = `<section class="stack">
+  screen.innerHTML = `<section class="stack np">
     <div id="preview">${petSVG(S.newAnimal, '', previewTier, S.newColor)}</div>
     <form class="form" id="newForm" autocomplete="off" novalidate>
       ${cloudNew ? `<div class="id-pin"><label><span>ID（2～8 個字）</span><input type="text" id="pname" maxlength="8" placeholder="例如：小明" enterkeyhint="next" required aria-describedby="perr"></label>
-        <label><span>序號（大人記下來）</span><input type="text" id="ppin" maxlength="6" inputmode="numeric" pattern="[0-9]*" placeholder="6 位數字" enterkeyhint="done" aria-describedby="perr"></label></div>`
+        <label><span>登入序號（大人記下來）</span><input type="text" id="ppin" maxlength="6" inputmode="numeric" pattern="[0-9]*" placeholder="6 位數字" enterkeyhint="done" aria-describedby="perr"></label></div>`
       : `<label for="pname">${lockName ? 'ID（已經存到雲端，不能改）' : 'ID（必填，2～8 個字；會顯示在英雄榜上，建議用暱稱，請大人幫忙輸入）'}</label>
       <input type="text" id="pname" maxlength="8" placeholder="例如：小明" enterkeyhint="done" required aria-describedby="perr" value="${editing ? esc(editing.name) : ''}"${lockName ? ' readonly' : ''}>`}
       <p class="form-err" id="perr" role="alert"></p>
@@ -5751,49 +5768,49 @@ function renderCloudForm() {
   const cf = S.cf || { mode: 'login' }, login = cf.mode === 'login', pinMode = cf.mode === 'pin';
   const imp = !login && cf.list ? cf.list[cf.i] : null, loc = !login && !cf.list ? PLAYERS.find(p => p.id === cf.pid) : null, who = imp || loc;
   if (!login && (!who || (pinMode && !synced(who)))) { S.cf = null; S.screen = 'players'; return renderPlayers(); }
-  setBar(login ? '用 ID 登入' : pinMode ? '改序號' : imp ? '搬家' : '存到雲端');
+  setBar(login ? '用 ID 登入' : pinMode ? '改登入序號' : imp ? '搬家' : '存到雲端');
   const pet = who ? petSVG(ANIMALS[who.animal] ? who.animal : 'owl', '', Math.max(1, tierOf(who.stars || 0)), who.color || COLORS[0], who.equip || {}) : petSVG('owl', 'happy', 1, COLORS[0]);
-  const head = login ? '換了平板？輸入 ID 和序號，就能接著玩。'
-    : pinMode ? `改「${loc.name}」的序號。改好後這台照常玩，其他平板、手機都要用新序號重新登入。`
-    : imp ? `搬家（第 ${cf.i + 1}／${cf.list.length} 位）：「${imp.name}」★ ${imp.stars || 0}・${fmtNum(imp.score || 0)} 分。設一個序號就存到雲端。`
-    : `「${loc.name}」的進度現在只存在這台。設一個序號，就會存到雲端。`;
+  const head = login ? '換了平板？輸入 ID 和登入序號，就能接著玩。'
+    : pinMode ? `改「${loc.name}」的登入序號。改好後這台照常玩，其他平板、手機都要用新登入序號重新登入。`
+    : imp ? `搬家（第 ${cf.i + 1}／${cf.list.length} 位）：「${imp.name}」★ ${imp.stars || 0}・${fmtNum(imp.score || 0)} 分。設一個登入序號就存到雲端。`
+    : `「${loc.name}」的進度現在只存在這台。設一個登入序號，就會存到雲端。`;
   const full = imp && PLAYERS.length >= MAX_PLAYERS;
   const pinIn = (id, ph, key) => `<input type="text" id="${id}" maxlength="6" inputmode="numeric" pattern="[0-9]*" placeholder="${ph}" enterkeyhint="${key}">`;
   screen.innerHTML = `<section class="stack cf-stack">
     <div id="preview">${pet}</div>
     <p class="save-note">${esc(head)}</p>
     <form class="form" id="cfForm" autocomplete="off" novalidate>
-      <div class="id-pin">${pinMode ? `<label><span>現在的序號</span>${pinIn('cfOld', '舊序號', 'next')}</label>
-        <label><span>新序號（大人記下來）</span>${pinIn('cfPin', '6 位數字', 'done')}</label>`
+      <div class="id-pin">${pinMode ? `<label><span>現在的登入序號</span>${pinIn('cfOld', '舊登入序號', 'next')}</label>
+        <label><span>新登入序號（大人記下來）</span>${pinIn('cfPin', '6 位數字', 'done')}</label>`
       : `<label><span>ID</span><input type="text" id="cfId" maxlength="8" value="${esc(login ? (cf.id || '') : who.name || '')}" placeholder="例如：小明" enterkeyhint="next" autocapitalize="off"></label>
-        <label><span>序號${login ? '' : '（大人記下來）'}</span>${pinIn('cfPin', login ? '序號' : '6 位數字', 'done')}</label>`}</div>
+        <label><span>登入序號${login ? '' : '（大人記下來）'}</span>${pinIn('cfPin', login ? '登入序號' : '6 位數字', 'done')}</label>`}</div>
       <p class="form-err" id="cfErr" role="alert">${full ? `這台已經有 ${MAX_PLAYERS} 位玩家：這位會存到雲端，要玩時在別台用 ID 登入` : ''}</p>
-      <button class="btn-big go" type="submit">${login ? '登入' : pinMode ? '改序號' : '存到雲端'}</button>
+      <button class="btn-big go" type="submit">${login ? '登入' : pinMode ? '改登入序號' : '存到雲端'}</button>
       ${login ? '<button type="button" class="btn-small" data-act="move-paste">從 claude.ai 搬過來？貼上搬家代碼</button>' : imp ? '<button type="button" class="btn-small" data-act="cf-skip">先跳過這位</button>' : ''}
     </form>
-    ${login ? '<p class="save-note cf-tip">登入一次，這台就會記住。iPad 的 Safari 和主畫面圖示是分開的，各要登入一次；無痕視窗不會記住。</p><p class="save-note">忘記序號：請大人在試算表的「國英數大冒險」選單重設</p>'
-      : pinMode ? '<p class="save-note">忘記現在的序號，或懷疑被別人知道了：請大人在試算表的「國英數大冒險」選單「重設序號」</p>' : ''}
+    ${login ? '<p class="save-note cf-tip">登入一次，這台就會記住。iPad 的 Safari 和主畫面圖示是分開的，各要登入一次；無痕視窗不會記住。</p><p class="save-note">忘記登入序號：請大人在試算表的「國英數大冒險」選單重設</p>'
+      : pinMode ? '<p class="save-note">忘記現在的登入序號，或懷疑被別人知道了：請大人在試算表的「國英數大冒險」選單「重設登入序號」</p>' : ''}
   </section>`;
   $('#cfForm').addEventListener('submit', async e => {
     e.preventDefault();
     if (S.cloudBusy) return;
     if (pinMode) {
       const old = $('#cfOld').value.trim(), pin = $('#cfPin').value.trim();
-      const msg = !/^\d{4,6}$/.test(old) ? '請輸入現在的序號' : pinProblem(pin) || (old === pin ? '新序號跟現在的一樣，換一個吧' : '');
+      const msg = !/^\d{4,6}$/.test(old) ? '請輸入現在的登入序號' : pinProblem(pin) || (old === pin ? '新登入序號跟現在的一樣，換一個吧' : '');
       if (msg) { $('#cfErr').textContent = msg; sfx('wrong'); narrate(msg); return; }
       if (!(await cloudCreate(loc, '', '', () => changePinCloud(loc, old, pin)))) return;
-      S.cf = null; S.manage = true; go('players'); toast(`「${loc.name}」的序號改好了！其他平板要用新序號重新登入`);
+      S.cf = null; S.manage = true; go('players'); toast(`「${loc.name}」的登入序號改好了！其他平板要用新登入序號重新登入`);
       return;
     }
     const id = $('#cfId').value.trim(), pin = $('#cfPin').value.trim();
     const bad = login ? (!id ? '請輸入 ID' : '') : idProblem(id, loc ? loc.id : null);
-    const msg = bad || (login ? (!/^\d{4,6}$/.test(pin) ? '序號要是 4～6 位數字' : '') : pinProblem(pin));
+    const msg = bad || (login ? (!/^\d{4,6}$/.test(pin) ? '登入序號要是 4～6 位數字' : '') : pinProblem(pin));
     if (msg) { $('#cfErr').textContent = msg; sfx('wrong'); narrate(msg); return; }
     if (login) {
       let got = null, weak = false;
       if (!(await cloudCreate(null, id, pin, async () => { const r = await loginCloud(id, pin); got = r.p; weak = r.weak; return r.msg || ''; }))) return;
       S.cf = null; setCur(got.id); S.greet = null; S.manage = false; enterGame();
-      if (weak) toast('這個序號只有 4～5 位數，請大人到「管理玩家」→「改序號」換成 6 位數');
+      if (weak) toast('這個登入序號只有 4～5 位數，請大人到「管理玩家」→「改登入序號」換成 6 位數');
       else narrate(`歡迎回來，${got.name}！`);
       return;
     }
@@ -5831,7 +5848,7 @@ async function readMove() {
   if (S.screen !== 'movePaste') return;
   if (!list.length) { const m = '讀不懂這段代碼，請確認整段都有貼上'; $('#mvErr').textContent = m; sfx('wrong'); narrate(m); return; }
   S.cf = { mode: 'save', list, i: 0 }; go('cloudForm');
-  narrate(`找到${list.length}位玩家。幫每一位設一個序號。`);
+  narrate(`找到${list.length}位玩家。幫每一位設一個登入序號。`);
 }
 
 /* 選夥伴轉盤：選一個（點、箭頭或轉到中間），center 時把它轉到正中間 */
@@ -7447,7 +7464,7 @@ document.addEventListener('click', e => {
   else if (act === 'animal') pickAnimal(b.dataset.k);
   else if (act === 'animal-step') { const i = ANIMAL_KEYS.indexOf(S.newAnimal) + +b.dataset.d; if (i >= 0 && i < ANIMAL_KEYS.length) pickAnimal(ANIMAL_KEYS[i]); }
   else if (act === 'manage') { S.manage = !S.manage; S.delArm = null; render(); }
-  else if (act === 'cloud-login') { sfx('tap'); S.cf = { mode: 'login' }; go('cloudForm'); narrate('請大人幫忙輸入 ID 和序號。'); }
+  else if (act === 'cloud-login') { sfx('tap'); S.cf = { mode: 'login' }; go('cloudForm'); narrate('請大人幫忙輸入 ID 和登入序號。'); }
   else if (act === 'cloud-save') { sfx('tap'); S.cf = { mode: 'save', pid: b.dataset.id }; go('cloudForm'); }
   else if (act === 'cloud-pin') { sfx('tap'); S.cf = { mode: 'pin', pid: b.dataset.id }; go('cloudForm'); }
   else if (act === 'cf-skip') { sfx('tap'); nextImport(''); }
