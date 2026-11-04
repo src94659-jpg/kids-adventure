@@ -2750,6 +2750,7 @@ function mergePlayer(a, b) {
   m.owned = [...new Set([...(b.owned || []), ...(a.owned || [])])];
   m.dex = { ...(a.dex || {}) }; Object.entries(b.dex || {}).forEach(([k, v]) => { m.dex[k] = mx(m.dex[k], v); });
   m.dexDone = { ...(a.dexDone || {}), ...(b.dexDone || {}) }; m.badges = { ...(a.badges || {}), ...(b.badges || {}) };
+  if (a.bossPlays || b.bossPlays) { m.bossPlays = { ...(b.bossPlays || {}) }; Object.entries(a.bossPlays || {}).forEach(([k, v]) => { m.bossPlays[k] = mx(m.bossPlays[k], v); }); }   // 頭目破關後重打的次數
   m.secret = { ...(b.secret || {}) }; Object.entries(a.secret || {}).forEach(([k, r]) => { const o = m.secret[k]; m.secret[k] = o ? { best: mx(o.best, r.best), stars: mx(o.stars, r.stars), wins: mx(o.wins, r.wins) } : clone(r); });   // 隱藏關卡的最佳紀錄
   m.prog = m.prog || {};
   for (const [g, lvs] of Object.entries(a.prog || {})) {
@@ -2761,7 +2762,7 @@ function mergePlayer(a, b) {
         if (!r || typeof r !== 'object') return;
         const q = o[i];
         if (!q || typeof q !== 'object') { o[i] = clone(r); return; }
-        o[i] = { ...((Number(r.best) || 0) > (Number(q.best) || 0) ? { ...q, ...clone(r) } : q), best: mx(q.best, r.best), cleared: !!(q.cleared || r.cleared) };
+        o[i] = { ...((Number(r.best) || 0) > (Number(q.best) || 0) ? { ...q, ...clone(r) } : q), best: mx(q.best, r.best), cleared: !!(q.cleared || r.cleared), ...(q.replays || r.replays ? { replays: mx(q.replays, r.replays) } : {}) };
       });
     }
   }
@@ -3904,7 +3905,7 @@ function kzMatchPick(side, k) {
   if (!q.sel || q.sel.side === side) { q.sel = { side, k }; q.flash = null; sfx('tap'); render(); narrate(side === 'l' ? q.pairs[k].成語 : q.pairs[k].意思); return; }
   const li = side === 'l' ? k : q.sel.k, ri = side === 'r' ? k : q.sel.k, x = q.pairs[li]; q.sel = null;
   if (li === ri) {   // 配對成功
-    const first = !q.missed.includes(li), pts = first ? 10 : 5;
+    const first = !q.missed.includes(li), pts = Math.round((first ? 10 : 5) * scoreMult());
     q.done.push(li); S.roundScore += pts;
     if (first) { S.firstTry++; S.combo++; S.bestCombo = Math.max(S.bestCombo, S.combo); }
     recordOutcome({ sub: 'kz', lv: q.lv, ch: x.成語, g: q.g }, first);
@@ -5015,7 +5016,7 @@ function renderDuelSetup() {
   const people = duelPeople(), g0 = S.grade || grades()[0];
   const D = S.duelPick || (S.duelPick = { a: (me() || people[0]).id, b: (people.find(x => x.id !== (me() || {}).id) || FRIEND).id, g: g0 });
   D.sub = D.sub || 'zh'; D.ga = D.ga || D.g || g0; D.gb = D.gb || D.g || g0;
-  if (D.mode === 'remote') return renderRemoteSetup(D, people);
+  /* 「各用各的平板」遠端對戰已拿掉（使用者要求），只剩同一台平板；遠端程式先留著不用 */
   /* 英文對戰選的是 Book（只列有資料的冊），國語、數學選年級 */
   const en = D.sub === 'en', gl = en ? BOOKS.filter(b => bookUnits(b).length) : grades();
   ['ga', 'gb'].forEach(k => { if (!gl.includes(D[k])) D[k] = gl.includes(g0) ? g0 : gl[0]; });
@@ -5153,9 +5154,7 @@ const R_TOK = (() => { const t = () => Math.random().toString(36).slice(2, 10); 
 const RA = { checked: false, busy: false, ok: false, why: '', room: null };   // 這台裝置能不能遠端對戰
 let R = null, rTimer = 0, rBeat = 0;
 
-function duelModeTabs(D) {
-  return `<div class="dex-tabs"><button class="btn-small" data-act="duel-mode" data-m="same" aria-pressed="${D.mode !== 'remote'}">同一台平板</button><button class="btn-small" data-act="duel-mode" data-m="remote" aria-pressed="${D.mode === 'remote'}">各用各的平板</button></div>`;
-}
+function duelModeTabs() { return ''; }   // 遠端對戰拿掉了，不再顯示「同一台平板／各用各的平板」切換
 function waitConnected(room, ms) {
   return new Promise(res => {
     if (room.connected()) return res(true);
@@ -6761,6 +6760,7 @@ function renderResult() {
     ${R.badgeNew ? `<div class="celebrate green">${v3d() ? v3i('rewards/badge_hero', 'cele-ic') : ''}拿到「${levelInfo(S.level).name}勇者徽章」＋${BOSS_COINS} 金幣！</div>` : ''}
     ${R.secret && R.secret.first ? `<div class="celebrate green">${v3d() ? v3i('rewards/badge_hero', 'cele-ic') : ''}拿到「${secretOf().badge}」徽章、專屬裝扮「${SHOP_BY[secretOf().prize].name}」＋${secretOf().coins} 金幣！</div>` : ''}
     <p class="score-line">這回合得分 <b>${R.score}</b> 分・總分 ${fmtNum(p.score)} 分</p>
+    ${R.replay ? `<p class="save-note">${replayNote(R.replay)}${R.replay < REPLAY_MULT.length - 1 ? `（下次${R.replay === 1 ? '只有四分之一' : '就不加分了'}）` : ''}，去挑戰新的關卡吧！</p>` : ''}
     <p class="score-line"><span class="coin">金</span> ＋${R.coins || 0} 金幣（共 ${fmtNum(p.coins)} 個）<span class="nw">・<button class="btn-small" data-act="shop" style="min-height:36px;padding:2px 14px">去商店</button></span></p>
     <p class="gain">${R.gained ? `＋${R.gained} 顆新星星` : S.mode === 'stage' || R.boss || R.secret ? (R.stars ? '這關最好的星星已經拿過了' : '這次沒有拿到星星') : '複習不加星星'}，總共 ${p.stars} 顆${R.bestCombo >= 3 ? `・最高連擊 ${R.bestCombo}` : ''}${R.newCards && R.newCards.length ? `・新字卡 ${R.newCards.length} 張` : ''}</p>
     ${R.chest ? `<div class="celebrate">${v3d() ? v3i('rewards/chest_open', 'cele-ic') : ''}打開寶箱：<b>${R.chest === 'coins' ? '30 金幣' : `「${SHOP_BY[R.chest].name}」`}</b>${R.chest === 'coins' ? '' : '（到商店穿上）'}</div>` : ''}
@@ -6834,6 +6834,18 @@ function startReview() {
   S.qs = qs;
   beginRound('錯字複習。');
 }
+/* 已破關的關卡重玩，分數遞減（使用者要求）：同一個玩家、同一關，破關之後第 2 次玩分數減半、第 3 次 1/4、第 4 次起不加分。
+   一般關卡記在每關紀錄的 replays，頭目關（打敗拿到徽章後）記在 p.bossPlays；複習、指定練習、隱藏關卡、雙人對戰不打折 */
+const REPLAY_MULT = [1, .5, .25, 0];
+const replayMult = n => REPLAY_MULT[Math.min(n, REPLAY_MULT.length - 1)];
+function replayCount() {   // 這一關破關後，這次是第幾次重玩（0＝還沒破關，或不是一般關卡／頭目關）
+  const p = me(); if (!p) return 0;
+  if (S.mode === 'stage') { const r = peek(p, S.grade, S.level, S.stage); return r.cleared ? (Number(r.replays) || 0) + 1 : 0; }
+  if (S.mode === 'boss') return hasBadge(p, S.grade, S.level) ? (Number((p.bossPlays || {})[badgeKey(S.grade, S.level)]) || 0) + 1 : 0;
+  return 0;
+}
+const scoreMult = () => S.mode === 'stage' || S.mode === 'boss' ? replayMult(S.replayN || 0) : 1;
+const replayNote = n => !n ? '' : n >= REPLAY_MULT.length - 1 ? '這關已經破關，也重玩很多次了，這次不加分' : `這關已經破關了，這次重玩分數${n === 1 ? '減半' : '只有四分之一'}`;
 function beginRound(intro) {
   /* 安親班中途離開過：從上次寫到的那一題接著寫（分數、一次答對的題數也接回來） */
   const k = S.mode === 'stage' && kzParse(S.level), r0 = k ? peek(me(), S.grade, S.level, S.stage) : null;
@@ -6841,16 +6853,18 @@ function beginRound(intro) {
   S.idx = at; S.firstTry = at ? r0.atFirst || 0 : 0; S.tried = []; S.answered = false; S.bubble = at ? `接著從第 ${at + 1} 題寫` : ''; S.result = null;
   S.roundScore = at ? r0.atScore || 0 : 0; S.timedOut = false; newQTime(); prepQ(S.qs[S.idx]);
   S.combo = 0; S.bestCombo = 0; S.newCards = []; S.chestGot = null;
+  S.replayN = replayCount();
   const mr = S.qs[0] && S.qs[0].restore;   // 成語配對中途離開過：分數、一次配對成功的數目接回來
   if (mr) { S.roundScore = mr.score; S.firstTry = mr.first; S.bubble = `接著配，還有 ${S.qs[0].pairs.length - S.qs[0].done.length} 對`; }
   if (S.qs[0] && S.qs[0].type === 'kz-match' && S.qs[0].done.length >= S.qs[0].pairs.length) { S.answered = true; S.bubble = '配完了！按「看成績」'; }   // 保險：盤面已經全配好，一定要有看成績可以按
   go('game');
   startTimer(false);
+  if (S.replayN) toast(replayNote(S.replayN));
   if (at) { askQ(S.qs[S.idx], `接著從第${at + 1}題寫。`); return; }
   if (mr) { askQ(S.qs[0], '接著配。'); return; }
   if (S.mode === 'boss') showBossIntro(() => askQ(S.qs[0]));
   else if (S.mode === 'secret') { const sc = secretOf(); showBossIntro(() => askQ(S.qs[0]), { title: `隱藏關卡・${sc.name}`, tag: `${bossOf().name}又出現了！`, line: sc.line, rule: `${sc.sec} 秒內答對 ${sc.need} 題就贏，每答對一題多 ${sc.bonus} 秒。答錯可以再算一次。`, go: '開始！' }); }
-  else askQ(S.qs[0], intro);
+  else askQ(S.qs[0], S.replayN ? `${intro}${replayNote(S.replayN)}。` : intro);
 }
 
 /* ---------- 頭目關（地圖每一關都過了才會出現） ----------
@@ -7105,7 +7119,7 @@ function succeed(el, i) {
     const p = me(), slips = slipsOf(q), first = slips === 0;
     if (first) { S.combo++; S.bestCombo = Math.max(S.bestCombo, S.combo); }
     const mult = first ? comboMult(S.combo) : 1;
-    const gain = Math.round(pointsFor(slips, S.timeLeft, S.qTotal) * mult);
+    const gain = Math.round(pointsFor(slips, S.timeLeft, S.qTotal) * mult * scoreMult());   // 已破關重玩打折
     S.roundScore += gain;
     let extra = '', extraSay = '';
     if (first) {
@@ -7327,7 +7341,7 @@ function finishRound() {
   const coinsGot = Math.floor(S.roundScore * (longRound ? Math.min(1, ROUND / Math.max(1, total)) : 1) / COIN_RATE);
   p.coins += coinsGot;
   const after = tierOf(p.stars);
-  const R = { stars, gained, total, score: S.roundScore, coins: coinsGot, firstTry: S.firstTry, levelUp: after > before ? after : -1, passedNow: stars >= PASS, canSkip: false, levelClear: false, gradeBadge: false,
+  const R = { stars, gained, total, score: S.roundScore, coins: coinsGot, replay: S.mode === 'stage' || boss ? S.replayN || 0 : 0, firstTry: S.firstTry, levelUp: after > before ? after : -1, passedNow: stars >= PASS, canSkip: false, levelClear: false, gradeBadge: false,
               bestCombo: S.bestCombo, newCards: (S.newCards || []).slice(), chest: S.chestGot, land: currentLand().name, match: !!mq };
   /* 圖鑑集滿一頁：送金幣（每頁只送一次） */
   grades().forEach(g => {
@@ -7339,6 +7353,7 @@ function finishRound() {
     delete r.at; delete r.atFirst; delete r.atScore; delete r.atTotal; delete r.mAt;   // 這一段寫完了，不用再記寫到哪
     r.best = Math.max(r.best, stars);
     r.bestScore = Math.max(r.bestScore || 0, S.roundScore);
+    if (S.replayN) r.replays = S.replayN;   // 破關後又玩完一次
     if (stars >= PASS) { r.cleared = true; r.skipped = false; r.fails = 0; }
     else { r.fails++; R.canSkip = r.fails >= SKIP_AFTER && !passed(r); }
     R.levelClear = !wasLevel && levelDone(p, S.grade, S.level);
@@ -7347,6 +7362,7 @@ function finishRound() {
   if (boss) {
     const win = S.bossHP <= 0;
     R.boss = { win, hearts: S.hearts }; R.passedNow = win;
+    if (S.replayN) p.bossPlays = { ...(p.bossPlays || {}), [badgeKey(S.grade, S.level)]: S.replayN };
     if (win && !hasBadge(p, S.grade, S.level)) { p.badges = { ...(p.badges || {}), [badgeKey(S.grade, S.level)]: true }; p.coins += BOSS_COINS; R.badgeNew = true; }
   }
   persist(p);
@@ -7354,6 +7370,7 @@ function finishRound() {
   lines.push(boss ? (R.boss.win ? `你打敗${bossOf().name}了！` : `${bossOf().name}好強，再挑戰一次吧！`) : S.mode === 'review' ? '複習完成！' : R.passedNow ? '過關了！' : '差一點點！');
   if (R.badgeNew) lines.push(`拿到${levelInfo(S.level).name}勇者徽章，還有${BOSS_COINS}個金幣！`);
   lines.push(`${stars ? `你得到${CN_NUM[stars]}顆星星` : '這次沒有星星'}，這回合得到${S.roundScore}分${coinsGot ? `，還有${coinsGot}個金幣` : ''}。`);
+  if (R.replay) lines.push(`${replayNote(R.replay)}。`);
   if (R.newCards.length) lines.push(`收集了${R.newCards.length}張新字卡。`);
   if (R.dexPage) lines.push(`${CN_NUM[R.dexPage]}年級國字圖鑑集滿了，送你${DEX_REWARD}個金幣！`);
   if (R.levelUp >= 0) lines.push(`升級了！你現在是${TITLES[R.levelUp].name}。`);
