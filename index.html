@@ -1,4 +1,4 @@
-<!doctype html><html lang="zh-Hant-TW"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><title>國英數大冒險</title><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="國英數大冒險"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><link rel="apple-touch-icon" href="icon-180.png"><link rel="icon" href="icon-180.png"><script>window.ZZ_SITE = 1; window.ZZ_API = "https://script.google.com/macros/s/AKfycbxkk46VfoU1vdSL4b3cJGkiH-SXhh9XqjGM3dJ5eGBk1FQ54wdDSg_O0iT4f9xy5kKa/exec";if(navigator.userAgent.indexOf(" Line/")>=0&&location.search.indexOf("openExternalBrowser")<0)location.replace(location.pathname+(location.search?location.search+"&":"?")+"openExternalBrowser=1"+location.hash);</script><style>:root{padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}body{margin:0}[hidden]{display:none!important}</style></head><body><title>國英數大冒險</title>
+<!doctype html><html lang="zh-Hant-TW"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><title>國英數大冒險</title><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="國英數大冒險"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><link rel="apple-touch-icon" href="icon-180.png"><link rel="icon" href="icon-180.png"><script>window.ZZ_SITE = 1; window.ZZ_API = "https://script.google.com/macros/s/AKfycbxkk46VfoU1vdSL4b3cJGkiH-SXhh9XqjGM3dJ5eGBk1FQ54wdDSg_O0iT4f9xy5kKa/exec"; window.ZZ_VER = "202611052106-2a861ac7";if(navigator.userAgent.indexOf(" Line/")>=0&&location.search.indexOf("openExternalBrowser")<0)location.replace(location.pathname+(location.search?location.search+"&":"?")+"openExternalBrowser=1"+location.hash);</script><style>:root{padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}body{margin:0}[hidden]{display:none!important}</style></head><body><title>國英數大冒險</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <script>
 /* 開機預判（最先跑）：日夜、會不會進 3D 星球。進 3D 的話開機就鋪星球天空、先載天空圖，不會先閃一下 2D 點點紙和空的工具列 */
@@ -1038,6 +1038,8 @@ body.lock-cleared .node.done::after, body.lock-cleared .rnode.done::after, body.
 .en-sent { font-family: var(--en); font-size: max(var(--fs-min), min(2.1rem, 6.4vw, 4.6vh) * var(--fs-l)); line-height: 1.35; background: rgba(255, 253, 247, .92); border: 3px solid var(--line); border-radius: 22px; padding: 8px 22px; max-width: min(640px, 100%); text-wrap: balance; text-align: center; overflow-wrap: anywhere; }
 @media (max-width: 560px) { .en-sent { padding: 6px 14px; } }
 .en-sent u { text-decoration-thickness: 3px; text-underline-offset: 6px; display: inline-block; line-height: 1.1; }   /* 空格整塊換行，不會掛在行尾超出框 */
+/* 句子填空的空格：固定寬度的底線（原本用全形空白，行尾那個會被吃掉，看起來像「song ___as」黏在一起） */
+u.bk { display: inline-block; width: 3.2em; height: 1em; margin: 0 .12em; border-bottom: 3px solid currentColor; text-decoration: none; vertical-align: -.12em; }
 /* 分數：上下兩行（分子、分數線、分母）；帶分數的整數寫在左邊 */
 .frac { display: inline-flex; flex-direction: column; align-items: center; vertical-align: middle; font-size: .62em; line-height: 1.08; margin: 0 .1em; }
 .frac > span:first-child { border-bottom: .09em solid currentColor; padding: 0 .18em; }
@@ -1300,7 +1302,8 @@ body.v3d .hud-mid { gap: 5px; }
   .result .score-line .btn-small { min-height: 30px; padding-block: 0; }
   .result .btn-row .btn-big { min-height: 40px; padding-block: 2px; }
 }
-.float-pts { position: absolute; font-size: max(var(--fs-min), 1.8rem * var(--fs-l)); color: var(--sun-deep); text-shadow: 0 2px 0 #fff, 0 0 8px #fff; animation: rise 1.1s ease-out forwards; white-space: nowrap; }
+.float-pts { position: absolute; font-size: max(var(--fs-min), 1.8rem * var(--fs-l)); color: var(--sun-deep); text-shadow: 0 2px 0 #fff, 0 0 8px #fff; animation: ptsUp 1.1s ease-out forwards; white-space: nowrap; pointer-events: none; }
+@keyframes ptsUp { from { transform: translate(-100%, -50%); opacity: 1 } to { transform: translate(-100%, calc(-50% - 60px)); opacity: 0 } }
 .opt.reveal, .tile.reveal { background: var(--leaf-soft); border: 3px dashed var(--leaf); box-shadow: none; }
 .score-line { color: var(--ink) !important; }
 .score-line b { font-weight: 400; color: var(--sun-deep); font-size: max(var(--fs-min), 1.5rem * var(--fs-m)); font-variant-numeric: tabular-nums; }
@@ -1330,6 +1333,7 @@ body.v3d .hud-mid { gap: 5px; }
 .party-card h2 { margin: 4px 0 0; font-family: var(--kai); font-size: clamp(2.6rem, 13vw, 3.4rem); font-weight: 400; color: var(--sun-deep); letter-spacing: .08em; line-height: 1.15; text-wrap: balance; }
 .party-card p { margin: 6px 0 0; font-size: max(var(--fs-min), 1.15rem * var(--fs-m)); text-wrap: balance; }
 .party-card p .nw, .score-line .nw { white-space: nowrap; }   /* 最後兩個字（「完成」）、「・去商店」不要被拆開掛在行尾 */
+#restDone .nw, .card.add .nw { display: inline-block; white-space: nowrap; }   /* 按鈕字太長要換行時整段換，不會把「玩」單獨擠到下一行 */
 .party-card .party-stars { display: flex; justify-content: center; gap: 6px; margin-top: 8px; }
 .party-card .party-stars svg { width: 46px; height: auto; }
 .party-card .party-stars .s { fill: var(--sun); }
@@ -1407,6 +1411,11 @@ body.v3d .hud-mid { gap: 5px; }
 :root.night .duel-half { background: rgba(28, 54, 88, .75); }
 :root.night .duel-half.b, :root.night .r-foe { background: rgba(74, 38, 38, .75); }
 :root.night .chart .tip { background: #000; }
+/* 直式計算的格子、小檢查框、數字鍵盤的「清除」「退一格」原本寫死淺色底，夜裡字是白的看不到：底色跟著變深 */
+:root.night .vgrid, :root.night .vchk { background: rgba(27, 40, 73, .94); }
+:root.night .vc.vh, :root.night .vc.use, :root.night .vc.vop { color: #8EC5F5; }
+:root.night .vc.wr { color: #9BE3B5; }
+:root.night .nk.fn { background: #4A3424; }
 /* 黃色按鈕上的字維持深色 */
 :root.night .btn-big:not(.alt):not(.go), :root.night .btn-next, :root.night .item .buy, :root.night .hero-tabs button[aria-pressed="true"], :root.night .score { color: #1F3A2C; }
 :root.night .score { background: #FFE9A8; }
@@ -2904,6 +2913,53 @@ function siteCloud() {
   document.addEventListener('visibilitychange', () => { if (document.hidden) flushSync(true); else pullAll(); });
 }
 
+/* ---------- 網站版自動更新：平板一直開著舊網頁也會換成新版（使用者要求，2026-11-05） ----------
+   build_site.py 每次建置把版本號寫進 version.txt 和外框的 window.ZZ_VER（建置時間＋內容指紋，內容沒變就沿用舊號碼；號碼越大越新）。
+   打開時、從背景切回來、開著每 10 分鐘去抓一次 version.txt（不走快取）。比較新的話：
+   不在答題、對戰、輸入資料、彈出視窗中 → 存好進度（雲端也等寫完）再重新載入，回到原本的畫面；正在玩 → 先記著，玩完這關回到地圖或選關再更新。
+   同一個號碼只更新一次：更新後號碼還是舊的（例如伺服器快取）就不再試，不會一直重新整理。抓不到（離線）就安靜略過。 */
+const VER = { cur: String(window.ZZ_VER || ''), next: '', told: '', busy: false };
+const VER_TRY = 'zizi-ver-try', VER_RESUME = 'zizi-ver-resume';
+const VER_SAFE = ['home', 'grade', 'level', 'map', 'units', 'shop', 'dex', 'heroes', 'report', 'players', 'story'];
+const verSafe = () => VER_SAFE.includes(S.screen) && !document.querySelector('.party') && !document.hidden;   // .party：過關慶祝、頭目登場、休息一下等彈出視窗
+async function verCheck() {
+  if (!SITE || !VER.cur || VER.busy) return;
+  let v = '';
+  try { const r = await fetch(`version.txt?t=${Date.now()}`, { cache: 'no-store' }); if (r.ok) v = (await r.text()).trim(); } catch (e) { return; }
+  if (!/^\d{12}-[0-9a-f]{8}$/.test(v) || v <= VER.cur || lsGet(VER_TRY) === v) return;   // 沒有比較新，或這個號碼已經更新過一次了
+  VER.next = v; verApply();
+}
+async function verApply() {
+  if (!VER.next || VER.busy) return;
+  if (!verSafe()) {
+    if (S.screen === 'game' && VER.told !== VER.next) { VER.told = VER.next; toast('有新版本，玩完這關就更新'); }
+    return;
+  }
+  VER.busy = true;
+  try {
+    const p = me(); if (p) persist(p);
+    if (API) await Promise.race([flushSync(true), new Promise(r => setTimeout(r, 8000))]);   // 雲端存檔寫完再走（網路太慢最多等 8 秒，沒寫完的下次打開會自動補存）
+    await Promise.all(Object.values(writing));
+  } catch (e) { /* 存檔失敗也照樣更新：進度在這台裝置的 localStorage 裡 */ }
+  if (!verSafe()) { VER.busy = false; return; }   // 存檔這幾秒內開始玩了：等這關玩完
+  lsSet(VER_TRY, VER.next);
+  try { sessionStorage.setItem(VER_RESUME, JSON.stringify({ t: Date.now(), S: { screen: S.screen, hub: S.hub, subject: S.subject, grade: S.grade, level: S.level, enSet: S.enSet } })); } catch (e) {}
+  const u = new URL(location.href); u.searchParams.set('v', VER.next);   // 網址帶新號碼，平板一定拿到新網頁、不用舊的快取
+  location.replace(u.href);
+}
+function verResume() {   // 自動更新後回到原本的畫面（2 分鐘內有效）
+  try {
+    const r = JSON.parse(sessionStorage.getItem(VER_RESUME) || 'null'); sessionStorage.removeItem(VER_RESUME);
+    if (r && r.S && Date.now() - r.t < 120000 && VER_SAFE.includes(r.S.screen)) Object.assign(S, r.S);
+  } catch (e) {}
+}
+function verStart() {
+  if (!SITE || !VER.cur) return;
+  verCheck();
+  setInterval(verCheck, 10 * 60 * 1000);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) verCheck(); });
+}
+
 /* ---------- 搬家代碼：claude.ai 版複製（壓縮成一段文字），網站版貼上；也接受玩家物件 JSON（陣列或 { players: [...] }） ---------- */
 async function packMove(players) {
   const json = JSON.stringify({ v: 1, players: players.map(cloudBody) });
@@ -3809,7 +3865,7 @@ function kzQ(it) {
            options: opts, answer: it.答案, explain: it.解說, say, after };
 }
 /* 直式：上、符號＋下、橫線、答；□ 畫成方框 */
-function vertHTML(v) {
+function kzVertHTML(v) {   // 跟直式計算的 vertHTML(q) 同名會被蓋掉（安親班直式題卡住），所以改名
   const w = Math.max(...[v.上, v.下, v.答].map(s => [...String(s)].length));
   const cells = (sign, s) => [sign, ...' '.repeat(w - [...String(s)].length), ...String(s)].map(c => c === '□' ? '<i class="vbox"></i>' : `<span>${c === ' ' ? '' : esc(c)}</span>`).join('');
   return `<div class="vert" style="--n:${w + 1}" aria-label="直式">${cells('', v.上)}${cells(v.符號, v.下)}<b class="vline"></b>${cells('', v.答)}</div>`;
@@ -3843,7 +3899,7 @@ function kzBody(q, st, dis) {
   const box = s => esc(s).replace(/□/g, '<i class="vbox in"></i>');
   return `<div class="kz-head">${S.mode === 'review' ? `<span class="kz-tag">${esc(kzTag(q))}</span>` : ''}${q.kzLesson && S.mode === 'review' ? '' : `<span class="kz-part">${esc(S.mode === 'review' && kzLessonOf(q.part) && kzTag(q).endsWith(kzLessonOf(q.part)) ? String(q.part).replace(/^第.+?課\s*/, '') : q.part || '')}</span>`}${q.hard ? '<span class="kz-hard">⚠ 上次錯過</span>' : ''}<span class="kz-no">第 ${S.idx + 1}／${S.qs.length} 題${S.mode === 'review' ? '' : `・不限時${q.subj === '數學' ? '，可以用紙筆算' : ''}`}</span></div>
     <div class="kz-q ${size} ${q.g === 1 ? 'g1' : ''}">${box(q.text)}</div>
-    ${q.vert ? vertHTML(q.vert) : ''}${q.map ? routeSVG(q.map) : ''}
+    ${q.vert ? kzVertHTML(q.vert) : ''}${q.map ? routeSVG(q.map) : ''}
     <div class="opts kz-opts ${long ? 'kz-long' : q.options.length === 3 ? 'three' : ''} ${q.en ? 'en' : ''}${q.options.every(o => KZ_CMP.includes(o)) ? 'kz-cmp' : ''} ${q.options.every(o => /^[ˊˇˋ˙]$/.test(o)) ? 'kz-tone' : q.options.every(o => /^[ㄅ-ㄯˊˇˋ˙\s]+$/.test(o)) ? `kz-zy${q.options.some(o => o.split(' ').length > 2 || o.replace(/\s/g, '').length > 6) ? ' kz-zyw' : ''}` : ''} ${q.options.length === 2 && q.options.every(o => o.length <= 2) ? 'kz-tf' : ''}">${q.options.map((o, i) => `<button class="opt kzopt ${st(i)}" data-act="pick" data-i="${i}" ${dis(i)}>${q.options.every(x => TONE_SVG[x]) ? TONE_SVG[o] : box(o)}</button>`).join('')}</div>
     ${S.answered ? `<div class="kz-explain ${wrong ? 'wrong' : ''} ${String(q.explain).length > 110 ? 'long' : ''}" role="status"><b>${wrong ? `答錯了，正確答案是「${esc(q.answer)}」` : '答對了！看看解說'}</b><p>${esc(q.explain)}</p></div>` : ''}`;
 }
@@ -4107,14 +4163,17 @@ function fracArgs(g, d) {
   const m2 = rnd(2, 9); return [op, n1, m1, coNum(m2), m2];
 }
 function fracQ(op, n1, m1, n2, m2) {
-  const N = [n1 * m2 + n2 * m1, n1 * m2 - n2 * m1, n1 * n2, n1 * m2][op], M = [m1 * m2, m1 * m2, m1 * m2, m1 * n2][op];
+  /* 同分母加減（4 年級）：約分是 5 年級才教，答案和選項都照算出來的寫、不約分（3/6＋1/6＝4/6） */
+  const same = op <= 1 && m1 === m2, str = same ? (n, m) => m === 1 ? String(n) : `${n}/${m}` : fracStr;
+  const N = same ? [n1 + n2, n1 - n2][op] : [n1 * m2 + n2 * m1, n1 * m2 - n2 * m1, n1 * n2, n1 * m2][op], M = same ? m1 : [m1 * m2, m1 * m2, m1 * m2, m1 * n2][op];
   if (!(N > 0 && M > 0)) return null;
-  const ans = fracStr(N, M), val = N / M;
+  const ans = str(N, M), val = N / M;
   const b = m2 === 1 ? String(n2) : `${n2}/${m2}`, sym = ['＋', '－', '×', '÷'][op], word = ['加', '減', '乘以', '除以'][op];
   /* 錯誤選項：常見的錯法（分子分母直接相加減、除法忘了顛倒）和差一點的答案 */
-  const wrong = [[n1 + n2, m1 + m2], [Math.abs(n1 - n2), Math.abs(m1 - m2) || m1], [n1 * m2, m1 * n2], [n1 * n2, m1 * m2], [N + 1, M], [N - 1, M], [N, M + 1], [N + M, M]];
+  const wrong = same ? [[n1 + n2, op ? m1 : m1 + m2], [N + 1, M], [N - 1, M], [N, M + 1], [N + 2, M], [N, M - 1]]   // 同分母：分母也相加、減法做成加法、差一點
+    : [[n1 + n2, m1 + m2], [Math.abs(n1 - n2), Math.abs(m1 - m2) || m1], [n1 * m2, m1 * n2], [n1 * n2, m1 * m2], [N + 1, M], [N - 1, M], [N, M + 1], [N + M, M]];
   const opts = [ans], seen = new Set([val]);
-  shuffle(wrong.slice(0, 4)).concat(wrong.slice(4)).forEach(([n, m]) => { if (opts.length < 4 && n > 0 && m > 0 && !seen.has(n / m)) { seen.add(n / m); opts.push(fracStr(n, m)); } });
+  shuffle(wrong.slice(0, 4)).concat(wrong.slice(4)).forEach(([n, m]) => { if (opts.length < 4 && n > 0 && m > 0 && !seen.has(n / m)) { seen.add(n / m); opts.push(str(n, m)); } });
   const show = `${n1}/${m1} ${sym} ${b} ＝ ？`;
   return { type: 'math', show, answer: ans, options: shuffle(opts), say: `${fracSay(`${n1}/${m1}`)}${word}${fracSay(b)}，等於多少？`, after: `${fracSay(`${n1}/${m1}`)}${word}${fracSay(b)}，等於${fracSay(ans)}` };
 }
@@ -4347,7 +4406,7 @@ function vertOk(q) {
    1 年級（數字小、剛學）和數一數、比大小、分數、小數維持選擇題；雙人對戰也維持選擇題（搶答要快） */
 const PAD_LV = ['m-add', 'm-sub', 'm-mul', 'm-div', 'm-ops', 'm-99'];
 const padOn = q => !!q && (q.type === 'vert' || (q.type === 'math' && PAD_LV.includes(q.lv) && (q.g || S.grade) >= 2));
-const padHTML = () => `<div class="numpad" role="group" aria-label="數字鍵盤">${[1, 2, 3, 4, 5, 6, 7, 8, 9].map(n => `<button class="nk" data-act="key" data-d="${n}">${n}</button>`).join('')}<button class="nk fn" data-act="key-clr">清除</button><button class="nk" data-act="key" data-d="0">0</button><button class="nk ok" data-act="key-ok">確認</button></div>`;
+const padHTML = () => `<div class="numpad" role="group" aria-label="數字鍵盤">${[1, 2, 3, 4, 5, 6, 7, 8, 9].map(n => `<button class="nk" data-act="key" data-d="${n}">${n}</button>`).join('')}<button class="nk fn" data-act="key-clr" aria-label="退一格">⌫ 退格</button><button class="nk" data-act="key" data-d="0">0</button><button class="nk ok" data-act="key-ok">確認</button></div>`;
 const padSlot = q => `<span class="pad-ans ${q.typed ? 'on' : ''}">${esc(q.typed || '？')}</span>`;
 const curQ = () => S.qs && S.qs[S.idx];
 function padType(d) {
@@ -4688,6 +4747,7 @@ function render() {
   }
   v3dSync();
   SND.want(...musicNow());
+  if (VER.next) setTimeout(verApply, 300);   // 有新版等著：玩完這關回到地圖、選關就更新
 }
 /* 配樂：星球和其他頁放主畫面那首，進了國語／數學／英文／安親班館就換該館的；答題時只留氛圍層，頭目戰加一點心跳鼓 */
 function musicNow() {
@@ -4731,12 +4791,17 @@ function v3dSync() {
       bg3dEl.dataset.want = want;
       v3Load(`${V3}${b.n}_${plNight() ? 'night' : 'day'}.webp`, () => {
         if (bg3dEl.dataset.want !== want) return;
-        const cur = bg3dLayers.find(l => l.classList.contains('show'));
+        const cur = bg3dLayers.filter(l => l.classList.contains('show')).sort((x, y) => (+y.style.zIndex || 0) - (+x.style.zIndex || 0))[0];   // 兩張都還亮著（剛換過）就取上面那張
         if (cur && cur.dataset.css === want) return;
         const nx = cur === bg3dLayers[0] ? bg3dLayers[1] : bg3dLayers[0];
+        nx.style.cssText = 'transition:none'; nx.classList.remove('show'); void nx.offsetWidth;   // 下面那張可能還亮著：先直接藏起來，再換圖淡入
         nx.style.cssText = css; nx.dataset.css = want; nx.classList.toggle('blur', !!b.blur);
         void nx.offsetWidth;   // 先套好圖再開始淡入
-        nx.classList.add('show'); if (cur) cur.classList.remove('show');
+        /* 新的疊在上面淡入、舊的留在下面不動，等新的完全蓋住才收掉（兩張同時淡出淡入，中間會透出底色，看起來像背景空白一下） */
+        nx.style.zIndex = 1; if (cur) cur.style.zIndex = 0;
+        nx.classList.add('show');
+        clearTimeout(bg3dEl._t);
+        if (cur) bg3dEl._t = setTimeout(() => { if (nx.classList.contains('show')) cur.classList.remove('show'); }, 450);
       }, true);
     }
   }
@@ -5117,7 +5182,7 @@ function duelTop(q) {
   if (q.type === 'zhuyin') return `<div class="duel-q">${esc(q.char)}</div>`;
   if (q.type === 'en-pic') return `<div class="duel-q pic">${esc(q.pic)}</div>`;
   if (q.type === 'en-mean') return `<div class="duel-q en">${esc(q.word)}</div>`;
-  if (q.type === 'en-sent') return `<div class="duel-q sent">${esc(q.show).replace('___', '<u>　　</u>')}<small>${esc(q.zh)}</small></div>`;
+  if (q.type === 'en-sent') return `<div class="duel-q sent">${esc(q.show).replace('___', '<u class="bk"></u>')}<small>${esc(q.zh)}</small></div>`;
   if (q.type === 'en-def') return `<div class="duel-q sent">${esc(q.show)}</div>`;
   if (q.type === 'm-count') return `<div class="duel-q pic">${q.pic.repeat(q.n)}</div>`;
   if (q.type === 'math' || q.type === 'm-cmp') return `<div class="duel-q num">${mathHTML(q.show)}</div>`;
@@ -5514,7 +5579,7 @@ function renderPlayers() {
         <span class="num" style="background:${p.color}22">${petOf(p)}</span>
         <span class="txt"><span class="name">${esc(p.name)}</span>
         <span class="desc">${TITLES[tierOf(p.stars)].name}・★ ${p.stars}・${fmtNum(p.score)} 分</span>${lockMark(p)}</span></button>`).join('');
-    if (PLAYERS.length < MAX_PLAYERS) cards += `<button class="card add" data-act="add-player">＋ 新增玩家（輸入 ID）</button>`
+    if (PLAYERS.length < MAX_PLAYERS) cards += `<button class="card add" data-act="add-player"><span class="nw">＋ 新增玩家</span><span class="nw">（輸入 ID）</span></button>`
       + (API ? `<button class="card add" data-act="cloud-login">🔑 用 ID 登入（換平板接著玩）</button>` : '');   // 按鈕列放不下第三顆，做成卡片
     cards += `<button class="card guest" data-act="guest">
         <span class="num">${GUEST ? petOf(GUEST) : petSVG('owl', '', 0, '#8A8F99')}</span>
@@ -6689,7 +6754,7 @@ function renderGame() {
       : q.type === 'en-pic' ? `<div class="en-pic">${esc(q.pic)}</div>`
       : q.type === 'en-miss' ? `<div class="en-word miss">${esc(S.answered ? q.word.split('').join(' ') : q.show)}</div><p class="example">${esc(q.hint)}</p>`
       : q.type === 'en-spell' ? `<button class="listen-btn" data-act="replay" aria-label="再聽一次">${ICONS.speaker}<span>再聽一次</span></button>`
-      : q.type === 'en-sent' ? `<div class="en-sent">${esc(S.answered ? q.show.replace('___', q.answer) : q.show).replace('___', '<u>　　　</u>')}</div><p class="example">${esc(q.zh)}</p><button class="listen-btn small" data-act="replay" aria-label="再聽一次">${ICONS.speaker}<span>再聽一次</span></button>`
+      : q.type === 'en-sent' ? `<div class="en-sent">${esc(S.answered ? q.show.replace('___', q.answer) : q.show).replace('___', '<u class="bk"></u>')}</div><p class="example">${esc(q.zh)}</p><button class="listen-btn small" data-act="replay" aria-label="再聽一次">${ICONS.speaker}<span>再聽一次</span></button>`
       : q.type === 'en-def' ? `<div class="en-sent en-def">${esc(q.show)}</div><p class="example">${S.answered ? `<b class="en-font">${esc(q.word)}</b>　${esc(q.zh)}` : '這是哪一個單字？'}</p><button class="listen-btn small" data-act="replay" aria-label="再聽一次">${ICONS.speaker}<span>再聽一次</span></button>`
       : `<div class="en-word">${esc(q.word)}</div><button class="listen-btn small" data-act="replay" aria-label="再聽一次">${ICONS.speaker}<span>再聽一次</span></button>`;
     /* 三個選項排一列只給圖片和比大小用；英文單字、中文意思、長數字在放慢模式剩 3 個時仍排兩欄，字才放得下 */
@@ -7000,7 +7065,7 @@ function maybeRest(delay = 0) {
     ov.className = 'party rest'; ov.setAttribute('role', 'dialog'); ov.setAttribute('aria-label', '休息一下');
     ov.innerHTML = `<div class="party-wrap"><div class="party-card">${p ? petOf(p) : owlSVG()}<h2>休息一下</h2>
       <p>已經玩了 15 分鐘囉！請看看窗外遠方的樹或天空，讓眼睛休息 ${REST_SEC} 秒。</p>
-      <p class="rest-count" id="restCount">${REST_SEC}</p><button class="btn-big go" id="restDone" disabled>休息好了，繼續玩</button></div></div>`;
+      <p class="rest-count" id="restCount">${REST_SEC}</p><button class="btn-big go" id="restDone" disabled><span class="nw">休息好了，</span><span class="nw">繼續玩</span></button></div></div>`;
     document.body.appendChild(ov);
     narrate('已經玩了十五分鐘囉！請看看窗外遠方，讓眼睛休息一下。');
     let n = REST_SEC;
@@ -7052,7 +7117,8 @@ function floatPoints(el, n) {
   if (!el) return;
   const r = el.getBoundingClientRect(), sp = document.createElement('span');
   sp.className = 'float-pts'; sp.textContent = `+${n}`;
-  sp.style.left = (r.left + r.width / 2) + 'px'; sp.style.top = (r.top - 6) + 'px';
+  /* 從答案的右上角冒出來往上飄：答案的字在中間，右上角是空的，不會蓋到答案，也不會蓋到旁邊的選項 */
+  sp.style.left = Math.max(60, r.right - 8) + 'px'; sp.style.top = (r.top + 4) + 'px';
   $('#fx').appendChild(sp); setTimeout(() => sp.remove(), 1200);
   const sc = $('#score'); if (sc) { sc.classList.remove('bump'); void sc.offsetWidth; sc.classList.add('bump'); }
 }
@@ -7232,7 +7298,7 @@ function seqHTML(q) {
       <rect x="2" y="2" width="96" height="96" fill="#FFFDF7" stroke="#E08A86" stroke-width="1.5"/><path d="M50 2 V98 M2 50 H98" stroke="#E08A86" stroke-width=".8" stroke-dasharray="3 3" opacity=".6"/>
       ${q.strokes.map((d, k) => `<path d="${d}" fill="none" stroke="${k < q.pos ? INK : k === hint ? '#F6B12F' : '#D5DDD7'}" stroke-width="${k === hint ? 10 : 8}" stroke-linecap="round" stroke-linejoin="round" class="${k === hint ? 'glow' : ''}"/>`).join('')}
       ${q.strokes.map((d, k) => k < q.pos ? '' : `<path d="${d}" fill="none" stroke="transparent" stroke-width="22" stroke-linecap="round" data-act="seq" data-i="${k}" style="cursor:pointer;pointer-events:stroke"/>`).join('')}
-      ${q.strokes.map((d, k) => k < q.pos ? `<text x="${firstPt(d)[0] - 7}" y="${firstPt(d)[1] - 3}" font-size="9" fill="#2F7DBF">${k + 1}</text>` : '').join('')}
+      ${strokeNums(q.strokes, q.pos)}
     </svg><p class="example">已經寫了 ${q.pos}／${q.strokes.length} 筆</p></div>`;
   }
   const slots = q.seq.map((t, k) => `<span class="slot ${k < q.pos ? 'on' : ''} ${k === q.pos ? 'now' : ''}">${k < q.pos ? esc(String(t).startsWith('t') ? (t === 't1' ? '　' : TONE_TILE[t.slice(1)]) : t) : ''}</span>`).join('');
@@ -7242,6 +7308,19 @@ function seqHTML(q) {
       : `<div class="zy-tiles">${q.pool.map((c, k) => `<button class="opt zy ${q.used.includes(String(k)) ? 'tried' : ''}" data-act="seq" data-i="${k}" ${q.used.includes(String(k)) ? 'disabled' : ''}>${esc(c)}</button>`).join('')}</div>`}</div>`;
 }
 const firstPt = d => { const m = d.match(/M\s*([\d.]+)\s+([\d.]+)/); return m ? [+m[1], +m[2]] : [50, 50]; };
+/* 筆順號碼寫在起點外側，不壓在筆畫上：橫著起筆的寫在起點左邊、直著（或往下撇）起筆的寫在起點上面；和前面的號碼太近（例如「田」第 1、2 筆同一個起點）就再挪開 */
+function strokeNums(strokes, pos) {
+  const put = [];
+  return strokes.slice(0, pos).map((d, k) => {
+    const [x, y] = firstPt(d), m = d.match(/M\s*[\d.]+\s+[\d.]+\s*([HVQLC])\s*([\d.]+)(?:\s+([\d.]+))?/);
+    const dx = !m ? 1 : m[1] === 'H' ? 1 : m[1] === 'V' ? 0 : Math.abs(+m[2] - x), dy = !m ? 0 : m[1] === 'H' ? 0 : m[1] === 'V' ? 1 : Math.abs(+(m[3] || y) - y);
+    let p = dx >= dy ? [x - 11, y + 3] : [x - 2, y - 6];   // 文字的左下角
+    for (let t = 0; t < 4 && put.some(([a, b]) => Math.abs(a - p[0]) < 7 && Math.abs(b - p[1]) < 8); t++) p = dx >= dy ? [p[0], p[1] + 8] : [p[0] - 7, p[1]];
+    p = [Math.max(1, Math.min(92, p[0])), Math.max(8, Math.min(98, p[1]))];
+    put.push(p);
+    return `<text x="${p[0]}" y="${p[1]}" font-size="9" fill="#2F7DBF">${k + 1}</text>`;
+  }).join('');
+}
 /* 筆順：用手指（或滑鼠）順著筆畫畫下來。起點要在筆畫開頭附近、方向要對、路線要貼著筆畫（小手指粗，容許度放寬）；
    描對就跟以前點對一樣往下一筆、描到別的筆畫算順序錯；亂畫、方向反了只提醒，不算答錯。短短點一下還是可以（備用） */
 const TRACE = { on: false };
@@ -7534,7 +7613,7 @@ document.addEventListener('click', e => {
   else if (act === 'pick') { choose(+b.dataset.i); }
   else if (act === 'seq') { seqTap(b.dataset.i); }
   else if (act === 'key') { padType(b.dataset.d); }
-  else if (act === 'key-clr') { padBack(true); }
+  else if (act === 'key-clr') { padBack(false); }   // 退一格（原本是全部清除，使用者要可以只刪最後一個數字）
   else if (act === 'key-ok') { padOk(); }
   else if (act === 'next') { sfx('tap'); nextQ(); }
   else if (act === 'again') { sfx('go'); startStage(S.stage); }
@@ -7640,6 +7719,7 @@ async function start(saved) {
                  組: p.類型 === '配對' ? p.組.map(g => ({ ...g, 配對: (g.配對 || []).filter(x => x && x.成語 && x.意思) })).filter(g => g.配對.length >= 2) : p.組 }));
   checkBank();
   if (saved && saved.S && saved.S.screen) Object.assign(S, saved.S);
+  if (SITE) verResume();
   if (S.screen === 'game' && !S.qs.length) S.screen = 'home';
   if (S.screen === 'home' && planetOn()) { S.screen = me() ? 'grade' : 'players'; S.hub = true; }   // 3D：一打開就是星球地圖，記得上次的玩家就直接用
   render();
@@ -7647,6 +7727,7 @@ async function start(saved) {
   if (S.screen === 'game' && !S.answered) startTimer(false);   // 網頁更新後接著原本的秒數倒數
   connectCloud();
   siteCloud();
+  verStart();
 }
 window.claude?.hot?.snapshot?.(() => ({ S: clone(S) }));
 window.claude?.hot?.ready ? window.claude.hot.ready(start) : start(window.claude?.hot?.data ?? {});
