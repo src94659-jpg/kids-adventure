@@ -675,7 +675,7 @@ body.lock-cleared .node.done::after, body.lock-cleared .rnode.done::after, body.
   transform: scale(.88); opacity: .7; transition: transform .2s, opacity .2s;
 }
 .animal .pet { width: 100%; max-width: 88px; }
-.animal .long { display: inline-block; transform: scaleX(.86); }   /* 名字長的（30號籃球英雄）橫向擠一點，才放得進卡片 */
+.animal .long { display: inline-block; transform: scaleX(.86); }   /* 名字長的（超過 5 個字）橫向擠一點，才放得進卡片 */
 .animal[aria-pressed="true"] { transform: scale(1.45); z-index: 1; opacity: 1; border-color: var(--sky); background: var(--sky-soft); box-shadow: 0 0 0 3px var(--sky); }
 .ani-arrow { flex: none; width: var(--aw); height: var(--aw); display: grid; place-items: center; padding: 0; border: 3px solid var(--line); border-radius: 50%; background: var(--paper); color: var(--ink); font-size: max(var(--fs-min), 1.6rem * var(--fs-l)); line-height: 1; box-shadow: 0 3px 0 var(--line); }
 .ani-arrow:active { transform: translateY(2px); box-shadow: none; }
@@ -2172,10 +2172,10 @@ const ANIMALS = {
   mboy: { name: '摩登男孩' },
   mgirl: { name: '摩登女孩' },
   princess: { name: '童話公主' },
-  hoop: { name: '30號籃球英雄' },
+  hoop: { name: '籃球英雄' },
   /* 交接包的 gray_mouse、pink_hood_bunny（GPT 畫的 3D 圖，同樣沒有向量版） */
-  mouse: { name: '灰色小老鼠' },
-  pbunny: { name: '粉紅兜帽兔' }
+  mouse: { name: '米米鼠' },
+  pbunny: { name: '莓莓兔' }
 };
 const ANIMAL_KEYS = Object.keys(ANIMALS);
 
@@ -2251,12 +2251,12 @@ const PET3D = {
     nk: [64, 57, .46], md: [63, 70, .6], cape: [26, 57, 76, 52] },
   mgirl: { human: 1, y: 2, hd: [[46, 91], [82, 91]], eyes: [[61, 49], [74, 48]], gr: 4.6, gsw: 1.7, dy: 0, feet: [[54, 120], [78, 120]], hat: [67, 32, .9], wing: 1, wc: [67, 75],
     nk: [68, 64, .42], md: [69, 74, .6], cape: [38, 64, 62, 48] },
-  /* 童話公主、30號籃球英雄：頭比較小。裝扮多半換成 SOLO_FIT 的整張圖，這些點給「同時穿好幾件」時疊上去的那幾件 */
+  /* 童話公主、籃球英雄：頭比較小。裝扮多半換成 SOLO_FIT 的整張圖，這些點給「同時穿好幾件」時疊上去的那幾件 */
   princess: { human: 1, y: 0, hd: [[50, 70], [86, 77]], eyes: [[54.5, 38], [64.5, 37]], gr: 4.2, gsw: 1.5, dy: 0, feet: [[50, 119], [66, 119]], shoe: .55, hat: [56, 28, .64], wing: 1, wc: [60, 62],
     nk: [60, 52, .38], md: [62, 60, .55], cape: [26, 52, 70, 58] },
   hoop: { human: 1, y: 0, hd: [[41, 88], [78, 88]], eyes: [[49, 37], [60, 36]], gr: 4.2, gsw: 1.5, dy: 0, feet: [[50, 117], [73, 119]], shoe: .75, hat: [55.5, 26.5, .72], wing: 1, wc: [57, 64],
     nk: [57, 53, .4], md: [57, 64, .55], cape: [32, 54, 52, 50] },
-  /* 灰色小老鼠、粉紅兜帽兔：裸腳、沒有穿鞋全身圖（BARE_FEET），拿道具用 HOLD_FIT 的整張圖，其他裝扮照舊疊上去 */
+  /* 米米鼠、莓莓兔：裸腳、沒有穿鞋全身圖（BARE_FEET），拿道具用 HOLD_FIT 的整張圖，其他裝扮照舊疊上去 */
   mouse: { human: 1, y: 0, hd: [[40.5, 89.8], [70.7, 93.3]], eyes: [[50.8, 54], [73.1, 54]], gr: 5.8, gsw: 1.8, dy: 0, feet: [[49.6, 118.6], [75, 118.6]], shoe: .85, hat: [62.3, 39.8, .9], wing: 1, wc: [62.3, 87.7],
     nk: [62.3, 79.2, .44], md: [60.2, 89.1, .55], cape: [32, 76, 62, 46] },
   pbunny: { human: 1, y: 0, hd: [[42.8, 99.5], [71, 100.9]], eyes: [[48.4, 71.5], [74.5, 71.5]], gr: 4.6, gsw: 1.6, dy: 0, feet: [[52.2, 119.2], [71, 119.2]], shoe: .75, hat: [63.6, 57.5, 1.04], wing: 1, wc: [61.6, 98.4],
@@ -2297,7 +2297,7 @@ function held3d(it, r3) {
    穿商店鞋時換整張圖，不再把鞋子貼在腳上 */
 const SHOE_FIT = new Set(['sneakers', 'boots', 'goldShoes', 'rainbowShoes', 'flameShoes']);
 const BARE_FEET = new Set(['mouse', 'pbunny']);   // 沒有穿鞋全身圖：鞋子照舊疊在腳上
-/* 3D 拿道具：GPT 畫好的「拿著這件」全身圖。只拿一件、沒穿商店鞋 → held/<夥伴>_<道具>（121 張，小老鼠、粉紅兔的來自交接包）；
+/* 3D 拿道具：GPT 畫好的「拿著這件」全身圖。只拿一件、沒穿商店鞋 → held/<夥伴>_<道具>（121 張，米米鼠、莓莓兔的來自交接包）；
    剛好是 COMBO_FIT 那組「鞋＋道具」→ combo/<夥伴>_<鞋>_<道具>（9 張）；其他（兩件都拿、鞋＋別的道具）照舊疊圖。
    [x, y, 寬, 高, f, 頭歪角度]：圖在 viewBox 的位置（已對齊原圖的頭）；f < 1 是道具太大，整隻以頭中心 FIT_HC 縮小才放得進框；
    頭歪了幾度，帽子和眼鏡就跟著轉 */
@@ -2323,7 +2323,7 @@ const COMBO_FIT = {
   girl: ['goldShoes', 'violin', 22.02, 11.48, 98.55, 107.05, 1, 0],
   mboy: ['sneakers', 'recorder', 36.09, 13.42, 51.53, 109.44, 1, 0],
   mgirl: ['rainbowShoes', 'pipa', 27.59, 21.92, 77.83, 102.53, 0.994, 0] };
-/* 童話公主、30號籃球英雄：每件商店裝扮都有 GPT 畫的「穿這一件」全身圖（solo/<夥伴>_<道具>，[x, y, 寬, 高, f, 頭歪角度] 同 HOLD_FIT），
+/* 童話公主、籃球英雄：每件商店裝扮都有 GPT 畫的「穿這一件」全身圖（solo/<夥伴>_<道具>，[x, y, 寬, 高, f, 頭歪角度] 同 HOLD_FIT），
    穿一件就整張換掉；穿好幾件照 SOLO_ORDER 挑第一件有圖的換整張，其他幾件照舊疊上去。
    公主沒有吉他、彩虹皇冠、冰晶皇冠的圖：只穿這三件時用母圖＋疊圖 */
 const SOLO_FIT = {
