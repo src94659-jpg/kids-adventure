@@ -2175,7 +2175,9 @@ const ANIMALS = {
   hoop: { name: '籃球英雄' },
   /* 交接包的 gray_mouse、pink_hood_bunny（GPT 畫的 3D 圖，同樣沒有向量版） */
   mouse: { name: '米米鼠' },
-  pbunny: { name: '莓莓兔' }
+  pbunny: { name: '莓莓兔' },
+  /* 交接包的 guitar_hero（GPT 畫的 3D 圖，2026-11-05） */
+  ghero: { name: '吉他英雄' }
 };
 const ANIMAL_KEYS = Object.keys(ANIMALS);
 
@@ -2260,7 +2262,10 @@ const PET3D = {
   mouse: { human: 1, y: 0, hd: [[40.5, 89.8], [70.7, 93.3]], eyes: [[50.8, 54], [73.1, 54]], gr: 5.8, gsw: 1.8, dy: 0, feet: [[49.6, 118.6], [75, 118.6]], shoe: .85, hat: [62.3, 39.8, .9], wing: 1, wc: [62.3, 87.7],
     nk: [62.3, 79.2, .44], md: [60.2, 89.1, .55], cape: [32, 76, 62, 46] },
   pbunny: { human: 1, y: 0, hd: [[42.8, 99.5], [71, 100.9]], eyes: [[48.4, 71.5], [74.5, 71.5]], gr: 4.6, gsw: 1.6, dy: 0, feet: [[52.2, 119.2], [71, 119.2]], shoe: .75, hat: [63.6, 57.5, 1.04], wing: 1, wc: [61.6, 98.4],
-    nk: [61.6, 88.4, .42], md: [60.9, 98.4, .5], cape: [35, 85, 54, 37] }
+    nk: [61.6, 88.4, .42], md: [60.9, 98.4, .5], cape: [35, 85, 54, 37] },
+  /* 吉他英雄：自己戴高帽、墨鏡、穿黑靴；沒有穿鞋全身圖（BARE_FEET），拿道具用 HOLD_FIT 的整張圖；不戴任何帽子（NO_HAT） */
+  ghero: { human: 1, y: 0, hd: [[43.7, 95.8], [83.4, 95.8]], eyes: [[53.1, 58.6], [74, 58.6]], gr: 6.5, gsw: 1.8, dy: 0, feet: [[49.4, 117.3], [74.6, 117.3]], shoe: .85, hat: [64.5, 18.2, .9], wing: 1, wc: [62.2, 90.2],
+    nk: [62.2, 78.8, .44], md: [64.7, 86.4, .55], cape: [36, 78, 54, 34] }
 };
 /* 商店 42 件的 3D 圖（GPT 畫的，已裁掉透明邊）。位置框 [x, y, 寬, 高, 對齊]：帽子和光環是在「帽子座標」（頭寬 38～82、帽緣 y 30，會跟著每隻動物的頭縮放），
    其他是夥伴的 viewBox 座標；圖用 meet 放進框裡、不變形 */
@@ -2296,8 +2301,9 @@ function held3d(it, r3) {
 /* 3D 鞋子：GPT 畫好的「穿著這雙鞋」全身圖（fantasy_art/characters/shoes/<夥伴>_<鞋>.webp，已對齊原圖的位置和大小），
    穿商店鞋時換整張圖，不再把鞋子貼在腳上 */
 const SHOE_FIT = new Set(['sneakers', 'boots', 'goldShoes', 'rainbowShoes', 'flameShoes']);
-const BARE_FEET = new Set(['mouse', 'pbunny']);   // 沒有穿鞋全身圖：鞋子照舊疊在腳上
-/* 3D 拿道具：GPT 畫好的「拿著這件」全身圖。只拿一件、沒穿商店鞋 → held/<夥伴>_<道具>（121 張，米米鼠、莓莓兔的來自交接包）；
+const BARE_FEET = new Set(['mouse', 'pbunny', 'ghero']);   // 沒有穿鞋全身圖：鞋子照舊疊在腳上
+const NO_HAT = new Set(['ghero']);   // 自己就戴著帽子（吉他英雄的高帽）：升級送的棒球帽、博士帽和商店帽子都不戴
+/* 3D 拿道具：GPT 畫好的「拿著這件」全身圖。只拿一件、沒穿商店鞋 → held/<夥伴>_<道具>（132 張，米米鼠、莓莓兔、吉他英雄的來自交接包）；
    剛好是 COMBO_FIT 那組「鞋＋道具」→ combo/<夥伴>_<鞋>_<道具>（9 張）；其他（兩件都拿、鞋＋別的道具）照舊疊圖。
    [x, y, 寬, 高, f, 頭歪角度]：圖在 viewBox 的位置（已對齊原圖的頭）；f < 1 是道具太大，整隻以頭中心 FIT_HC 縮小才放得進框；
    頭歪了幾度，帽子和眼鏡就跟著轉 */
@@ -2312,7 +2318,8 @@ const HOLD_FIT = {
   mboy: { guitar: [36.36, 13.42, 68, 110.5, 1, 0], violin: [36.09, 13.69, 78.36, 106.52, 1, 0], pipa: [36.36, 13.95, 64.55, 109.97, 1, 0], recorder: [36.36, 13.95, 51.27, 108.38, 1, 0], sax: [35.83, 13.69, 59.77, 110.77, 0.997, -4.7], drum: [36.62, 13.42, 63.22, 109.44, 1, 0], triangle: [35.83, 13.95, 65.34, 109.44, 1, -3.7], wand: [23.88, 13.42, 63.48, 109.7, 1, 0], balloon: [36.62, -4.91, 89.25, 132.55, 0.963, 0], icecream: [36.36, 13.16, 52.86, 108.11, 1, -3.4], magicBook: [33.44, 12.89, 62.95, 112.36, 0.985, 8.6] },
   mgirl: { guitar: [27.33, 22.19, 78.89, 99.88, 1, 0], violin: [27.06, 21.12, 89.25, 102.27, 1, 0], pipa: [27.59, 22.19, 77.83, 102, 1, 0], recorder: [27.59, 21.66, 59.5, 100.41, 1, 0], sax: [27.06, 20.86, 66.41, 103.06, 1, 0], drum: [27.33, 21.92, 74.91, 102.53, 0.994, 0], triangle: [27.59, 21.12, 79.42, 101.73, 1, -4.5], wand: [27.59, 21.92, 75.17, 99.88, 1, 0], balloon: [27.33, -8.62, 98.28, 129.36, 1, 0], icecream: [27.59, 22.45, 66.67, 96.95, 1, 0], magicBook: [27.06, 19.27, 72.25, 100.94, 1, 3.3] },
   mouse: { guitar: [20.93, 16.61, 95.86, 117.72, 0.861, 0], violin: [11.63, 14.37, 111.28, 123.38, 0.825, -8.4], pipa: [19.99, 14.24, 93.79, 114.23, 0.932, -6.2], recorder: [22.17, 15.67, 95.27, 109.59, 0.977, 0], sax: [22.33, 15.36, 96.57, 121.28, 0.836, 0], drum: [22.25, 16.34, 94.79, 115.71, 0.888, 0], triangle: [14.84, 15.64, 100.89, 114.08, 0.916, 0], wand: [12.04, 15.31, 103.88, 109.77, 0.979, 0], balloon: [-13.4, -2.45, 130.95, 127.62, 0.926, 3.0], icecream: [21.98, 16.09, 95.74, 110.11, 0.963, 0], magicBook: [22.43, 16.44, 93.47, 111.07, 0.945, 0] },
-  pbunny: { guitar: [28.7, 15.25, 69.1, 113.89, 0.904, -2.5], violin: [26.57, 15.28, 80.96, 115.16, 0.884, -5.8], pipa: [27.19, 17.08, 77.27, 114.72, 0.863, -5.5], recorder: [30.09, 14.64, 64.3, 108.27, 1, 0], sax: [30.64, 13.68, 64.96, 119.15, 0.848, 0], drum: [29.4, 13.57, 64.98, 120.23, 0.835, 0], triangle: [22.59, 14.46, 71.56, 112.45, 0.941, 0], wand: [14.71, 14.01, 79.57, 110.13, 0.992, 0], balloon: [-10.67, 13.44, 105.17, 112.96, 0.95, 0], icecream: [24.52, 13.97, 69.83, 109.45, 1, 0], magicBook: [28.05, 15.26, 66.3, 112.29, 0.93, 0] } };
+  pbunny: { guitar: [28.7, 15.25, 69.1, 113.89, 0.904, -2.5], violin: [26.57, 15.28, 80.96, 115.16, 0.884, -5.8], pipa: [27.19, 17.08, 77.27, 114.72, 0.863, -5.5], recorder: [30.09, 14.64, 64.3, 108.27, 1, 0], sax: [30.64, 13.68, 64.96, 119.15, 0.848, 0], drum: [29.4, 13.57, 64.98, 120.23, 0.835, 0], triangle: [22.59, 14.46, 71.56, 112.45, 0.941, 0], wand: [14.71, 14.01, 79.57, 110.13, 0.992, 0], balloon: [-10.67, 13.44, 105.17, 112.96, 0.95, 0], icecream: [24.52, 13.97, 69.83, 109.45, 1, 0], magicBook: [28.05, 15.26, 66.3, 112.29, 0.93, 0] },
+  ghero: { guitar: [24.57, 13.96, 79.27, 117.54, 0.888, 0], violin: [23.77, 13.82, 87.82, 120.61, 0.852, 0], pipa: [25.01, 13.63, 78.96, 113.22, 0.952, -5.5], recorder: [24.46, 13.55, 73.91, 111.07, 0.985, 0], sax: [23.18, 13.47, 74.32, 120.24, 0.861, -3.1], drum: [24.46, 13.87, 74.53, 124.02, 0.813, 0], triangle: [24.26, 14.26, 83.87, 113.63, 0.936, 0], wand: [26.03, 14.52, 90.87, 110.33, 0.982, -3.1], balloon: [24.44, 6.05, 108.3, 122.11, 0.927, 0], icecream: [24.6, 15.02, 77.8, 108.62, 1, 0], magicBook: [24.41, 13.92, 74.84, 115.23, 0.919, 0] } };
 const COMBO_FIT = {
   owl: ['sneakers', 'wand', -8, 9.55, 117.67, 115.28, 0.993, 4.5],
   cat: ['sneakers', 'wand', 2.09, 5.22, 109.97, 120.86, 0.98, 0],
@@ -2330,7 +2337,7 @@ const SOLO_FIT = {
   princess: { crown: [23.88, 11.42, 72.52, 112.36, 1, 0], wizard: [21.75, 4.52, 77.3, 124.05, 0.955, 0], pirate: [21.75, 9.83, 76.77, 119.8, 0.942, 0], bunny: [21.48, 1.06, 77.3, 126.97, 0.958, 0], flowers: [23.34, 15.14, 73.05, 109.97, 0.99, 0], ninja: [24.14, 14.61, 72.52, 110.23, 0.993, 0], diamondCrown: [22.55, 10.09, 74.91, 116.34, 0.979, 0], capeRed: [15.11, 13.81, 86.59, 110.77, 0.996, 0], capeRainbow: [16.7, 14.08, 84.73, 110.77, 0.993, 0], capeStar: [16.97, 13.81, 88.72, 109.7, 1, 0], auroraCape: [13.78, 13.81, 88.45, 112.36, 0.979, 0], angel: [21.75, 13.81, 74.38, 109.97, 1, 0], butterfly: [18.03, 13.81, 77.83, 109.97, 1, 0], dragon: [22.02, 13.81, 73.84, 109.44, 1, 0], phoenix: [13.25, 13.81, 91.38, 109.97, 1, 0], sneakers: [24.94, 13.81, 71.72, 111.03, 0.996, 0], boots: [23.61, 13.81, 72.52, 111.56, 0.987, 0], goldShoes: [24.14, 13.81, 72.52, 110.5, 0.999, 0], wand: [23.88, 14.08, 73.05, 112.89, 0.971, 0], balloon: [23.34, -7.7, 91.64, 133.34, 0.982, 0], icecream: [23.34, 13.81, 73.31, 111.83, 0.985, 0], violin: [21.75, 13.81, 85.8, 116.61, 0.934, 0], pipa: [22.28, 13.81, 77.3, 115.55, 0.947, -3.5], recorder: [23.08, 13.81, 73.31, 111.83, 0.985, 0], sax: [20.69, 13.81, 75.7, 114.75, 0.952, 0], drum: [24.67, 14.08, 78.09, 115.28, 0.947, 0], triangle: [25.2, 14.34, 74.38, 112.09, 0.974, -5.3], halo: [22.81, 4.78, 73.31, 119.8, 0.993, 0], sparkle: [24.41, 13.55, 71.98, 109.97, 1, 0], goldCape: [16.17, 13.81, 91.91, 111.56, 0.985, 0], heartWings: [23.08, 13.81, 72.78, 110.23, 1, 0], fairy: [23.88, 13.55, 73.84, 111.03, 0.993, 0], comet: [16.17, 13.81, 94.03, 111.03, 0.99, 0], galaxyCape: [5.55, 13.81, 103.59, 110.5, 0.996, 0], iceWings: [16.44, 13.81, 83.67, 110.23, 1, 0], rainbowShoes: [24.41, 13.81, 71.45, 111.03, 0.993, 0], magicBook: [25.2, 13.55, 73.31, 113.16, 0.974, 0], bubbles: [12.98, 13.28, 89.52, 110.77, 1, 0], flameShoes: [24.14, 13.81, 73.05, 113.69, 0.963, 0] },
   hoop: { crown: [35.3, 0.27, 48.34, 124.84, 0.99, 0], wizard: [31.58, -2.92, 52.86, 131.22, 0.958, 0], pirate: [26.53, -0.27, 58.97, 132.28, 0.925, 0], bunny: [32.64, -5.84, 51.53, 133.61, 0.963, 0], flowers: [35.3, 11.69, 47.28, 111.83, 1, 0], ninja: [37.16, 13.55, 47.81, 109.44, 1, 0], diamondCrown: [36.09, 2.92, 48.34, 125.91, 0.952, 0], capeRed: [22.55, 13.81, 81.02, 111.83, 0.985, 0], capeRainbow: [18.3, 13.28, 87.66, 114.22, 0.963, 0], capeStar: [22.28, 13.81, 83.14, 110.77, 0.996, 0], auroraCape: [14.84, 13.81, 94.3, 110.77, 0.996, 0], angel: [20.95, 13.81, 83.67, 110.77, 0.993, 0], butterfly: [21.22, 13.55, 82.08, 110.77, 0.999, 0], dragon: [22.28, 13.81, 79.69, 110.77, 0.999, 0], phoenix: [10.33, 13.81, 101.2, 111.3, 0.987, 0], sneakers: [37.16, 13.28, 45.42, 111.83, 0.99, 0], boots: [37.42, 13.81, 45.16, 111.3, 0.99, 0], goldShoes: [37.42, 13.81, 45.16, 109.97, 1, 0], wand: [22.55, 13.55, 60.56, 113.16, 0.974, 0], balloon: [-2.69, -6.38, 79.95, 136.27, 0.94, 15.6], icecream: [34.23, 13.81, 49.94, 115.02, 0.952, 0], guitar: [33.44, 13.55, 67.47, 115.28, 0.952, 0], violin: [30.78, 13.02, 79.16, 122.19, 0.892, -10.6], pipa: [37.42, 13.81, 54.98, 116.34, 0.94, 0], recorder: [36.89, 13.55, 44.09, 115.28, 0.95, 0], sax: [30.52, 13.81, 58.44, 118.47, 0.917, -10.4], drum: [34.5, 13.81, 49.67, 112.89, 0.974, 0], triangle: [25.2, 13.81, 51.8, 111.56, 0.987, 19.5], halo: [37.16, 2.39, 45.42, 120.86, 1, 0], sparkle: [37.16, 13.55, 58.97, 111.83, 0.985, 0], rainbowCrown: [35.03, -0.27, 48.08, 125.64, 0.985, 0], goldCape: [17.77, 13.81, 90.58, 111.03, 0.993, 0], heartWings: [24.94, 13.55, 76.23, 110.23, 1, 0], fairy: [37.95, 13.81, 61.36, 109.97, 1, 0], comet: [23.88, 13.81, 91.11, 111.03, 0.996, 0], iceCrown: [35.03, 5.05, 48.61, 121.92, 0.968, 0], galaxyCape: [19.09, 13.55, 90.58, 110.5, 1, 0], iceWings: [16.97, 13.81, 87.92, 110.77, 0.996, 0], rainbowShoes: [36.89, 13.81, 46.75, 113.69, 0.963, 0], magicBook: [30.78, 12.75, 54.98, 117.14, 0.94, 0], bubbles: [16.97, 13.81, 87.12, 111.56, 0.987, 0], flameShoes: [37.42, 13.55, 47.55, 111.83, 0.987, 0] } };
 const SOLO_ORDER = ['music', 'hand', 'shoes', 'hat', 'wings', 'cape', 'aura'];
-const FIT_HC = { owl: [60, 38], cat: [56.7, 31.6], dog: [59.8, 35.8], lion: [56.5, 30.9], bear: [60, 34.7], boy: [60.1, 34.3], girl: [57.1, 33.9], mboy: [58.1, 34], mgirl: [57, 40.7], princess: [56.1, 30.8], hoop: [56.2, 30.7], mouse: [64.4, 57.4], pbunny: [61.6, 73.0] };
+const FIT_HC = { owl: [60, 38], cat: [56.7, 31.6], dog: [59.8, 35.8], lion: [56.5, 30.9], bear: [60, 34.7], boy: [60.1, 34.3], girl: [57.1, 33.9], mboy: [58.1, 34], mgirl: [57, 40.7], princess: [56.1, 30.8], hoop: [56.2, 30.7], mouse: [64.4, 57.4], pbunny: [61.6, 73.0], ghero: [63.2, 61.8] };
 const FIT_FRONT = new Set(['guitar', 'violin', 'pipa', 'recorder', 'sax', 'drum', 'magicBook']);   // 拿在胸前／嘴邊的（圍巾、獎牌會擋到）
 const FIT_ST = {};   // 全身圖載入狀態：'ing' 載入中、'ok' 可用、'bad' 載不到（退回疊圖）
 function fitState(src) {
@@ -2405,7 +2412,7 @@ function petSVG(kind = 'owl', cls = '', tier = 0, color = '#2F7DBF', gear = {}, 
       <path class="tassel" d="M60 17 L90 21 L90 35"/><circle cx="90" cy="37" r="3.8" fill="${G('beak')}"/><circle cx="60" cy="17" r="2.6" fill="${G('beak')}"/>` : '';
   /* 第 5 級起：胸前掛獎牌（銅 → 銀 → 金 → 彩虹） */
   const medal = tier >= 5 && on('medal') ? `<g transform="${a.md ? `translate(${a.md[0]} ${a.md[1]}) scale(${a.md[2]})` : `translate(60 ${96 + a.dy})`}"><path d="M-6 -12 L-2 0 M6 -12 L2 0" stroke="#2F7DBF" stroke-width="3"/><circle r="8.6" fill="${tier >= 8 ? 'url(#zz-rainbow)' : ['#D08A4E', '#C3CCD5', '#F6B12F'][tier - 5]}" stroke="#fff" stroke-width="1.6"/>${starShape(0, 0.4, 4.4, '#fff')}</g>` : '';
-  const hatSvg = (hatItem ? (e3('hat') ? img3d(hatItem.id, box3d(hatItem)) : hatItem.draw()) : solo && solo.slot === 'hat' ? '' : cap + grad) + (halo3d || '');
+  const hatSvg = (NO_HAT.has(kind) ? '' : hatItem ? (e3('hat') ? img3d(hatItem.id, box3d(hatItem)) : hatItem.draw()) : solo && solo.slot === 'hat' ? '' : cap + grad) + (halo3d || '');
   if (r3) {
     const hatG = hatSvg ? `<g transform="translate(${r3.hat[0]} ${r3.hat[1]}) scale(${r3.hat[2]}) translate(-60 -30)">${hatSvg}</g>` : '';
     const clasp = e3('cape') ? '' : capeClasp;
@@ -5536,7 +5543,7 @@ function renderPlayers() {
 /* 商店最上面：升級時稱號送的裝扮，每一樣可以自己關掉（還沒升到那一級的不顯示） */
 const tierGearSec = p => {
   const t = tierOf(p.stars), hid = String(p.equip.hide || '').split(',');
-  const list = TIER_GEAR.filter(([, , , lo, hi]) => t >= lo && t <= hi);
+  const list = TIER_GEAR.filter(([k, , , lo, hi]) => t >= lo && t <= hi && !(NO_HAT.has(p.animal) && (k === 'cap' || k === 'grad')));   // 吉他英雄不戴帽子，帽子開關不列
   return list.length ? `<div class="shop-sec tg-sec"><h3>升級裝扮</h3><div class="tg-row">${list.map(([k, name, ic]) => {
     const show = !hid.includes(k);
     return `<button class="tg-sw" role="switch" aria-checked="${show}" data-act="tier-hide" data-k="${k}"><span class="tg-ic">${ic}</span><span class="tg-t">${name}<small>${show ? '戴著' : '收起來了'}</small></span><span class="sw"></span></button>`;
@@ -5549,19 +5556,22 @@ function renderShop() {
   const trying = S.tryItem && SHOP_BY[S.tryItem];
   const gear = { ...p.equip, ...(trying ? { [trying.slot]: trying.id } : {}) };
   const actOf = it => {
-    const owned = p.owned.includes(it.id), on = p.equip[it.slot] === it.id;
+    const noHat = it.slot === 'hat' && NO_HAT.has(p.animal), owned = p.owned.includes(it.id), on = p.equip[it.slot] === it.id && !noHat;
     let act;
-    if (owned) act = on ? `<button class="btn-small" data-act="unequip" data-id="${it.id}">脫下</button>` : `<button class="btn-small wear" data-act="equip" data-id="${it.id}">穿上</button>`;
+    if (noHat) act = `<span class="lock">${esc(ANIMALS[p.animal].name)}戴著自己的帽子，不能換</span>`;
+    else if (owned) act = on ? `<button class="btn-small" data-act="unequip" data-id="${it.id}">脫下</button>` : `<button class="btn-small wear" data-act="equip" data-id="${it.id}">穿上</button>`;
     else if (it.limited) act = `<span class="lock">答對寶箱題才拿得到</span>`;
     else if (it.secret) act = `<span class="lock">打贏${it.secret}才拿得到</span>`;
     else if (p.coins >= it.price) act =`<button class="btn-small buy ${S.buyArm === it.id ? 'confirm' : ''}" data-act="buy" data-id="${it.id}">${S.buyArm === it.id ? `確定用 ${it.price} 金幣買？` : `<span class="coin">金</span> ${it.price} 買`}</button>`;
     else act = `<span class="lack"><span><span class="coin">金</span> ${it.price}・還差 ${it.price - p.coins}</span></span>`;
     return { act, owned, on };
   };
+  /* 吉他英雄這種不戴帽子的：帽子卡片只畫帽子本身，讓孩子還是看得到長什麼樣 */
+  const hatAlone = it => v3d() && SHOP3D[it.id] ? `<img class="pet" src="${SHOP3D_ART}${SHOP3D[it.id]}.webp" alt="" style="object-fit:contain;aspect-ratio:120/124">` : `<svg class="pet" viewBox="0 -30 120 124" aria-hidden="true">${it.draw()}</svg>`;
   const card = it => {
     const { act, owned, on } = actOf(it);
     return `<div class="item ${S.tryItem === it.id ? 'trying' : ''} ${on ? 'on' : ''}">
-      <button class="btn-small" style="border:none;background:none;padding:0;min-height:0" data-act="try" data-id="${it.id}" aria-label="放大看${it.name}">${petOf(p, '', { hide: p.equip.hide, [it.slot]: it.id })}</button>
+      <button class="btn-small" style="border:none;background:none;padding:0;min-height:0" data-act="try" data-id="${it.id}" aria-label="放大看${it.name}">${it.slot === 'hat' && NO_HAT.has(p.animal) ? hatAlone(it) : petOf(p, '', { hide: p.equip.hide, [it.slot]: it.id })}</button>
       <span class="iname">${it.name}${on ? '（穿著）' : owned ? '（已擁有）' : ''}</span>${act}</div>`;
   };
   /* 點商品：跳出放大視窗，看大大的夥伴穿上它（3D 模式旁邊再放商品本身的圖），在視窗裡也能買／穿 */
@@ -7482,7 +7492,7 @@ document.addEventListener('click', e => {
     S.buyArm = null; S.tryItem = null; persist(p);
     sfx('coin'); render(); burst(screen.querySelector('.shop-top .pet')); narrate(`買好了！已經幫你穿上${it.name}。`);
   }
-  else if (act === 'equip') { const p = me(), it = SHOP_BY[b.dataset.id]; if (it && p.owned.includes(it.id)) { p.equip[it.slot] = it.id; S.tryItem = null; persist(p); sfx('tap'); render(); } }
+  else if (act === 'equip') { const p = me(), it = SHOP_BY[b.dataset.id]; if (it && p.owned.includes(it.id) && !(it.slot === 'hat' && NO_HAT.has(p.animal))) { p.equip[it.slot] = it.id; S.tryItem = null; persist(p); sfx('tap'); render(); } }
   else if (act === 'tier-hide') { const p = me(), k = b.dataset.k; if (TIER_GEAR.some(([g]) => g === k)) { const h = new Set(String(p.equip.hide || '').split(',').filter(Boolean)); h.has(k) ? h.delete(k) : h.add(k); const v = cleanHide([...h].join(',')); if (v) p.equip.hide = v; else delete p.equip.hide; persist(p); sfx('tap'); render(); } }
   else if (act === 'unequip') { const p = me(), it = SHOP_BY[b.dataset.id]; if (it) { delete p.equip[it.slot]; S.tryItem = null; persist(p); sfx('tap'); render(); } }
   else if (act === 'player') { sfx('tap'); setCur(b.dataset.id); S.greet = null; enterGame(); }
