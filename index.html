@@ -1,4 +1,4 @@
-<!doctype html><html lang="zh-Hant-TW"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><title>國英數大冒險</title><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="國英數大冒險"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><link rel="apple-touch-icon" href="icon-180.png"><link rel="icon" href="icon-180.png"><script>window.ZZ_SITE = 1; window.ZZ_API = "https://script.google.com/macros/s/AKfycbxkk46VfoU1vdSL4b3cJGkiH-SXhh9XqjGM3dJ5eGBk1FQ54wdDSg_O0iT4f9xy5kKa/exec"; window.ZZ_VER = "202611052238-9b35fe03";if(navigator.userAgent.indexOf(" Line/")>=0&&location.search.indexOf("openExternalBrowser")<0)location.replace(location.pathname+(location.search?location.search+"&":"?")+"openExternalBrowser=1"+location.hash);</script><style>:root{padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}body{margin:0}[hidden]{display:none!important}</style></head><body><title>國英數大冒險</title>
+<!doctype html><html lang="zh-Hant-TW"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><title>國英數大冒險</title><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="國英數大冒險"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><link rel="apple-touch-icon" href="icon-180.png"><link rel="icon" href="icon-180.png"><script>window.ZZ_SITE = 1; window.ZZ_API = "https://script.google.com/macros/s/AKfycbxkk46VfoU1vdSL4b3cJGkiH-SXhh9XqjGM3dJ5eGBk1FQ54wdDSg_O0iT4f9xy5kKa/exec"; window.ZZ_VER = "202611052253-98cd67a4";if(navigator.userAgent.indexOf(" Line/")>=0&&location.search.indexOf("openExternalBrowser")<0)location.replace(location.pathname+(location.search?location.search+"&":"?")+"openExternalBrowser=1"+location.hash);</script><style>:root{padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}body{margin:0}[hidden]{display:none!important}</style></head><body><title>國英數大冒險</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <script>
 /* 開機預判（最先跑）：日夜、會不會進 3D 星球。進 3D 的話開機就鋪星球天空、先載天空圖，不會先閃一下 2D 點點紙和空的工具列 */
@@ -4732,7 +4732,7 @@ function currentSay() {
     case 'home': return '歡迎來到國英數大冒險！按下開始玩。';
     case 'voice': return VOICE_SAMPLE.zh;
     case 'players': return PLAYERS.length ? '誰要來玩？按一下你的名字。也可以用遊客玩。' : '請大人幫你建立 ID，或是先用遊客玩。';
-    case 'newPlayer': return API && !S.editId ? '請大人幫忙輸入 ID 和登入序號，再選一個動物夥伴和顏色。登入序號要記下來，換平板登入要用。' : '請大人幫忙輸入 ID，再選一個動物夥伴和顏色。不想輸入 ID，也可以用遊客玩。';
+    case 'newPlayer': return API && !S.editId ? '請大人幫忙輸入 ID 和登入序號，再選一位夥伴和顏色。登入序號要記下來，換平板登入要用。' : '請大人幫忙輸入 ID，再選一位夥伴和顏色。不想輸入 ID，也可以用遊客玩。';
     case 'cloudForm': return '請大人幫忙輸入 ID 和登入序號。';
     case 'movePaste': return '請大人把搬家代碼貼上來。';
     case 'grade': return S.hub ? '你想玩哪一科？按一下國語、英文、數學還是安親班。' : S.subject === 'kz' ? '安親班專區。點一座島，就能開始寫。' : S.subject === 'en' ? (S.enSet ? '選一冊。' : '選一個英文項目。') : '按一下你的年級。';
@@ -5806,7 +5806,7 @@ function renderNewPlayer() {
       <input type="text" id="pname" maxlength="8" placeholder="例如：小明" enterkeyhint="done" required aria-describedby="perr" value="${editing ? esc(editing.name) : ''}"${lockName ? ' readonly' : ''}>`}
       <p class="form-err" id="perr" role="alert"></p>
       ${fromGuest ? `<p class="save-note" style="text-align:left">遊客的 ${fmtNum(GUEST.score)} 分、${GUEST.stars} 顆星、${fmtNum(GUEST.coins || 0)} 個金幣和裝扮，都會搬到這個 ID。</p>` : ''}
-      <span class="form-label">選一個動物夥伴</span>
+      <span class="form-label">選一位夥伴</span>
       <div class="ani-wheel"><button type="button" class="ani-arrow" data-act="animal-step" data-d="-1" aria-label="上一個夥伴">‹</button>
         <div class="animals" id="aniRow">${ANIMAL_KEYS.map(k => `<button type="button" class="animal" data-act="animal" data-k="${k}" aria-pressed="${k === S.newAnimal}">${petSVG(k)}<span${ANIMALS[k].name.length > 5 ? ' class="long"' : ''}>${ANIMALS[k].name}</span></button>`).join('')}</div>
         <button type="button" class="ani-arrow" data-act="animal-step" data-d="1" aria-label="下一個夥伴">›</button></div>
